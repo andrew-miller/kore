@@ -4,14 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.example.kore.R;
-import com.example.kore.codes.Code;
-import com.example.kore.codes.Label;
-import com.example.kore.utils.CodeUtils;
-import com.example.kore.utils.Random;
-import com.example.unsuck.Boom;
-import com.example.unsuck.Null;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -22,6 +14,14 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+
+import com.example.kore.R;
+import com.example.kore.codes.Code;
+import com.example.kore.codes.Label;
+import com.example.kore.utils.CodeUtils;
+import com.example.kore.utils.Random;
+import com.example.unsuck.Boom;
+import com.example.unsuck.Null;
 
 public class CodeEditor extends Fragment implements Field.LabelSelectedListener {
   public static final String ARG_CODE = "code";
@@ -67,11 +67,10 @@ public class CodeEditor extends Fragment implements Field.LabelSelectedListener 
         .setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View v) {
-            Map<Label, Code> m = new HashMap<Label, Code>(CodeUtils
-                .getLabels(code));
+            Map<Label, Code> m = new HashMap<Label, Code>(code.labels);
             while (m.put(new Label(Random.randomId()), CodeUtils.unit) != null)
               ;
-            code = CodeUtils.replaceLabels(code, m);
+            code = new Code(code.tag, m);
 
             codeEditedListener.onCodeEdited(code);
             render();
@@ -83,10 +82,10 @@ public class CodeEditor extends Fragment implements Field.LabelSelectedListener 
   private void switchCodeOp() {
     switch (code.tag) {
     case PRODUCT:
-      code = Code.newUnion(code.getProduct().labels);
+      code = Code.newUnion(code.labels);
       break;
     case UNION:
-      code = Code.newProduct(code.getUnion().labels);
+      code = Code.newProduct(code.labels);
       break;
     default:
       throw Boom.boom();
@@ -115,7 +114,7 @@ public class CodeEditor extends Fragment implements Field.LabelSelectedListener 
     fields.removeAllViews();
     FragmentTransaction fragmentTransaction = getFragmentManager()
         .beginTransaction();
-    for (final Entry<Label, Code> e : CodeUtils.getLabels(code).entrySet()) {
+    for (final Entry<Label, Code> e : code.labels.entrySet()) {
       Bundle args = new Bundle();
       args.putBoolean(Field.ARG_SELECTED, e.getKey().equals(selectedLabel));
       args.putSerializable(Field.ARG_LABEL, e.getKey());
@@ -138,9 +137,9 @@ public class CodeEditor extends Fragment implements Field.LabelSelectedListener 
     deleteButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        Map<Label, Code> m = new HashMap<Label, Code>(CodeUtils.getLabels(code));
+        Map<Label, Code> m = new HashMap<Label, Code>(code.labels);
         m.remove(l);
-        code = CodeUtils.replaceLabels(code, m);
+        code = new Code(code.tag, m);
         codeEditedListener.onCodeEdited(code);
         render();
       }

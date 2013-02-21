@@ -83,9 +83,9 @@ public class Blob {
     private static Map<Label, Code> getLabels(Code c) {
       switch (c.tag) {
       case PRODUCT:
-        return c.getProduct().labels;
+        return c.labels;
       case UNION:
-        return c.getUnion().labels;
+        return c.labels;
       default:
         throw Boom.boom();
       }

@@ -3,13 +3,6 @@ package com.example.kore.ui;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.example.kore.R;
-import com.example.kore.codes.Code;
-import com.example.kore.codes.Label;
-import com.example.kore.utils.CodeUtils;
-import com.example.unsuck.Boom;
-import com.example.unsuck.Null;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -20,6 +13,12 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
+
+import com.example.kore.R;
+import com.example.kore.codes.Code;
+import com.example.kore.codes.Label;
+import com.example.unsuck.Boom;
+import com.example.unsuck.Null;
 
 public class Path extends Fragment {
   private ViewGroup path;
@@ -74,7 +73,7 @@ public class Path extends Fragment {
     LinkedList<Label> subpath = new LinkedList<Label>();
     Code code = root;
     for (Label l : path) {
-      code = CodeUtils.getLabels(code).get(l);
+      code = code.labels.get(l);
       Button b1 = new Button(a);
       b1.setBackgroundColor((int) Long.parseLong(l.label.substring(0, 8), 16));
       b1.setWidth(0);

@@ -5,16 +5,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import com.example.kore.R;
-import com.example.kore.codes.Code;
-import com.example.kore.codes.Label;
-import com.example.kore.utils.CodeUtils;
-
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
+
+import com.example.kore.R;
+import com.example.kore.codes.Code;
+import com.example.kore.codes.Label;
+import com.example.kore.utils.CodeUtils;
 
 public class MainActivity extends FragmentActivity implements
     ActionBar.TabListener, Field.CodeSelectedListener,
@@ -102,10 +102,10 @@ public class MainActivity extends FragmentActivity implements
     if (p.size() == 0) {
       return newCode;
     }
-    Map<Label, Code> m = new HashMap<Label, Code>(CodeUtils.getLabels(c));
+    Map<Label, Code> m = new HashMap<Label, Code>(c.labels);
     Label l = p.get(0);
     m.put(l, replaceCurrentCode(m.get(l), p.subList(1, p.size()), newCode));
-    return CodeUtils.replaceLabels(c, m);
+    return new Code(c.tag, m);
   }
 
   @Override
@@ -127,7 +127,7 @@ public class MainActivity extends FragmentActivity implements
     List<Label> p = new LinkedList<Label>();
     for (Label l : subpath) {
       p.add(l);
-      if ((c = CodeUtils.getLabels(c).get(l)) == null) {
+      if ((c = c.labels.get(l)) == null) {
         throw new RuntimeException("selected nonexistent path");
       }
     }
