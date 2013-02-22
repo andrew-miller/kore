@@ -8,14 +8,11 @@ import com.example.unsuck.Null;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnDragListener;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 public class Field extends Fragment {
   public static final String ARG_LABEL = "label";
@@ -43,8 +40,6 @@ public class Field extends Fragment {
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
-    View v = inflater.inflate(R.layout.field, container, false);
-
     Bundle args = getArguments();
     final Label label = (Label) args.get(ARG_LABEL);
     final Code code = (Code) args.get(ARG_CODE);
@@ -52,37 +47,29 @@ public class Field extends Fragment {
     Null.notNull(label);
     Null.notNull(code);
 
-    v.setOnDragListener(new OnDragListener() {
-      @Override
-      public boolean onDrag(View v, DragEvent event) {
-        switch (event.getAction()) {
-        case DragEvent.ACTION_DRAG_ENDED:
-        }
-        return false;
-      }
-    });
-    Button lb = (Button) v.findViewById(R.id.label);
+    View v = inflater.inflate(R.layout.field, container, false);
+
+    Button labelButton = (Button) v.findViewById(R.id.label);
+    labelButton.setBackgroundColor((int) Long.parseLong(
+        label.label.substring(0, 8), 16));
     if (selected)
-      lb.setText("---");
-    lb.setOnClickListener(new OnClickListener() {
+      labelButton.setText("---");
+    labelButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
         labelSelectedListener.labelSelected(label);
       }
     });
 
-    ((Button) v.findViewById(R.id.code))
-        .setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View v) {
-            codeSelectedListener.codeSelected(label, code);
-          }
-        });
-    int c = (int) Long.parseLong(label.label.substring(0, 8), 16);
-    ((TextView) v.findViewById(R.id.label)).setBackgroundColor(c);
+    Button codeButton = (Button) v.findViewById(R.id.code);
+    codeButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        codeSelectedListener.codeSelected(label, code);
+      }
+    });
     String cs = code.toString();
-    ((TextView) v.findViewById(R.id.code)).setText(cs.substring(0,
-        Math.min(10, cs.length())));
+    codeButton.setText(cs.substring(0, Math.min(10, cs.length())));
     return v;
   }
 }
