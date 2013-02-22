@@ -17,9 +17,6 @@ public final class Code implements Serializable {
   public final Tag tag;
   public final Map<Label, Code> labels;
 
-  // private final Union union;
-  // private final Product product;
-
   public Code(Tag tag, Map<Label, Code> labels) {
     Null.notNull(labels);
     this.tag = tag;
