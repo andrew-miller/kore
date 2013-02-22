@@ -52,6 +52,7 @@ public class MainActivity extends FragmentActivity implements
     codeEditor.setArguments(b);
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.fieldContainer, codeEditor).commit();
+    pathFragment.setPath(code, new LinkedList<Label>());
 
   }
 
