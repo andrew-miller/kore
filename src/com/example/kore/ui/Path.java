@@ -43,64 +43,48 @@ public class Path extends Fragment {
     return v;
   }
 
-  public void setPath(Code root, List<Label> p) {
-    Null.notNull(p);
-    final LinkedList<Label> path = new LinkedList<Label>(p);
-    final FragmentActivity a = getActivity();
+  public void setPath(Code code, List<Label> path) {
+    Null.notNull(code);
+    path = new LinkedList<Label>(path);
+    FragmentActivity a = getActivity();
     this.path.removeAllViews();
 
-    Button rB = new Button(a);
-    rB.setWidth(0);
-    rB.setHeight(LayoutParams.MATCH_PARENT);
-    this.path.addView(rB);
-    rB.setOnClickListener(new OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        subpathSelectedListener.onCodeInPathSelected(new LinkedList<Label>());
-      }
-    });
-    switch (root.tag) {
-    case PRODUCT:
-      rB.setText("{...}");
-      break;
-    case UNION:
-      rB.setText("[...]");
-      break;
-    default:
-      throw Boom.boom();
-    }
-
     LinkedList<Label> subpath = new LinkedList<Label>();
-    Code code = root;
-    for (Label l : path) {
-      code = code.labels.get(l);
-      Button b1 = new Button(a);
-      b1.setBackgroundColor((int) Long.parseLong(l.label.substring(0, 8), 16));
-      b1.setWidth(0);
-      b1.setHeight(LayoutParams.MATCH_PARENT);
-      this.path.addView(b1);
-      Button b2 = new Button(a);
+    while (true) {
+      Button b = new Button(a);
       switch (code.tag) {
       case PRODUCT:
-        b2.setText("{...}");
+        b.setText("{...}");
         break;
       case UNION:
-        b2.setText("[...]");
+        b.setText("[...]");
         break;
       default:
         throw Boom.boom();
       }
-      b2.setWidth(0);
-      b2.setHeight(LayoutParams.MATCH_PARENT);
-      subpath.add(l);
+      b.setWidth(0);
+      b.setHeight(LayoutParams.MATCH_PARENT);
       final LinkedList<Label> subpathS = new LinkedList<Label>(subpath);
-      b2.setOnClickListener(new OnClickListener() {
+      b.setOnClickListener(new OnClickListener() {
         @Override
         public void onClick(View v) {
           subpathSelectedListener.onCodeInPathSelected(subpathS);
         }
       });
-      this.path.addView(b2);
+      this.path.addView(b);
+      if (path.size() == 0) {
+        break;
+      } else {
+        Label l = path.get(0);
+        path = path.subList(1, path.size());
+        subpath.add(l);
+        code = code.labels.get(l);
+        Button b2 = new Button(a);
+        b2.setBackgroundColor((int) Long.parseLong(l.label.substring(0, 8), 16));
+        b2.setWidth(0);
+        b2.setHeight(LayoutParams.MATCH_PARENT);
+        this.path.addView(b2);
+      }
     }
   }
 }
