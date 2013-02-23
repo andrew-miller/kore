@@ -49,6 +49,7 @@ public class MainActivity extends FragmentActivity implements
     codeEditor = new CodeEditor();
     Bundle b = new Bundle();
     b.putSerializable(CodeEditor.ARG_CODE, CodeUtils.unit);
+    b.putSerializable(CodeEditor.ARG_ROOT_CODE, CodeUtils.unit);
     codeEditor.setArguments(b);
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.fieldContainer, codeEditor).commit();
@@ -97,6 +98,14 @@ public class MainActivity extends FragmentActivity implements
   public void onCodeEdited(Code c) {
     code = replaceCurrentCode(code, path, c);
     pathFragment.setPath(code, path);
+
+    codeEditor = new CodeEditor();
+    Bundle b = new Bundle();
+    b.putSerializable(CodeEditor.ARG_CODE, c);
+    b.putSerializable(CodeEditor.ARG_ROOT_CODE, code);
+    codeEditor.setArguments(b);
+    getSupportFragmentManager().beginTransaction()
+        .replace(R.id.fieldContainer, codeEditor).commit();
   }
 
   private Code replaceCurrentCode(Code c, List<Label> p, Code newCode) {
@@ -117,6 +126,7 @@ public class MainActivity extends FragmentActivity implements
     codeEditor = new CodeEditor();
     Bundle b = new Bundle();
     b.putSerializable(CodeEditor.ARG_CODE, c);
+    b.putSerializable(CodeEditor.ARG_ROOT_CODE, code);
     codeEditor.setArguments(b);
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.fieldContainer, codeEditor).commit();
@@ -136,6 +146,7 @@ public class MainActivity extends FragmentActivity implements
     codeEditor = new CodeEditor();
     Bundle b = new Bundle();
     b.putSerializable(CodeEditor.ARG_CODE, c);
+    b.putSerializable(CodeEditor.ARG_ROOT_CODE, code);
     codeEditor.setArguments(b);
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.fieldContainer, codeEditor).commit();
