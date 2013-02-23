@@ -43,7 +43,7 @@ public class Field extends Fragment {
     Bundle args = getArguments();
     final Label label = (Label) args.get(ARG_LABEL);
     final Code code = (Code) args.get(ARG_CODE);
-    final Boolean selected = args.getBoolean(ARG_SELECTED);
+    final boolean selected = args.getBoolean(ARG_SELECTED);
     Null.notNull(label);
     Null.notNull(code);
 
