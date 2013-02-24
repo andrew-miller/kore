@@ -25,12 +25,14 @@ import com.example.unsuck.Null;
 
 public class CodeEditor extends Fragment implements Field.LabelSelectedListener {
   public static final String ARG_CODE = "code";
+  public static final String ARG_ROOT_CODE = "rootCode";
 
   public static interface CodeEditedListener {
     public void onCodeEdited(Code c);
   }
 
   private Code code;
+  private Code rootCode;
   private CodeEditedListener codeEditedListener;
   private Button deleteButton;
   private Label selectedLabel;
@@ -50,7 +52,9 @@ public class CodeEditor extends Fragment implements Field.LabelSelectedListener 
 
     Bundle args = getArguments();
     code = (Code) args.get(ARG_CODE);
+    rootCode = (Code) args.get(ARG_ROOT_CODE);
     Null.notNull(code);
+    Null.notNull(rootCode);
 
     fields = (LinearLayout) v.findViewById(R.id.fields);
     deleteButton = ((Button) v.findViewById(R.id.button_delete_field));
@@ -73,7 +77,6 @@ public class CodeEditor extends Fragment implements Field.LabelSelectedListener 
             code = new Code(code.tag, m);
 
             codeEditedListener.onCodeEdited(code);
-            render();
           }
         });
     return v;
@@ -91,7 +94,6 @@ public class CodeEditor extends Fragment implements Field.LabelSelectedListener 
       throw Boom.boom();
     }
     codeEditedListener.onCodeEdited(code);
-    render();
   }
 
   @Override
@@ -119,15 +121,12 @@ public class CodeEditor extends Fragment implements Field.LabelSelectedListener 
       args.putBoolean(Field.ARG_SELECTED, e.getKey().equals(selectedLabel));
       args.putSerializable(Field.ARG_LABEL, e.getKey());
       args.putSerializable(Field.ARG_CODE, e.getValue());
+      args.putSerializable(Field.ARG_ROOT_CODE, rootCode);
       Field f = new Field();
       f.setArguments(args);
       fragmentTransaction.add(R.id.fields, f);
     }
     fragmentTransaction.commit();
-  }
-
-  public Code getCode() {
-    return code;
   }
 
   @Override
@@ -141,7 +140,6 @@ public class CodeEditor extends Fragment implements Field.LabelSelectedListener 
         m.remove(l);
         code = new Code(code.tag, m);
         codeEditedListener.onCodeEdited(code);
-        render();
       }
     });
     render();
