@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.example.kore.utils.CodeUtils;
-import com.example.unsuck.Boom;
 
 public class Blob {
   private String id;
@@ -58,9 +57,9 @@ public class Blob {
       this.args = args;
       in = CodeUtils.unit;
 
-      Map<Label, Code> subType = new HashMap<Label, Code>();
+      Map<Label, CodeRef> subType = new HashMap<Label, CodeRef>();
       for (int i = 0; i < order.length; i++)
-        subType.put(order[i], args.get(order[i]).out);
+        subType.put(order[i], CodeRef.newCode(args.get(order[i]).out));
       out = Code.newProduct(subType);
     }
 
@@ -80,19 +79,8 @@ public class Blob {
     public Blob arg;
     public Label label;
 
-    private static Map<Label, Code> getLabels(Code c) {
-      switch (c.tag) {
-      case PRODUCT:
-        return c.labels;
-      case UNION:
-        return c.labels;
-      default:
-        throw Boom.boom();
-      }
-    }
-
     public Proj(Blob arg, Label label) {
-      super(arg.in, getLabels(arg.out).get(label));
+      super(arg.in, arg.out.labels.get(label).code);
       this.arg = arg;
       this.label = label;
     }

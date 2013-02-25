@@ -1,6 +1,7 @@
 package com.example.kore.ui;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -17,13 +18,15 @@ import android.widget.LinearLayout;
 
 import com.example.kore.R;
 import com.example.kore.codes.Code;
+import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.Random;
 import com.example.unsuck.Boom;
 import com.example.unsuck.Null;
 
-public class CodeEditor extends Fragment implements Field.LabelSelectedListener {
+public class CodeEditor extends Fragment implements
+    Field.LabelSelectedListener, Field.FieldChangedListener {
   public static final String ARG_CODE = "code";
   public static final String ARG_ROOT_CODE = "rootCode";
 
@@ -71,8 +74,9 @@ public class CodeEditor extends Fragment implements Field.LabelSelectedListener 
         .setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View v) {
-            Map<Label, Code> m = new HashMap<Label, Code>(code.labels);
-            while (m.put(new Label(Random.randomId()), CodeUtils.unit) != null)
+            Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(code.labels);
+            while (m.put(new Label(Random.randomId()),
+                CodeRef.newCode(CodeUtils.unit)) != null)
               ;
             code = new Code(code.tag, m);
 
@@ -116,11 +120,11 @@ public class CodeEditor extends Fragment implements Field.LabelSelectedListener 
     fields.removeAllViews();
     FragmentTransaction fragmentTransaction = getFragmentManager()
         .beginTransaction();
-    for (final Entry<Label, Code> e : code.labels.entrySet()) {
+    for (final Entry<Label, CodeRef> e : code.labels.entrySet()) {
       Bundle args = new Bundle();
       args.putBoolean(Field.ARG_SELECTED, e.getKey().equals(selectedLabel));
       args.putSerializable(Field.ARG_LABEL, e.getKey());
-      args.putSerializable(Field.ARG_CODE, e.getValue());
+      args.putSerializable(Field.ARG_CODE_REF, e.getValue());
       args.putSerializable(Field.ARG_ROOT_CODE, rootCode);
       Field f = new Field();
       f.setArguments(args);
@@ -136,13 +140,21 @@ public class CodeEditor extends Fragment implements Field.LabelSelectedListener 
     deleteButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        Map<Label, Code> m = new HashMap<Label, Code>(code.labels);
+        Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(code.labels);
         m.remove(l);
         code = new Code(code.tag, m);
         codeEditedListener.onCodeEdited(code);
       }
     });
     render();
+  }
+
+  @Override
+  public void fieldChanged(List<Label> path, Label label) {
+    Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(code.labels);
+    m.put(label, CodeRef.newPath(path));
+    code = new Code(code.tag, m);
+    codeEditedListener.onCodeEdited(code);
   }
 
 }

@@ -13,13 +13,14 @@ import android.view.Menu;
 
 import com.example.kore.R;
 import com.example.kore.codes.Code;
+import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 
 public class MainActivity extends FragmentActivity implements
     ActionBar.TabListener, Field.CodeSelectedListener,
     CodeEditor.CodeEditedListener, Path.SubpathSelectedListener,
-    Field.LabelSelectedListener {
+    Field.LabelSelectedListener, Field.FieldChangedListener {
 
   private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
 
@@ -112,9 +113,12 @@ public class MainActivity extends FragmentActivity implements
     if (p.size() == 0) {
       return newCode;
     }
-    Map<Label, Code> m = new HashMap<Label, Code>(c.labels);
+    Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(c.labels);
     Label l = p.get(0);
-    m.put(l, replaceCurrentCode(m.get(l), p.subList(1, p.size()), newCode));
+    m.put(
+        l,
+        CodeRef.newCode(replaceCurrentCode(m.get(l).code,
+            p.subList(1, p.size()), newCode)));
     return new Code(c.tag, m);
   }
 
@@ -138,9 +142,14 @@ public class MainActivity extends FragmentActivity implements
     List<Label> p = new LinkedList<Label>();
     for (Label l : subpath) {
       p.add(l);
-      if ((c = c.labels.get(l)) == null) {
+      CodeRef cr;
+      if ((cr = c.labels.get(l)) == null) {
         throw new RuntimeException("selected nonexistent path");
       }
+      if (cr.tag != CodeRef.Tag.CODE) {
+        throw new RuntimeException("you can't go there");
+      }
+      c = cr.code;
     }
     path = p;
     codeEditor = new CodeEditor();
@@ -155,5 +164,10 @@ public class MainActivity extends FragmentActivity implements
   @Override
   public void labelSelected(Label l) {
     codeEditor.labelSelected(l);
+  }
+
+  @Override
+  public void fieldChanged(List<Label> path, Label label) {
+    codeEditor.fieldChanged(path, label);
   }
 }

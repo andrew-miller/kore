@@ -15,9 +15,9 @@ public final class Code implements Serializable {
   }
 
   public final Tag tag;
-  public final Map<Label, Code> labels;
+  public final Map<Label, CodeRef> labels;
 
-  public Code(Tag tag, Map<Label, Code> labels) {
+  public Code(Tag tag, Map<Label, CodeRef> labels) {
     Null.notNull(labels);
     this.tag = tag;
     this.labels = Collections.unmodifiableMap(labels);
@@ -34,11 +34,11 @@ public final class Code implements Serializable {
     throw new RuntimeException("Unnown tag: " + tag);
   }
 
-  public final static Code newUnion(Map<Label, Code> labels) {
+  public final static Code newUnion(Map<Label, CodeRef> labels) {
     return new Code(Tag.UNION, labels);
   }
 
-  public static Code newProduct(Map<Label, Code> labels) {
+  public static Code newProduct(Map<Label, CodeRef> labels) {
     return new Code(Tag.PRODUCT, labels);
   }
 
