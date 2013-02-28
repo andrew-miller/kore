@@ -14,4 +14,16 @@ public final class Label implements Serializable {
   public String toString() {
     return label;
   }
+
+  @Override
+  public int hashCode() {
+    return label.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof Label))
+      return false;
+    return label.equals(((Label) o).label);
+  }
 }

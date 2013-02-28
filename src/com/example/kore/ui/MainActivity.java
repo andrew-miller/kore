@@ -20,7 +20,8 @@ import com.example.kore.utils.CodeUtils;
 public class MainActivity extends FragmentActivity implements
     ActionBar.TabListener, Field.CodeSelectedListener,
     CodeEditor.CodeEditedListener, Path.SubpathSelectedListener,
-    Field.LabelSelectedListener, Field.FieldChangedListener {
+    Field.LabelSelectedListener, Field.FieldChangedListener,
+    Field.LabelAliasChangedListener {
 
   private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
 
@@ -28,6 +29,7 @@ public class MainActivity extends FragmentActivity implements
   private Code code = CodeUtils.unit;
   private List<Label> path = new LinkedList<Label>();
   private Path pathFragment;
+  private final Map<Label, String> labelAliases = new HashMap<Label, String>();
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +53,8 @@ public class MainActivity extends FragmentActivity implements
     Bundle b = new Bundle();
     b.putSerializable(CodeEditor.ARG_CODE, CodeUtils.unit);
     b.putSerializable(CodeEditor.ARG_ROOT_CODE, CodeUtils.unit);
+    b.putSerializable(CodeEditor.ARG_LABEL_ALIASES, new HashMap<Label, String>(
+        labelAliases));
     codeEditor.setArguments(b);
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.fieldContainer, codeEditor).commit();
@@ -104,6 +108,8 @@ public class MainActivity extends FragmentActivity implements
     Bundle b = new Bundle();
     b.putSerializable(CodeEditor.ARG_CODE, c);
     b.putSerializable(CodeEditor.ARG_ROOT_CODE, code);
+    b.putSerializable(CodeEditor.ARG_LABEL_ALIASES, new HashMap<Label, String>(
+        labelAliases));
     codeEditor.setArguments(b);
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.fieldContainer, codeEditor).commit();
@@ -131,6 +137,8 @@ public class MainActivity extends FragmentActivity implements
     Bundle b = new Bundle();
     b.putSerializable(CodeEditor.ARG_CODE, c);
     b.putSerializable(CodeEditor.ARG_ROOT_CODE, code);
+    b.putSerializable(CodeEditor.ARG_LABEL_ALIASES, new HashMap<Label, String>(
+        labelAliases));
     codeEditor.setArguments(b);
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.fieldContainer, codeEditor).commit();
@@ -156,6 +164,8 @@ public class MainActivity extends FragmentActivity implements
     Bundle b = new Bundle();
     b.putSerializable(CodeEditor.ARG_CODE, c);
     b.putSerializable(CodeEditor.ARG_ROOT_CODE, code);
+    b.putSerializable(CodeEditor.ARG_LABEL_ALIASES, new HashMap<Label, String>(
+        labelAliases));
     codeEditor.setArguments(b);
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.fieldContainer, codeEditor).commit();
@@ -169,5 +179,25 @@ public class MainActivity extends FragmentActivity implements
   @Override
   public void fieldChanged(List<Label> path, Label label) {
     codeEditor.fieldChanged(path, label);
+  }
+
+  @Override
+  public void labelAliasChanged(Label label, String alias) {
+    labelAliases.put(label, alias);
+    Code c = code;
+    for (Label l : path) {
+      CodeRef cr = c.labels.get(l);
+      assert cr.tag == CodeRef.Tag.CODE;
+      c = cr.code;
+    }
+    codeEditor = new CodeEditor();
+    Bundle b = new Bundle();
+    b.putSerializable(CodeEditor.ARG_CODE, c);
+    b.putSerializable(CodeEditor.ARG_ROOT_CODE, code);
+    b.putSerializable(CodeEditor.ARG_LABEL_ALIASES, new HashMap<Label, String>(
+        labelAliases));
+    codeEditor.setArguments(b);
+    getSupportFragmentManager().beginTransaction()
+        .replace(R.id.fieldContainer, codeEditor).commit();
   }
 }

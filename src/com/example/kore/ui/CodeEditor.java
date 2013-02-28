@@ -1,5 +1,6 @@
 package com.example.kore.ui;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-
 import com.example.kore.R;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeRef;
@@ -29,6 +29,7 @@ public class CodeEditor extends Fragment implements
     Field.LabelSelectedListener, Field.FieldChangedListener {
   public static final String ARG_CODE = "code";
   public static final String ARG_ROOT_CODE = "rootCode";
+  public static final String ARG_LABEL_ALIASES = "labelAliases";
 
   public static interface CodeEditedListener {
     public void onCodeEdited(Code c);
@@ -41,6 +42,7 @@ public class CodeEditor extends Fragment implements
   private Label selectedLabel;
   private LinearLayout fields;
   private Button switchCodeOpButton;
+  private Map<Label, String> labelAliases;
 
   @Override
   public void onAttach(Activity activity) {
@@ -56,6 +58,12 @@ public class CodeEditor extends Fragment implements
     Bundle args = getArguments();
     code = (Code) args.get(ARG_CODE);
     rootCode = (Code) args.get(ARG_ROOT_CODE);
+    {
+      @SuppressWarnings("unchecked")
+      HashMap<Label, String> labelAliasesUnsafe = (HashMap<Label, String>) args
+          .get(ARG_LABEL_ALIASES);
+      labelAliases = Collections.unmodifiableMap(labelAliasesUnsafe);
+    }
     Null.notNull(code);
     Null.notNull(rootCode);
 
@@ -126,6 +134,8 @@ public class CodeEditor extends Fragment implements
       args.putSerializable(Field.ARG_LABEL, e.getKey());
       args.putSerializable(Field.ARG_CODE_REF, e.getValue());
       args.putSerializable(Field.ARG_ROOT_CODE, rootCode);
+      args.putSerializable(Field.ARG_LABEL_ALIASES, new HashMap<Label, String>(
+          labelAliases));
       Field f = new Field();
       f.setArguments(args);
       fragmentTransaction.add(R.id.fields, f);
