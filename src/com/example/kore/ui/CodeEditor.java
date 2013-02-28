@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -83,9 +84,13 @@ public class CodeEditor extends Fragment implements
           @Override
           public void onClick(View v) {
             Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(code.labels);
-            while (m.put(new Label(Random.randomId()),
-                CodeRef.newCode(CodeUtils.unit)) != null)
-              ;
+            Label l = null;
+            do {
+              if (l != null)
+                Log.w("code editor", "generated duplicate label");
+              l = new Label(Random.randomId());
+            } while (m.containsKey(l));
+            m.put(l, CodeRef.newCode(CodeUtils.unit));
             code = new Code(code.tag, m);
 
             codeEditedListener.onCodeEdited(code);
