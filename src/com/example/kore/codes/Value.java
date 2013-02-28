@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.example.kore.utils.CodeUtils;
-import com.example.kore.utils.Helpers;
 
 public class Value {
   public final Map<Label, Value> val;
@@ -19,9 +18,9 @@ public class Value {
   public String toString() {
     switch (type.tag) {
     case PRODUCT:
-      return "{" + Helpers.labelMap(val) + "}";
+      return "{" + CodeUtils.labelMap(val) + "}";
     case UNION:
-      return Helpers.labelMap(val);
+      return CodeUtils.labelMap(val);
     default:
       throw new RuntimeException();
     }

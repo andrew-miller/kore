@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
-import com.example.kore.utils.Helpers;
+import com.example.kore.utils.CodeUtils;
 import com.example.unsuck.Null;
 
 public final class Code implements Serializable {
@@ -27,9 +27,9 @@ public final class Code implements Serializable {
   public String toString() {
     switch (tag) {
     case UNION:
-      return "[" + Helpers.labelMap(labels) + "]";
+      return "[" + CodeUtils.labelMap(labels) + "]";
     case PRODUCT:
-      return "{" + Helpers.labelMap(labels) + "}";
+      return "{" + CodeUtils.labelMap(labels) + "}";
     }
     throw new RuntimeException("Unnown tag: " + tag);
   }
