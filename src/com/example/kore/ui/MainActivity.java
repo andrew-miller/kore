@@ -49,15 +49,7 @@ public class MainActivity extends FragmentActivity implements
     pathFragment = (Path) getSupportFragmentManager().findFragmentById(
         R.id.path);
 
-    codeEditor = new CodeEditor();
-    Bundle b = new Bundle();
-    b.putSerializable(CodeEditor.ARG_CODE, CodeUtils.unit);
-    b.putSerializable(CodeEditor.ARG_ROOT_CODE, CodeUtils.unit);
-    b.putSerializable(CodeEditor.ARG_LABEL_ALIASES, new HashMap<Label, String>(
-        labelAliases));
-    codeEditor.setArguments(b);
-    getSupportFragmentManager().beginTransaction()
-        .replace(R.id.fieldContainer, codeEditor).commit();
+    initCodeEditor(code);
     pathFragment.setPath(code, new LinkedList<Label>());
 
   }
@@ -103,16 +95,7 @@ public class MainActivity extends FragmentActivity implements
   public void onCodeEdited(Code c) {
     code = replaceCurrentCode(code, path, c);
     pathFragment.setPath(code, path);
-
-    codeEditor = new CodeEditor();
-    Bundle b = new Bundle();
-    b.putSerializable(CodeEditor.ARG_CODE, c);
-    b.putSerializable(CodeEditor.ARG_ROOT_CODE, code);
-    b.putSerializable(CodeEditor.ARG_LABEL_ALIASES, new HashMap<Label, String>(
-        labelAliases));
-    codeEditor.setArguments(b);
-    getSupportFragmentManager().beginTransaction()
-        .replace(R.id.fieldContainer, codeEditor).commit();
+    initCodeEditor(c);
   }
 
   private Code replaceCurrentCode(Code c, List<Label> p, Code newCode) {
@@ -132,16 +115,7 @@ public class MainActivity extends FragmentActivity implements
   public void codeSelected(Label l, Code c) {
     path.add(l);
     pathFragment.setPath(code, path);
-
-    codeEditor = new CodeEditor();
-    Bundle b = new Bundle();
-    b.putSerializable(CodeEditor.ARG_CODE, c);
-    b.putSerializable(CodeEditor.ARG_ROOT_CODE, code);
-    b.putSerializable(CodeEditor.ARG_LABEL_ALIASES, new HashMap<Label, String>(
-        labelAliases));
-    codeEditor.setArguments(b);
-    getSupportFragmentManager().beginTransaction()
-        .replace(R.id.fieldContainer, codeEditor).commit();
+    initCodeEditor(c);
   }
 
   @Override
@@ -160,15 +134,7 @@ public class MainActivity extends FragmentActivity implements
       c = cr.code;
     }
     path = p;
-    codeEditor = new CodeEditor();
-    Bundle b = new Bundle();
-    b.putSerializable(CodeEditor.ARG_CODE, c);
-    b.putSerializable(CodeEditor.ARG_ROOT_CODE, code);
-    b.putSerializable(CodeEditor.ARG_LABEL_ALIASES, new HashMap<Label, String>(
-        labelAliases));
-    codeEditor.setArguments(b);
-    getSupportFragmentManager().beginTransaction()
-        .replace(R.id.fieldContainer, codeEditor).commit();
+    initCodeEditor(c);
   }
 
   @Override
@@ -190,6 +156,10 @@ public class MainActivity extends FragmentActivity implements
       assert cr.tag == CodeRef.Tag.CODE;
       c = cr.code;
     }
+    initCodeEditor(c);
+  }
+
+  private void initCodeEditor(Code c) {
     codeEditor = new CodeEditor();
     Bundle b = new Bundle();
     b.putSerializable(CodeEditor.ARG_CODE, c);
