@@ -10,6 +10,7 @@ import com.example.kore.R;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
+import com.example.kore.utils.CodeUtils;
 import com.example.unsuck.Null;
 
 import android.app.Activity;
@@ -210,7 +211,7 @@ public class Field extends Fragment {
           ls = la == null ? l.toString() : la;
         }
         MenuItem i = m.add(space + ls.substring(0, Math.min(10, ls.length()))
-            + " " + renderCodeRef(codeRef));
+            + " " + CodeUtils.renderCode(codeRef, labelAliases));
         i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
           @Override
           public boolean onMenuItemClick(MenuItem i) {
@@ -229,11 +230,7 @@ public class Field extends Fragment {
       }
 
     });
-    String cs = renderCodeRef(codeRef);
+    String cs = CodeUtils.renderCode(codeRef, labelAliases);
     codeButton.setText(cs.substring(0, Math.min(10, cs.length())));
-  }
-
-  private static String renderCodeRef(CodeRef cr) {
-    return cr.tag == CodeRef.Tag.CODE ? cr.code.toString() : "^";
   }
 }

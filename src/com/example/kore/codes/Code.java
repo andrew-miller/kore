@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
-import com.example.kore.utils.CodeUtils;
 import com.example.unsuck.Null;
 
 public final class Code implements Serializable {
@@ -25,13 +24,7 @@ public final class Code implements Serializable {
 
   @Override
   public String toString() {
-    switch (tag) {
-    case UNION:
-      return "[" + CodeUtils.labelMap(labels) + "]";
-    case PRODUCT:
-      return "{" + CodeUtils.labelMap(labels) + "}";
-    }
-    throw new RuntimeException("Unnown tag: " + tag);
+    return "Code [tag=" + tag + ", labels=" + labels + "]";
   }
 
   public final static Code newUnion(Map<Label, CodeRef> labels) {

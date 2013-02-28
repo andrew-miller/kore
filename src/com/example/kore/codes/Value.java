@@ -16,14 +16,7 @@ public class Value {
 
   @Override
   public String toString() {
-    switch (type.tag) {
-    case PRODUCT:
-      return "{" + CodeUtils.labelMap(val) + "}";
-    case UNION:
-      return CodeUtils.labelMap(val);
-    default:
-      throw new RuntimeException();
-    }
+    return "Value [val=" + val + ", type=" + type + "]";
   }
 
   public static final Value unit = new Value(new HashMap<Label, Value>(),
