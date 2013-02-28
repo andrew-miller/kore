@@ -194,14 +194,22 @@ public class Field extends Fragment {
       public boolean onLongClick(View v) {
         PopupMenu pm = new PopupMenu(a, v);
         Menu m = pm.getMenu();
-        fillMenu(m, CodeRef.newCode(rootCode), "", "", new LinkedList<Label>());
+        fillMenu(m, CodeRef.newCode(rootCode), null, "",
+            new LinkedList<Label>());
         pm.show();
         return true;
       }
 
-      private void fillMenu(Menu m, CodeRef codeRef, String l, String space,
+      private void fillMenu(Menu m, CodeRef codeRef, Label l, String space,
           final List<Label> path) {
-        MenuItem i = m.add(space + l.substring(0, Math.min(10, l.length()))
+        String ls;
+        if (l == null) {
+          ls = "";
+        } else {
+          String la = labelAliases.get(l);
+          ls = la == null ? l.toString() : la;
+        }
+        MenuItem i = m.add(space + ls.substring(0, Math.min(10, ls.length()))
             + " " + renderCodeRef(codeRef));
         i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
           @Override
@@ -214,7 +222,7 @@ public class Field extends Fragment {
           for (Entry<Label, CodeRef> e : codeRef.code.labels.entrySet()) {
             List<Label> path2 = new LinkedList<Label>(path);
             path2.add(e.getKey());
-            fillMenu(m, e.getValue(), e.getKey().toString(), space + " ", path2);
+            fillMenu(m, e.getValue(), e.getKey(), space + " ", path2);
           }
         }
 
