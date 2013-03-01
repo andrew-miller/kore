@@ -211,7 +211,7 @@ public class Field extends Fragment {
           ls = la == null ? l.toString() : la;
         }
         MenuItem i = m.add(space + ls.substring(0, Math.min(10, ls.length()))
-            + " " + CodeUtils.renderCode(codeRef, labelAliases));
+            + " " + CodeUtils.renderCode(codeRef, labelAliases, 1));
         i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
           @Override
           public boolean onMenuItemClick(MenuItem i) {
@@ -230,7 +230,6 @@ public class Field extends Fragment {
       }
 
     });
-    String cs = CodeUtils.renderCode(codeRef, labelAliases);
-    codeButton.setText(cs.substring(0, Math.min(10, cs.length())));
+    codeButton.setText(CodeUtils.renderCode(codeRef, labelAliases, 1));
   }
 }
