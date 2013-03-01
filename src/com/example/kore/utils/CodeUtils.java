@@ -1,6 +1,7 @@
 package com.example.kore.utils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.example.kore.codes.Code;
@@ -42,5 +43,17 @@ public final class CodeUtils {
       result += (ls + " " + renderCode(c.labels.get(l), labelAliases));
     }
     return start + result + end;
+  }
+
+  public static Code followPath(List<Label> path, Code c) {
+    for (Label l : path) {
+      CodeRef cr = c.labels.get(l);
+      if (cr == null)
+        return null;
+      if (cr.tag != CodeRef.Tag.CODE)
+        return null;
+      c = cr.code;
+    }
+    return c;
   }
 }

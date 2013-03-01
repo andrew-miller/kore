@@ -16,6 +16,7 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
+import com.example.unsuck.Null;
 
 public class MainActivity extends FragmentActivity implements
     ActionBar.TabListener, Field.CodeSelectedListener,
@@ -24,16 +25,20 @@ public class MainActivity extends FragmentActivity implements
     Field.LabelAliasChangedListener {
 
   private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
+  private static final String STATE_CODE = "code";
+  private static final String STATE_PATH = "path";
+  private static final String STATE_LABEL_ALIASES = "labelAliases";
 
   private CodeEditor codeEditor;
   private Code code = CodeUtils.unit;
-  private List<Label> path = new LinkedList<Label>();
+  private LinkedList<Label> path = new LinkedList<Label>();
   private Path pathFragment;
-  private final Map<Label, String> labelAliases = new HashMap<Label, String>();
+  private HashMap<Label, String> labelAliases = new HashMap<Label, String>();
 
+  @SuppressWarnings("unchecked")
   @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
+  protected void onCreate(Bundle b) {
+    super.onCreate(b);
     setContentView(R.layout.activity_main);
 
     final ActionBar actionBar = getActionBar();
@@ -49,25 +54,27 @@ public class MainActivity extends FragmentActivity implements
     pathFragment = (Path) getSupportFragmentManager().findFragmentById(
         R.id.path);
 
-    initCodeEditor(code);
-    pathFragment.setPath(code, new LinkedList<Label>());
-
-  }
-
-  @Override
-  public void onRestoreInstanceState(Bundle savedInstanceState) {
-    // Restore the previously serialized current tab position.
-    if (savedInstanceState.containsKey(STATE_SELECTED_NAVIGATION_ITEM)) {
-      getActionBar().setSelectedNavigationItem(
-          savedInstanceState.getInt(STATE_SELECTED_NAVIGATION_ITEM));
+    if (b != null) {
+      actionBar.setSelectedNavigationItem(b
+          .getInt(STATE_SELECTED_NAVIGATION_ITEM));
+      code = (Code) b.get(STATE_CODE);
+      path = (LinkedList<Label>) b.get(STATE_PATH);
+      labelAliases = (HashMap<Label, String>) b.get(STATE_LABEL_ALIASES);
     }
+
+    initCodeEditor(CodeUtils.followPath(path, code));
+    pathFragment.setPath(code, path);
+
   }
 
   @Override
-  public void onSaveInstanceState(Bundle outState) {
-    // Serialize the current tab position.
-    outState.putInt(STATE_SELECTED_NAVIGATION_ITEM, getActionBar()
+  public void onSaveInstanceState(Bundle b) {
+    super.onSaveInstanceState(b);
+    b.putInt(STATE_SELECTED_NAVIGATION_ITEM, getActionBar()
         .getSelectedNavigationIndex());
+    b.putSerializable(STATE_CODE, code);
+    b.putSerializable(STATE_PATH, path);
+    b.putSerializable(STATE_LABEL_ALIASES, labelAliases);
   }
 
   @Override
@@ -112,27 +119,25 @@ public class MainActivity extends FragmentActivity implements
   }
 
   @Override
-  public void codeSelected(Label l, Code c) {
+  public void codeSelected(Label l) {
+    Null.notNull(l);
+    Code c = CodeUtils.followPath(path, code);
+    CodeRef cr = c.labels.get(l);
+    if (cr == null)
+      throw new RuntimeException("non-existent label");
+    if (cr.tag != CodeRef.Tag.CODE)
+      throw new RuntimeException("you can't go there");
     path.add(l);
     pathFragment.setPath(code, path);
-    initCodeEditor(c);
+    initCodeEditor(cr.code);
   }
 
   @Override
   public void onCodeInPathSelected(List<Label> subpath) {
-    Code c = code;
-    List<Label> p = new LinkedList<Label>();
-    for (Label l : subpath) {
-      p.add(l);
-      CodeRef cr;
-      if ((cr = c.labels.get(l)) == null) {
-        throw new RuntimeException("selected nonexistent path");
-      }
-      if (cr.tag != CodeRef.Tag.CODE) {
-        throw new RuntimeException("you can't go there");
-      }
-      c = cr.code;
-    }
+    LinkedList<Label> p = new LinkedList<Label>(subpath);
+    Code c = CodeUtils.followPath(subpath, code);
+    if (c == null)
+      throw new RuntimeException("invalid path");
     path = p;
     initCodeEditor(c);
   }
@@ -149,13 +154,11 @@ public class MainActivity extends FragmentActivity implements
 
   @Override
   public void labelAliasChanged(Label label, String alias) {
+    Null.notNull(label, alias);
+    Code c = CodeUtils.followPath(path, code);
+    if (!c.labels.containsKey(label))
+      throw new RuntimeException("non-existent label");
     labelAliases.put(label, alias);
-    Code c = code;
-    for (Label l : path) {
-      CodeRef cr = c.labels.get(l);
-      assert cr.tag == CodeRef.Tag.CODE;
-      c = cr.code;
-    }
     initCodeEditor(c);
   }
 

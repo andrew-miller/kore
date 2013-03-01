@@ -46,7 +46,7 @@ public class Field extends Fragment {
   public static final String ARG_LABEL_ALIASES = "labelAliases";
 
   public static interface CodeSelectedListener {
-    public void codeSelected(Label l, Code c);
+    public void codeSelected(Label l);
   }
 
   public static interface LabelSelectedListener {
@@ -186,7 +186,7 @@ public class Field extends Fragment {
       codeButton.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-          codeSelectedListener.codeSelected(label, codeRef.code);
+          codeSelectedListener.codeSelected(label);
         }
       });
     }
