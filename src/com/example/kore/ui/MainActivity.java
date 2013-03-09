@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 
 import android.app.ActionBar;
@@ -42,8 +43,8 @@ public class MainActivity extends FragmentActivity implements
   @SuppressWarnings("unchecked")
   @Override
   protected void onCreate(Bundle b) {
-    SimpleGraph<String, String> sg = new SimpleGraph<String, String>(
-        String.class);
+    SimpleGraph<String, DefaultEdge> sg = new SimpleGraph<String, DefaultEdge>(
+        DefaultEdge.class);
     sg.addVertex("A");
     sg.addVertex("B");
     sg.addVertex("C");
@@ -54,12 +55,13 @@ public class MainActivity extends FragmentActivity implements
     sg.addEdge("D", "C");
     sg.addEdge("E", "C");
     Log.d("ggggggg", "" + sg.edgesOf("C"));
-    for (String s : sg.edgesOf("C")) {
-      Log.d("watt", "wtffff" + s);
+    for (DefaultEdge s : sg.edgesOf("C")) {
+      Log.d("watt", "wtffff " + s);
     }
+    Log.d("dC", sg.degreeOf("C") + "");
 
-    DefaultDirectedGraph<String, String> dg = new DefaultDirectedGraph<String, String>(
-        String.class);
+    DefaultDirectedGraph<String, DefaultEdge> dg = new DefaultDirectedGraph<String, DefaultEdge>(
+        DefaultEdge.class);
     dg.addVertex("A");
     dg.addVertex("B");
     dg.addVertex("C");
@@ -71,6 +73,8 @@ public class MainActivity extends FragmentActivity implements
     dg.addEdge("E", "C");
     Log.d("g1g1g1g", "" + dg.edgesOf("C"));
     Log.d("g2g2g2g", "" + dg.incomingEdgesOf("C"));
+    Log.d("idC'", dg.inDegreeOf("C") + "");
+    Log.d("odC'", dg.outDegreeOf("C") + "");
 
     super.onCreate(b);
     setContentView(R.layout.activity_main);
