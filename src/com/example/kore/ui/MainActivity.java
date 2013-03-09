@@ -5,10 +5,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.SimpleGraph;
+
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.Menu;
 
 import com.example.kore.R;
@@ -38,6 +42,36 @@ public class MainActivity extends FragmentActivity implements
   @SuppressWarnings("unchecked")
   @Override
   protected void onCreate(Bundle b) {
+    SimpleGraph<String, String> sg = new SimpleGraph<String, String>(
+        String.class);
+    sg.addVertex("A");
+    sg.addVertex("B");
+    sg.addVertex("C");
+    sg.addVertex("D");
+    sg.addVertex("E");
+    sg.addEdge("A", "B");
+    sg.addEdge("B", "C");
+    sg.addEdge("D", "C");
+    sg.addEdge("E", "C");
+    Log.d("ggggggg", "" + sg.edgesOf("C"));
+    for (String s : sg.edgesOf("C")) {
+      Log.d("watt", "wtffff" + s);
+    }
+
+    DefaultDirectedGraph<String, String> dg = new DefaultDirectedGraph<String, String>(
+        String.class);
+    dg.addVertex("A");
+    dg.addVertex("B");
+    dg.addVertex("C");
+    dg.addVertex("D");
+    dg.addVertex("E");
+    dg.addEdge("A", "B");
+    dg.addEdge("B", "C");
+    dg.addEdge("D", "C");
+    dg.addEdge("E", "C");
+    Log.d("g1g1g1g", "" + dg.edgesOf("C"));
+    Log.d("g2g2g2g", "" + dg.incomingEdgesOf("C"));
+
     super.onCreate(b);
     setContentView(R.layout.activity_main);
 
