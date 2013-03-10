@@ -40,7 +40,7 @@ public class Path extends Fragment {
       Bundle savedInstanceState) {
 
     View v = inflater.inflate(R.layout.path, container, false);
-    path = (ViewGroup) v.findViewById(R.id.path);
+    path = (ViewGroup) v.findViewById(R.id.layout_path);
     return v;
   }
 

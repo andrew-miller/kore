@@ -4,7 +4,7 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/path"
+        android:id="@+id/layout_path"
         android:layout_width="wrap_content"
         android:layout_height="match_parent" >
     </LinearLayout>

@@ -1,19 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    tools:context=".MainActivity"
-    tools:ignore="MergeRootFrame" >
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
 
-    <fragment
-        android:id="@+id/path"
-        android:name="com.example.kore.ui.Path"
+    <Button
+        android:id="@+id/button_new_code"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:text="@string/button_new_code" />
 
     <FrameLayout
-        android:id="@+id/fieldContainer"
+        android:id="@+id/container_recent_codes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 

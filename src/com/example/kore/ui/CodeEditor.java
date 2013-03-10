@@ -36,6 +36,10 @@ public class CodeEditor extends Fragment implements
     public void onCodeEdited(Code c);
   }
 
+  public static interface DoneListener {
+    public void onDone(Code c);
+  }
+
   private Code code;
   private Code rootCode;
   private CodeEditedListener codeEditedListener;
@@ -44,11 +48,13 @@ public class CodeEditor extends Fragment implements
   private LinearLayout fields;
   private Button switchCodeOpButton;
   private Map<Label, String> labelAliases;
+  private DoneListener doneListener;
 
   @Override
   public void onAttach(Activity activity) {
     super.onAttach(activity);
     codeEditedListener = (CodeEditedListener) activity;
+    doneListener = (DoneListener) activity;
   }
 
   @Override
@@ -65,11 +71,10 @@ public class CodeEditor extends Fragment implements
           .get(ARG_LABEL_ALIASES);
       labelAliases = Collections.unmodifiableMap(labelAliasesUnsafe);
     }
-    Null.notNull(code);
-    Null.notNull(rootCode);
+    Null.notNull(code, rootCode);
 
-    fields = (LinearLayout) v.findViewById(R.id.fields);
-    deleteButton = ((Button) v.findViewById(R.id.button_delete_field));
+    fields = (LinearLayout) v.findViewById(R.id.layout_fields);
+    deleteButton = (Button) v.findViewById(R.id.button_delete_field);
     switchCodeOpButton = (Button) v.findViewById(R.id.button_switch_code_op);
 
     switchCodeOpButton.setOnClickListener(new OnClickListener() {
@@ -96,6 +101,15 @@ public class CodeEditor extends Fragment implements
             codeEditedListener.onCodeEdited(code);
           }
         });
+
+    ((Button) v.findViewById(R.id.button_done))
+        .setOnClickListener(new OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            doneListener.onDone(code);
+          }
+        });
+
     return v;
   }
 
@@ -143,7 +157,7 @@ public class CodeEditor extends Fragment implements
           labelAliases));
       Field f = new Field();
       f.setArguments(args);
-      fragmentTransaction.add(R.id.fields, f);
+      fragmentTransaction.add(R.id.layout_fields, f);
     }
     fragmentTransaction.commit();
   }

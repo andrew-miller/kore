@@ -11,5 +11,7 @@
     <string name="menu_submenu2">some other submenu</string>
     <string name="button_new_field">+</string>
     <string name="button_delete_field">-</string>
+    <string name="button_done">done</string>
+    <string name="button_new_code">+</string>
 
 </resources>

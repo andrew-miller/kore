@@ -106,9 +106,9 @@ public class Field extends Fragment {
     View v = inflater.inflate(R.layout.field, container, false);
     a = getActivity();
 
-    labelButton = (Button) v.findViewById(R.id.label);
+    labelButton = (Button) v.findViewById(R.id.button_label);
     initLabelButton();
-    codeButton = (Button) v.findViewById(R.id.code);
+    codeButton = (Button) v.findViewById(R.id.button_code);
     initCodeButton();
     return v;
   }
