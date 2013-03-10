@@ -29,7 +29,7 @@ public final class CodeUtils {
     Code c = cr;
     String start;
     String end;
-    switch (c.tag) {
+    switch (c.node.tag) {
     case UNION:
       start = "[";
       end = "]";
@@ -42,14 +42,14 @@ public final class CodeUtils {
       throw Boom.boom();
     }
     String result = "";
-    for (Label l : c.labels.keySet()) {
+    for (Label l : c.edges.keySet()) {
       if (result.equals(""))
         result = "'";
       else
         result += ", '";
       String la = labelAliases.get(l);
       String ls = la == null ? l.label : la;
-      result += ls + " " + renderCode(c.labels.get(l), labelAliases, depth);
+      result += ls + " " + renderCode(c.edges.get(l), labelAliases, depth);
     }
     return start + result + end;
   }

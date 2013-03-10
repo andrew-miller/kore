@@ -215,7 +215,7 @@ public class Field extends Fragment {
             return true;
           }
         });
-        for (Entry<Label, Code> e : codeRef.labels.entrySet()) {
+        for (Entry<Label, Code> e : codeRef.edges.entrySet()) {
           List<Label> path2 = new LinkedList<Label>(path);
           path2.add(e.getKey());
           fillMenu(m, e.getValue(), e.getKey(), space + " ", path2);

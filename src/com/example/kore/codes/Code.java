@@ -1,15 +1,15 @@
 package com.example.kore.codes;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import com.example.kore.graph.Equivalence;
-import com.example.unsuck.Null;
+import com.example.kore.codes.Code.Node;
+import com.example.kore.graph.LGraph;
 
-public final class Code implements Serializable {
+public final class Code extends LGraph<Node, Label, Code> implements
+    Serializable {
+
   private static final long serialVersionUID = 1L;
 
   public enum Tag {
@@ -25,13 +25,16 @@ public final class Code implements Serializable {
     }
   }
 
-  public final Tag tag;
-  public final Map<Label, Code> labels;
+  public static class Node {
+    public final Tag tag;
 
-  public Code(Tag tag, Map<Label, Code> labels) {
-    Null.notNull(labels);
-    this.tag = tag;
-    this.labels = Collections.unmodifiableMap(labels);
+    public Node(Tag tag) {
+      this.tag = tag;
+    }
+  }
+
+  public Code(Tag t, Map<Label, Code> edges) {
+    super(new Node(t), edges);
   }
 
   @Override
@@ -40,7 +43,7 @@ public final class Code implements Serializable {
   }
 
   public String toString(Map<Label, String> aliases) {
-    return tag.open + ((labels.size() > 0) ? "..." : "") + tag.close;
+    return node.tag.open + ((edges.size() > 0) ? "..." : "") + node.tag.close;
   }
 
   public final static Code newUnion(Map<Label, Code> labels) {
@@ -51,30 +54,4 @@ public final class Code implements Serializable {
     return new Code(Tag.PRODUCT, labels);
   }
 
-  public boolean eq(Code o) {
-    return eq(o, new Equivalence<Code>());
-  }
-
-  private boolean eq(Code o, Equivalence<Code> B) {
-    if (this.tag != o.tag)
-      return false;
-    if (!this.labels.keySet().equals(o.labels.keySet()))
-      return false;
-    B.add(this, o);
-    for (Label l : labels.keySet()) {
-      if (this.labels.get(l).eq(o.labels.get(l), B))
-        return false;
-    }
-    return true;
-  }
-
-  public Code projection(List<Label> path) {
-    if (path == null)
-      return null;
-    Code root = this;
-    for (Label l : path) {
-      root = root.labels.get(l);
-    }
-    return root;
-  }
 }

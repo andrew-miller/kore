@@ -80,7 +80,7 @@ public class Blob {
     public Label label;
 
     public Proj(Blob arg, Label label) {
-      super(arg.in, arg.out.labels.get(label));
+      super(arg.in, arg.out.edges.get(label));
       this.arg = arg;
       this.label = label;
     }

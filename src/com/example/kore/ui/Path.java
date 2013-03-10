@@ -52,7 +52,7 @@ public class Path extends Fragment {
     LinkedList<Label> subpath = new LinkedList<Label>();
     while (true) {
       Button b = new Button(a);
-      switch (code.tag) {
+      switch (code.node.tag) {
       case PRODUCT:
         b.setText("{...}");
         break;
@@ -78,7 +78,7 @@ public class Path extends Fragment {
         Label l = path.get(0);
         path = path.subList(1, path.size());
         subpath.add(l);
-        Code codeRef = code.labels.get(l);
+        Code codeRef = code.edges.get(l);
         code = codeRef;
         Button b2 = new Button(a);
         b2.setBackgroundColor((int) Long.parseLong(l.label.substring(0, 8), 16));

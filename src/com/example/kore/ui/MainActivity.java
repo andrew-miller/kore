@@ -61,7 +61,7 @@ public class MainActivity extends FragmentActivity implements
       labelAliases = (HashMap<Label, String>) b.get(STATE_LABEL_ALIASES);
     }
 
-    initCodeEditor(code.projection(path));
+    initCodeEditor(code.walk(path));
     pathFragment.setPath(code, path);
 
   }
@@ -108,17 +108,17 @@ public class MainActivity extends FragmentActivity implements
     if (p.size() == 0) {
       return newCode;
     }
-    Map<Label, Code> m = new HashMap<Label, Code>(c.labels);
+    Map<Label, Code> m = new HashMap<Label, Code>(c.edges);
     Label l = p.get(0);
     m.put(l, replaceCurrentCode(m.get(l), p.subList(1, p.size()), newCode));
-    return new Code(c.tag, m);
+    return new Code(c.node.tag, m);
   }
 
   @Override
   public void codeSelected(Label l) {
     Null.notNull(l);
-    Code c = code.projection(path);
-    Code cr = c.labels.get(l);
+    Code c = code.walk(path);
+    Code cr = c.edges.get(l);
     if (cr == null)
       throw new RuntimeException("non-existent label");
     path.add(l);
@@ -129,7 +129,7 @@ public class MainActivity extends FragmentActivity implements
   @Override
   public void onCodeInPathSelected(List<Label> subpath) {
     LinkedList<Label> p = new LinkedList<Label>(subpath);
-    Code c = code.projection(subpath);
+    Code c = code.walk(subpath);
     if (c == null)
       throw new RuntimeException("invalid path");
     path = p;
@@ -149,8 +149,8 @@ public class MainActivity extends FragmentActivity implements
   @Override
   public void labelAliasChanged(Label label, String alias) {
     Null.notNull(label, alias);
-    Code c = code.projection(path);
-    if (!c.labels.containsKey(label))
+    Code c = code.walk(path);
+    if (!c.edges.containsKey(label))
       throw new RuntimeException("non-existent label");
     labelAliases.put(label, alias);
     initCodeEditor(c);
