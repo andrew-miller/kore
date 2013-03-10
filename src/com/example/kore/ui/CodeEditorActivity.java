@@ -5,8 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import android.app.ActionBar;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -19,13 +17,11 @@ import com.example.kore.utils.CodeUtils;
 import com.example.unsuck.Null;
 
 public class CodeEditorActivity extends FragmentActivity implements
-    ActionBar.TabListener, Field.CodeSelectedListener,
-    CodeEditor.CodeEditedListener, Path.SubpathSelectedListener,
-    Field.LabelSelectedListener, Field.FieldChangedListener,
-    Field.LabelAliasChangedListener, CodeEditor.DoneListener {
+    Field.CodeSelectedListener, CodeEditor.CodeEditedListener,
+    Path.SubpathSelectedListener, Field.LabelSelectedListener,
+    Field.FieldChangedListener, Field.LabelAliasChangedListener,
+    CodeEditor.DoneListener {
 
-  private static final String STATE_SELECTED_NAVIGATION_ITEM =
-      "selected_navigation_item";
   private static final String STATE_CODE = "code";
   private static final String STATE_PATH = "path";
   private static final String STATE_LABEL_ALIASES = "label_aliases";
@@ -48,16 +44,6 @@ public class CodeEditorActivity extends FragmentActivity implements
     super.onCreate(b);
     setContentView(R.layout.activity_code_editor);
 
-    final ActionBar actionBar = getActionBar();
-    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-
-    actionBar.addTab(actionBar.newTab().setText(R.string.tab_new_function)
-        .setTabListener(this));
-    actionBar.addTab(actionBar.newTab().setText(R.string.tab_new_product)
-        .setTabListener(this));
-    actionBar.addTab(actionBar.newTab().setText(R.string.tab_new_sum)
-        .setTabListener(this));
-
     pathFragment =
         (Path) getSupportFragmentManager().findFragmentById(R.id.fragment_path);
 
@@ -67,8 +53,6 @@ public class CodeEditorActivity extends FragmentActivity implements
             .getSerializableExtra(ARG_LABEL_ALIASES));
 
     if (b != null) {
-      actionBar.setSelectedNavigationItem(b
-          .getInt(STATE_SELECTED_NAVIGATION_ITEM));
       code = (Code) b.get(STATE_CODE);
       path = (LinkedList<Label>) b.get(STATE_PATH);
       labelAliases = (HashMap<Label, String>) b.get(STATE_LABEL_ALIASES);
@@ -82,8 +66,6 @@ public class CodeEditorActivity extends FragmentActivity implements
   @Override
   public void onSaveInstanceState(Bundle b) {
     super.onSaveInstanceState(b);
-    b.putInt(STATE_SELECTED_NAVIGATION_ITEM, getActionBar()
-        .getSelectedNavigationIndex());
     b.putSerializable(STATE_CODE, code);
     b.putSerializable(STATE_PATH, path);
     b.putSerializable(STATE_LABEL_ALIASES, labelAliases);
@@ -93,21 +75,6 @@ public class CodeEditorActivity extends FragmentActivity implements
   public boolean onCreateOptionsMenu(Menu menu) {
     getMenuInflater().inflate(R.menu.activity_main, menu);
     return true;
-  }
-
-  @Override
-  public void onTabSelected(ActionBar.Tab tab,
-      FragmentTransaction fragmentTransaction) {
-  }
-
-  @Override
-  public void onTabUnselected(ActionBar.Tab tab,
-      FragmentTransaction fragmentTransaction) {
-  }
-
-  @Override
-  public void onTabReselected(ActionBar.Tab tab,
-      FragmentTransaction fragmentTransaction) {
   }
 
   @Override
