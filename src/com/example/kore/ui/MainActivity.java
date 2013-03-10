@@ -21,7 +21,7 @@ public class MainActivity extends FragmentActivity implements
     CodeList.CodeSelectListener {
 
   private static final String STATE_CODES = "codes";
-  private static final String STATE_CODE_LABEL_ALIASES = "codeLabelAliases";
+  private static final String STATE_CODE_LABEL_ALIASES = "code_label_aliases";
 
   private LinkedList<Code> recentCodes = new LinkedList<Code>();
   private HashMap<Code, HashMap<Label, String>> codeLabelAliases =

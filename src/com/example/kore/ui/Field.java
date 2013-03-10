@@ -40,10 +40,10 @@ import android.widget.TextView.OnEditorActionListener;
 
 public class Field extends Fragment {
   public static final String ARG_LABEL = "label";
-  public static final String ARG_CODE_REF = "codeRef";
-  public static final String ARG_ROOT_CODE = "rootCode";
+  public static final String ARG_CODE_REF = "code_ref";
+  public static final String ARG_ROOT_CODE = "root_code";
   public static final String ARG_SELECTED = "selected";
-  public static final String ARG_LABEL_ALIASES = "labelAliases";
+  public static final String ARG_LABEL_ALIASES = "label_aliases";
 
   public static interface CodeSelectedListener {
     public void codeSelected(Label l);
@@ -75,8 +75,8 @@ public class Field extends Fragment {
   private Button labelButton;
   private Button codeButton;
 
-  private final LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
-      0, LayoutParams.MATCH_PARENT, 1);
+  private final LinearLayout.LayoutParams buttonParams =
+      new LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1);
 
   @Override
   public void onAttach(Activity activity) {
@@ -97,8 +97,8 @@ public class Field extends Fragment {
     selected = args.getBoolean(ARG_SELECTED);
     {
       @SuppressWarnings("unchecked")
-      Map<Label, String> labelAliasesUnsafe = (Map<Label, String>) args
-          .get(ARG_LABEL_ALIASES);
+      Map<Label, String> labelAliasesUnsafe =
+          (Map<Label, String>) args.get(ARG_LABEL_ALIASES);
       labelAliases = Collections.unmodifiableMap(labelAliasesUnsafe);
     }
     Null.notNull(label, codeRef, rootCode);
@@ -143,7 +143,8 @@ public class Field extends Fragment {
         t.setInputType(EditorInfo.TYPE_CLASS_TEXT);
         t.setOnEditorActionListener(new OnEditorActionListener() {
           @Override
-          public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+          public boolean
+              onEditorAction(TextView v, int actionId, KeyEvent event) {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
               labelAliasChangedListener.labelAliasChanged(label, t.getText()
                   .toString());
@@ -154,8 +155,9 @@ public class Field extends Fragment {
           }
 
           private void hideKeyboard() {
-            InputMethodManager inputManager = (InputMethodManager) a
-                .getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager inputManager =
+                (InputMethodManager) a
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
             inputManager.toggleSoftInput(0, 0);
           }
         });
@@ -210,8 +212,9 @@ public class Field extends Fragment {
           String la = labelAliases.get(l);
           ls = la == null ? l.toString() : la;
         }
-        MenuItem i = m.add(space + ls.substring(0, Math.min(10, ls.length()))
-            + " " + CodeUtils.renderCode(codeRef, labelAliases, 1));
+        MenuItem i =
+            m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
+                + CodeUtils.renderCode(codeRef, labelAliases, 1));
         i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
           @Override
           public boolean onMenuItemClick(MenuItem i) {

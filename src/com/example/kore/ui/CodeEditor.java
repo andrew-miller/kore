@@ -29,8 +29,8 @@ import com.example.unsuck.Null;
 public class CodeEditor extends Fragment implements
     Field.LabelSelectedListener, Field.FieldChangedListener {
   public static final String ARG_CODE = "code";
-  public static final String ARG_ROOT_CODE = "rootCode";
-  public static final String ARG_LABEL_ALIASES = "labelAliases";
+  public static final String ARG_ROOT_CODE = "root_code";
+  public static final String ARG_LABEL_ALIASES = "label_aliases";
 
   public static interface CodeEditedListener {
     public void onCodeEdited(Code c);
@@ -67,8 +67,8 @@ public class CodeEditor extends Fragment implements
     rootCode = (Code) args.get(ARG_ROOT_CODE);
     {
       @SuppressWarnings("unchecked")
-      HashMap<Label, String> labelAliasesUnsafe = (HashMap<Label, String>) args
-          .get(ARG_LABEL_ALIASES);
+      HashMap<Label, String> labelAliasesUnsafe =
+          (HashMap<Label, String>) args.get(ARG_LABEL_ALIASES);
       labelAliases = Collections.unmodifiableMap(labelAliasesUnsafe);
     }
     Null.notNull(code, rootCode);
@@ -145,8 +145,8 @@ public class CodeEditor extends Fragment implements
       throw Boom.boom();
     }
     fields.removeAllViews();
-    FragmentTransaction fragmentTransaction = getFragmentManager()
-        .beginTransaction();
+    FragmentTransaction fragmentTransaction =
+        getFragmentManager().beginTransaction();
     for (final Entry<Label, CodeRef> e : code.labels.entrySet()) {
       Bundle args = new Bundle();
       args.putBoolean(Field.ARG_SELECTED, e.getKey().equals(selectedLabel));

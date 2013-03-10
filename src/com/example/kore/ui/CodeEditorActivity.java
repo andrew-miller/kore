@@ -28,13 +28,13 @@ public class CodeEditorActivity extends FragmentActivity implements
       "selected_navigation_item";
   private static final String STATE_CODE = "code";
   private static final String STATE_PATH = "path";
-  private static final String STATE_LABEL_ALIASES = "labelAliases";
+  private static final String STATE_LABEL_ALIASES = "label_aliases";
 
   public static final String RESULT_CODE = "code";
-  public static final String RESULT_LABEL_ALIASES = "labelAliases";
+  public static final String RESULT_LABEL_ALIASES = "label_aliases";
 
   public static final String ARG_CODE = "code";
-  public static final String ARG_LABEL_ALIASES = "labelAliases";
+  public static final String ARG_LABEL_ALIASES = "label_aliases";
 
   private CodeEditor codeEditor;
   private Code code = CodeUtils.unit;

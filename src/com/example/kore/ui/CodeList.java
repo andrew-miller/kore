@@ -24,7 +24,7 @@ import android.widget.LinearLayout;
 
 public class CodeList extends Fragment {
   public static final String ARG_CODES = "codes";
-  public static final String ARG_CODE_LABEL_ALIASES = "codeLabelAliases";
+  public static final String ARG_CODE_LABEL_ALIASES = "code_label_aliases";
 
   public static interface CodeSelectListener {
     public void onCodeSelected(Code c);
