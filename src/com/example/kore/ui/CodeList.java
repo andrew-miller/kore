@@ -2,6 +2,7 @@ package com.example.kore.ui;
 
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 
 import com.example.kore.R;
 import com.example.kore.codes.Code;
@@ -22,7 +23,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 public class CodeList extends Fragment {
-  public static final String ARG_CODES = null;
+  public static final String ARG_CODES = "codes";
+  public static final String ARG_CODE_LABEL_ALIASES = "codeLabelAliases";
 
   public static interface CodeSelectListener {
     public void onCodeSelected(Code c);
@@ -31,6 +33,7 @@ public class CodeList extends Fragment {
   private CodeSelectListener codeSelectListener;
   private LinearLayout codeListLayout;
   private LinkedList<Code> codes;
+  private HashMap<Code, HashMap<Label, String>> codeLabelAliases;
 
   @Override
   public void onAttach(Activity a) {
@@ -47,6 +50,19 @@ public class CodeList extends Fragment {
     Bundle args = getArguments();
     codes = (LinkedList<Code>) args.getSerializable(ARG_CODES);
     Null.notNull(codes);
+    {
+      HashMap<Code, HashMap<Label, String>> m =
+          new HashMap<Code, HashMap<Label, String>>();
+      HashMap<Code, HashMap<Label, String>> cla =
+          (HashMap<Code, HashMap<Label, String>>) args
+              .getSerializable(ARG_CODE_LABEL_ALIASES);
+      Null.notNull(cla);
+      for (Entry<Code, HashMap<Label, String>> e : cla.entrySet()) {
+        Null.notNull(e.getKey(), e.getValue());
+        m.put(e.getKey(), new HashMap<Label, String>(e.getValue()));
+      }
+      codeLabelAliases = m;
+    }
 
     codeListLayout = (LinearLayout) v.findViewById(R.id.layout_code_list);
 
@@ -54,7 +70,7 @@ public class CodeList extends Fragment {
     for (final Code c : codes) {
       Button b = new Button(a);
       b.setText(CodeUtils.renderCode(CodeRef.newCode(c),
-          new HashMap<Label, String>(), 1));
+          codeLabelAliases.get(c), 1));
       b.setOnClickListener(new OnClickListener() {
 
         @Override

@@ -24,14 +24,17 @@ public class CodeEditorActivity extends FragmentActivity implements
     Field.LabelSelectedListener, Field.FieldChangedListener,
     Field.LabelAliasChangedListener, CodeEditor.DoneListener {
 
-  private static final String STATE_SELECTED_NAVIGATION_ITEM = "selected_navigation_item";
+  private static final String STATE_SELECTED_NAVIGATION_ITEM =
+      "selected_navigation_item";
   private static final String STATE_CODE = "code";
   private static final String STATE_PATH = "path";
   private static final String STATE_LABEL_ALIASES = "labelAliases";
 
   public static final String RESULT_CODE = "code";
+  public static final String RESULT_LABEL_ALIASES = "labelAliases";
 
   public static final String ARG_CODE = "code";
+  public static final String ARG_LABEL_ALIASES = "labelAliases";
 
   private CodeEditor codeEditor;
   private Code code = CodeUtils.unit;
@@ -55,10 +58,13 @@ public class CodeEditorActivity extends FragmentActivity implements
     actionBar.addTab(actionBar.newTab().setText(R.string.tab_new_sum)
         .setTabListener(this));
 
-    pathFragment = (Path) getSupportFragmentManager().findFragmentById(
-        R.id.fragment_path);
+    pathFragment =
+        (Path) getSupportFragmentManager().findFragmentById(R.id.fragment_path);
 
     code = (Code) getIntent().getSerializableExtra(ARG_CODE);
+    labelAliases =
+        new HashMap<Label, String>((HashMap<Label, String>) getIntent()
+            .getSerializableExtra(ARG_LABEL_ALIASES));
 
     if (b != null) {
       actionBar.setSelectedNavigationItem(b
@@ -182,7 +188,10 @@ public class CodeEditorActivity extends FragmentActivity implements
 
   @Override
   public void onDone(Code c) {
-    setResult(0, new Intent().putExtra(RESULT_CODE, code));
+    setResult(
+        0,
+        new Intent().putExtra(RESULT_CODE, code).putExtra(RESULT_LABEL_ALIASES,
+            new HashMap<Label, String>(labelAliases)));
     finish();
   }
 }
