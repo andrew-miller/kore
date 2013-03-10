@@ -13,7 +13,6 @@ import android.view.Menu;
 
 import com.example.kore.R;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.unsuck.Null;
@@ -62,7 +61,7 @@ public class MainActivity extends FragmentActivity implements
       labelAliases = (HashMap<Label, String>) b.get(STATE_LABEL_ALIASES);
     }
 
-    initCodeEditor(CodeUtils.followPath(path, code));
+    initCodeEditor(code.projection(path));
     pathFragment.setPath(code, path);
 
   }
@@ -109,33 +108,28 @@ public class MainActivity extends FragmentActivity implements
     if (p.size() == 0) {
       return newCode;
     }
-    Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(c.labels);
+    Map<Label, Code> m = new HashMap<Label, Code>(c.labels);
     Label l = p.get(0);
-    m.put(
-        l,
-        CodeRef.newCode(replaceCurrentCode(m.get(l).code,
-            p.subList(1, p.size()), newCode)));
+    m.put(l, replaceCurrentCode(m.get(l), p.subList(1, p.size()), newCode));
     return new Code(c.tag, m);
   }
 
   @Override
   public void codeSelected(Label l) {
     Null.notNull(l);
-    Code c = CodeUtils.followPath(path, code);
-    CodeRef cr = c.labels.get(l);
+    Code c = code.projection(path);
+    Code cr = c.labels.get(l);
     if (cr == null)
       throw new RuntimeException("non-existent label");
-    if (cr.tag != CodeRef.Tag.CODE)
-      throw new RuntimeException("you can't go there");
     path.add(l);
     pathFragment.setPath(code, path);
-    initCodeEditor(cr.code);
+    initCodeEditor(cr);
   }
 
   @Override
   public void onCodeInPathSelected(List<Label> subpath) {
     LinkedList<Label> p = new LinkedList<Label>(subpath);
-    Code c = CodeUtils.followPath(subpath, code);
+    Code c = code.projection(subpath);
     if (c == null)
       throw new RuntimeException("invalid path");
     path = p;
@@ -155,7 +149,7 @@ public class MainActivity extends FragmentActivity implements
   @Override
   public void labelAliasChanged(Label label, String alias) {
     Null.notNull(label, alias);
-    Code c = CodeUtils.followPath(path, code);
+    Code c = code.projection(path);
     if (!c.labels.containsKey(label))
       throw new RuntimeException("non-existent label");
     labelAliases.put(label, alias);

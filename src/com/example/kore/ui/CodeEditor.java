@@ -17,9 +17,9 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+
 import com.example.kore.R;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.Random;
@@ -59,12 +59,12 @@ public class CodeEditor extends Fragment implements
     Bundle args = getArguments();
     code = (Code) args.get(ARG_CODE);
     rootCode = (Code) args.get(ARG_ROOT_CODE);
-    {
-      @SuppressWarnings("unchecked")
-      HashMap<Label, String> labelAliasesUnsafe = (HashMap<Label, String>) args
-          .get(ARG_LABEL_ALIASES);
-      labelAliases = Collections.unmodifiableMap(labelAliasesUnsafe);
-    }
+
+    @SuppressWarnings("unchecked")
+    HashMap<Label, String> labelAliasesUnsafe = (HashMap<Label, String>) args
+        .get(ARG_LABEL_ALIASES);
+    labelAliases = Collections.unmodifiableMap(labelAliasesUnsafe);
+
     Null.notNull(code);
     Null.notNull(rootCode);
 
@@ -83,14 +83,14 @@ public class CodeEditor extends Fragment implements
         .setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View v) {
-            Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(code.labels);
+            Map<Label, Code> m = new HashMap<Label, Code>(code.labels);
             Label l = null;
             do {
               if (l != null)
                 Log.w("code editor", "generated duplicate label");
               l = new Label(Random.randomId());
             } while (m.containsKey(l));
-            m.put(l, CodeRef.newCode(CodeUtils.unit));
+            m.put(l, CodeUtils.unit);
             code = new Code(code.tag, m);
 
             codeEditedListener.onCodeEdited(code);
@@ -120,20 +120,11 @@ public class CodeEditor extends Fragment implements
   }
 
   private void render() {
-    switch (code.tag) {
-    case PRODUCT:
-      switchCodeOpButton.setText("{}");
-      break;
-    case UNION:
-      switchCodeOpButton.setText("[]");
-      break;
-    default:
-      throw Boom.boom();
-    }
+    switchCodeOpButton.setText(code.tag.text);
     fields.removeAllViews();
     FragmentTransaction fragmentTransaction = getFragmentManager()
         .beginTransaction();
-    for (final Entry<Label, CodeRef> e : code.labels.entrySet()) {
+    for (final Entry<Label, Code> e : code.labels.entrySet()) {
       Bundle args = new Bundle();
       args.putBoolean(Field.ARG_SELECTED, e.getKey().equals(selectedLabel));
       args.putSerializable(Field.ARG_LABEL, e.getKey());
@@ -155,7 +146,7 @@ public class CodeEditor extends Fragment implements
     deleteButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(code.labels);
+        Map<Label, Code> m = new HashMap<Label, Code>(code.labels);
         m.remove(l);
         code = new Code(code.tag, m);
         codeEditedListener.onCodeEdited(code);
@@ -166,8 +157,8 @@ public class CodeEditor extends Fragment implements
 
   @Override
   public void fieldChanged(List<Label> path, Label label) {
-    Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(code.labels);
-    m.put(label, CodeRef.newPath(path));
+    Map<Label, Code> m = new HashMap<Label, Code>(code.labels);
+    m.put(label, rootCode.projection(path));
     code = new Code(code.tag, m);
     codeEditedListener.onCodeEdited(code);
   }

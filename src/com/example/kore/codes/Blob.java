@@ -57,9 +57,9 @@ public class Blob {
       this.args = args;
       in = CodeUtils.unit;
 
-      Map<Label, CodeRef> subType = new HashMap<Label, CodeRef>();
+      Map<Label, Code> subType = new HashMap<Label, Code>();
       for (int i = 0; i < order.length; i++)
-        subType.put(order[i], CodeRef.newCode(args.get(order[i]).out));
+        subType.put(order[i], args.get(order[i]).out);
       out = Code.newProduct(subType);
     }
 
@@ -80,7 +80,7 @@ public class Blob {
     public Label label;
 
     public Proj(Blob arg, Label label) {
-      super(arg.in, arg.out.labels.get(label).code);
+      super(arg.in, arg.out.labels.get(label));
       this.arg = arg;
       this.label = label;
     }

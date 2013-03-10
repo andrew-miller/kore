@@ -6,13 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.example.kore.R;
-import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeRef;
-import com.example.kore.codes.Label;
-import com.example.kore.utils.CodeUtils;
-import com.example.unsuck.Null;
-
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -37,6 +30,12 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+
+import com.example.kore.R;
+import com.example.kore.codes.Code;
+import com.example.kore.codes.Label;
+import com.example.kore.utils.CodeUtils;
+import com.example.unsuck.Null;
 
 public class Field extends Fragment {
   public static final String ARG_LABEL = "label";
@@ -67,7 +66,7 @@ public class Field extends Fragment {
   private LabelAliasChangedListener labelAliasChangedListener;
 
   private Label label;
-  private CodeRef codeRef;
+  private Code codeRef;
   private Code rootCode;
   private boolean selected;
   private Map<Label, String> labelAliases;
@@ -92,16 +91,15 @@ public class Field extends Fragment {
       Bundle savedInstanceState) {
     Bundle args = getArguments();
     label = (Label) args.get(ARG_LABEL);
-    codeRef = (CodeRef) args.get(ARG_CODE_REF);
+    codeRef = (Code) args.get(ARG_CODE_REF);
     rootCode = (Code) args.get(ARG_ROOT_CODE);
     selected = args.getBoolean(ARG_SELECTED);
-    {
-      @SuppressWarnings("unchecked")
-      Map<Label, String> labelAliasesUnsafe = (Map<Label, String>) args
-          .get(ARG_LABEL_ALIASES);
-      labelAliases = Collections.unmodifiableMap(labelAliasesUnsafe);
-    }
-    Null.notNull(label, codeRef, rootCode);
+
+    Map<Label, String> labelAliasesUnsafe = (Map<Label, String>) args
+        .get(ARG_LABEL_ALIASES);
+    labelAliases = Collections.unmodifiableMap(labelAliasesUnsafe);
+
+    Null.notNull(label, rootCode);
 
     View v = inflater.inflate(R.layout.field, container, false);
     a = getActivity();
@@ -182,26 +180,24 @@ public class Field extends Fragment {
   }
 
   private void initCodeButton() {
-    if (codeRef.tag == CodeRef.Tag.CODE) {
-      codeButton.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-          codeSelectedListener.codeSelected(label);
-        }
-      });
-    }
+    codeButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        codeSelectedListener.codeSelected(label);
+      }
+    });
+
     codeButton.setOnLongClickListener(new OnLongClickListener() {
       @Override
       public boolean onLongClick(View v) {
         PopupMenu pm = new PopupMenu(a, v);
         Menu m = pm.getMenu();
-        fillMenu(m, CodeRef.newCode(rootCode), null, "",
-            new LinkedList<Label>());
+        fillMenu(m, rootCode, null, "", new LinkedList<Label>());
         pm.show();
         return true;
       }
 
-      private void fillMenu(Menu m, CodeRef codeRef, Label l, String space,
+      private void fillMenu(Menu m, Code codeRef, Label l, String space,
           final List<Label> path) {
         String ls;
         if (l == null) {
@@ -219,17 +215,16 @@ public class Field extends Fragment {
             return true;
           }
         });
-        if (codeRef.tag == CodeRef.Tag.CODE) {
-          for (Entry<Label, CodeRef> e : codeRef.code.labels.entrySet()) {
-            List<Label> path2 = new LinkedList<Label>(path);
-            path2.add(e.getKey());
-            fillMenu(m, e.getValue(), e.getKey(), space + " ", path2);
-          }
+        for (Entry<Label, Code> e : codeRef.labels.entrySet()) {
+          List<Label> path2 = new LinkedList<Label>(path);
+          path2.add(e.getKey());
+          fillMenu(m, e.getValue(), e.getKey(), space + " ", path2);
         }
 
       }
 
     });
-    codeButton.setText(CodeUtils.renderCode(codeRef, labelAliases, 1));
+    // codeButton.setText(CodeUtils.renderCode(codeRef, labelAliases, 1));
+    codeButton.setText(codeRef.toString(labelAliases));
   }
 }

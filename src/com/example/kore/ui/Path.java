@@ -16,7 +16,6 @@ import android.widget.Button;
 
 import com.example.kore.R;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
 import com.example.unsuck.Boom;
 import com.example.unsuck.Null;
@@ -79,11 +78,8 @@ public class Path extends Fragment {
         Label l = path.get(0);
         path = path.subList(1, path.size());
         subpath.add(l);
-        CodeRef codeRef = code.labels.get(l);
-        if (codeRef.tag != CodeRef.Tag.CODE) {
-          throw new RuntimeException("path exits the spanning tree");
-        }
-        code = codeRef.code;
+        Code codeRef = code.labels.get(l);
+        code = codeRef;
         Button b2 = new Button(a);
         b2.setBackgroundColor((int) Long.parseLong(l.label.substring(0, 8), 16));
         b2.setWidth(0);

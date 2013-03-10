@@ -1,20 +1,21 @@
 package com.example.kore.utils;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
 import com.example.unsuck.Boom;
 
 public final class CodeUtils {
 
-  public final static Code unit = Code
-      .newProduct(new HashMap<Label, CodeRef>());
+  /**
+   * Unit Type, i.e., {}
+   */
+  public final static Code unit = Code.newProduct(new HashMap<Label, Code>());
 
-  public static String renderCode(CodeRef cr, Map<Label, String> labelAliases,
+  /* what does it do ? */
+  public static String renderCode(Code cr, Map<Label, String> labelAliases,
       Integer depth) {
     if (depth < 0)
       throw new RuntimeException("negative depth");
@@ -22,9 +23,10 @@ public final class CodeUtils {
       return "...";
     if (depth != null)
       depth--;
-    if (cr.tag == CodeRef.Tag.PATH)
-      return "^";
-    Code c = cr.code;
+    // if (cr.tag == CodeRef.Tag.PATH)
+    // return "^";
+    // Code c = cr.code;
+    Code c = cr;
     String start;
     String end;
     switch (c.tag) {
@@ -47,20 +49,9 @@ public final class CodeUtils {
         result += ", '";
       String la = labelAliases.get(l);
       String ls = la == null ? l.label : la;
-      result += (ls + " " + renderCode(c.labels.get(l), labelAliases, depth));
+      result += ls + " " + renderCode(c.labels.get(l), labelAliases, depth);
     }
     return start + result + end;
   }
 
-  public static Code followPath(List<Label> path, Code c) {
-    for (Label l : path) {
-      CodeRef cr = c.labels.get(l);
-      if (cr == null)
-        return null;
-      if (cr.tag != CodeRef.Tag.CODE)
-        return null;
-      c = cr.code;
-    }
-    return c;
-  }
 }
