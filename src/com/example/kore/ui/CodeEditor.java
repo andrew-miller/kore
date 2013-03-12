@@ -2,7 +2,6 @@ package com.example.kore.ui;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -25,6 +24,8 @@ import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.Random;
 import com.example.unsuck.Boom;
 import com.example.unsuck.Null;
+
+import fj.data.List;
 
 public class CodeEditor extends Fragment implements
     Field.LabelSelectedListener, Field.FieldChangedListener {

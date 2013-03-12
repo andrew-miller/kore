@@ -1,10 +1,9 @@
 package com.example.kore.codes;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
-
 import com.example.unsuck.Null;
+
+import fj.data.List;
 
 public final class CodeRef implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -30,7 +29,6 @@ public final class CodeRef implements Serializable {
 
   public static CodeRef newPath(List<Label> path) {
     Null.notNull(path);
-    return new CodeRef(Tag.PATH, null, Collections.unmodifiableList(path));
-
+    return new CodeRef(Tag.PATH, null, path);
   }
 }

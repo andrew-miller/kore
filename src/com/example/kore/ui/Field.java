@@ -1,11 +1,7 @@
 package com.example.kore.ui;
 
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-
 import com.example.kore.R;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeRef;
@@ -13,14 +9,14 @@ import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.unsuck.Null;
 
+import fj.data.List;
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
@@ -71,7 +67,7 @@ public class Field extends Fragment {
   private Code rootCode;
   private boolean selected;
   private Map<Label, String> labelAliases;
-  private FragmentActivity a;
+  private Activity a;
   private Button labelButton;
   private Button codeButton;
 
@@ -196,40 +192,17 @@ public class Field extends Fragment {
       @Override
       public boolean onLongClick(View v) {
         PopupMenu pm = new PopupMenu(a, v);
-        Menu m = pm.getMenu();
-        fillMenu(m, CodeRef.newCode(rootCode), null, "",
-            new LinkedList<Label>());
-        pm.show();
-        return true;
-      }
-
-      private void fillMenu(Menu m, CodeRef codeRef, Label l, String space,
-          final List<Label> path) {
-        String ls;
-        if (l == null) {
-          ls = "";
-        } else {
-          String la = labelAliases.get(l);
-          ls = la == null ? l.toString() : la;
-        }
-        MenuItem i =
-            m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
-                + CodeUtils.renderCode(codeRef, labelAliases, 1));
+        MenuItem i = pm.getMenu().add("^");
         i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
           @Override
           public boolean onMenuItemClick(MenuItem i) {
-            fieldChangedListener.fieldChanged(path, label);
+            fieldChangedListener.fieldChanged(List.<Label> nil(), label);
             return true;
           }
         });
-        if (codeRef.tag == CodeRef.Tag.CODE) {
-          for (Entry<Label, CodeRef> e : codeRef.code.labels.entrySet()) {
-            List<Label> path2 = new LinkedList<Label>(path);
-            path2.add(e.getKey());
-            fillMenu(m, e.getValue(), e.getKey(), space + " ", path2);
-          }
-        }
 
+        pm.show();
+        return true;
       }
 
     });

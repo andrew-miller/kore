@@ -2,7 +2,6 @@ package com.example.kore.ui;
 
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import android.content.Intent;
@@ -14,7 +13,10 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
+import com.example.unsuck.ListUtils;
 import com.example.unsuck.Null;
+
+import fj.data.List;
 
 public class CodeEditorActivity extends FragmentActivity implements
     Field.CodeSelectedListener, CodeEditor.CodeEditedListener,
@@ -34,7 +36,7 @@ public class CodeEditorActivity extends FragmentActivity implements
 
   private CodeEditor codeEditor;
   private Code code = CodeUtils.unit;
-  private LinkedList<Label> path = new LinkedList<Label>();
+  private List<Label> path = List.nil();
   private Path pathFragment;
   private HashMap<Label, String> labelAliases = new HashMap<Label, String>();
 
@@ -54,7 +56,7 @@ public class CodeEditorActivity extends FragmentActivity implements
 
     if (b != null) {
       code = (Code) b.get(STATE_CODE);
-      path = (LinkedList<Label>) b.get(STATE_PATH);
+      path = ListUtils.fromLinkedList((LinkedList<Label>) b.get(STATE_PATH));
       labelAliases = (HashMap<Label, String>) b.get(STATE_LABEL_ALIASES);
     }
 
@@ -67,7 +69,7 @@ public class CodeEditorActivity extends FragmentActivity implements
   public void onSaveInstanceState(Bundle b) {
     super.onSaveInstanceState(b);
     b.putSerializable(STATE_CODE, code);
-    b.putSerializable(STATE_PATH, path);
+    b.putSerializable(STATE_PATH, ListUtils.toLinkedList(path));
     b.putSerializable(STATE_LABEL_ALIASES, labelAliases);
   }
 
@@ -85,15 +87,12 @@ public class CodeEditorActivity extends FragmentActivity implements
   }
 
   private Code replaceCurrentCode(Code c, List<Label> p, Code newCode) {
-    if (p.size() == 0) {
+    if (p.isEmpty())
       return newCode;
-    }
     Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(c.labels);
-    Label l = p.get(0);
-    m.put(
-        l,
-        CodeRef.newCode(replaceCurrentCode(m.get(l).code,
-            p.subList(1, p.size()), newCode)));
+    Label l = p.head();
+    m.put(l,
+        CodeRef.newCode(replaceCurrentCode(m.get(l).code, p.tail(), newCode)));
     return new Code(c.tag, m);
   }
 
@@ -106,15 +105,15 @@ public class CodeEditorActivity extends FragmentActivity implements
       throw new RuntimeException("non-existent label");
     if (cr.tag != CodeRef.Tag.CODE)
       throw new RuntimeException("you can't go there");
-    path.add(l);
+    path = path.append(List.single(l));
     pathFragment.setPath(code, path);
     initCodeEditor(cr.code);
   }
 
   @Override
-  public void onCodeInPathSelected(List<Label> subpath) {
-    LinkedList<Label> p = new LinkedList<Label>(subpath);
-    Code c = CodeUtils.followPath(subpath, code);
+  public void onCodeInPathSelected(List<Label> p) {
+    Null.notNull(p);
+    Code c = CodeUtils.followPath(p, code);
     if (c == null)
       throw new RuntimeException("invalid path");
     path = p;

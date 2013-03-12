@@ -1,13 +1,15 @@
 package com.example.kore.utils;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
 import com.example.unsuck.Boom;
+
+import fj.F2;
+import fj.data.List;
 
 public final class CodeUtils {
 
@@ -52,15 +54,17 @@ public final class CodeUtils {
     return start + result + end;
   }
 
-  public static Code followPath(List<Label> path, Code c) {
-    for (Label l : path) {
-      CodeRef cr = c.labels.get(l);
-      if (cr == null)
-        return null;
-      if (cr.tag != CodeRef.Tag.CODE)
-        return null;
-      c = cr.code;
-    }
-    return c;
+  public static Code followPath(List<Label> p, Code c) {
+    return p.foldLeft(new F2<Code, Label, Code>() {
+      @Override
+      public Code f(Code c, Label l) {
+        CodeRef cr = c.labels.get(l);
+        if (cr == null)
+          return null;
+        if (cr.tag != CodeRef.Tag.CODE)
+          return null;
+        return cr.code;
+      }
+    }, c);
   }
 }
