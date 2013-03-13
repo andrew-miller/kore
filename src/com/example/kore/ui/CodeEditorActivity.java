@@ -1,7 +1,6 @@
 package com.example.kore.ui;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 
 import android.content.Intent;
@@ -13,7 +12,6 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
-import com.example.unsuck.ListUtils;
 import com.example.unsuck.Null;
 
 import fj.data.List;
@@ -56,7 +54,7 @@ public class CodeEditorActivity extends FragmentActivity implements
 
     if (b != null) {
       code = (Code) b.get(STATE_CODE);
-      path = ListUtils.fromLinkedList((LinkedList<Label>) b.get(STATE_PATH));
+      path = (List<Label>) b.get(STATE_PATH);
       labelAliases = (HashMap<Label, String>) b.get(STATE_LABEL_ALIASES);
     }
 
@@ -69,7 +67,7 @@ public class CodeEditorActivity extends FragmentActivity implements
   public void onSaveInstanceState(Bundle b) {
     super.onSaveInstanceState(b);
     b.putSerializable(STATE_CODE, code);
-    b.putSerializable(STATE_PATH, ListUtils.toLinkedList(path));
+    b.putSerializable(STATE_PATH, path);
     b.putSerializable(STATE_LABEL_ALIASES, labelAliases);
   }
 
