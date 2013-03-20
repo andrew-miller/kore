@@ -83,7 +83,7 @@ public class Path extends Fragment {
       public Code f(Code c, final List<Label> p) {
         Label l = p.last();
         addLabel(l);
-        CodeRef codeRef = c.labels.get(l);
+        CodeRef codeRef = c.labels.get(l).some();
         if (codeRef.tag != CodeRef.Tag.CODE)
           throw new RuntimeException("path exits the spanning tree");
         addCode(codeRef.code, p);

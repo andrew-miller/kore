@@ -1,29 +1,28 @@
 package com.example.kore.utils;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
+import com.example.kore.codes.LabelOrd;
 import com.example.unsuck.Boom;
 
 import fj.F2;
+import fj.P2;
 import fj.data.List;
+import fj.data.Option;
+import fj.data.TreeMap;
 
 public final class CodeUtils {
 
-  public final static Code unit = Code
-      .newProduct(new HashMap<Label, CodeRef>());
+  public final static Code unit = Code.newProduct(TreeMap
+      .<Label, CodeRef> empty((LabelOrd.ord())));
 
-  public static String renderCode(CodeRef cr, Map<Label, String> labelAliases,
-      Integer depth) {
+  public static String renderCode(CodeRef cr,
+      TreeMap<Label, String> labelAliases, int depth) {
     if (depth < 0)
       throw new RuntimeException("negative depth");
     if (depth == 0)
       return "...";
-    if (depth != null)
-      depth--;
     if (cr.tag == CodeRef.Tag.PATH)
       return "^";
     Code c = cr.code;
@@ -42,14 +41,14 @@ public final class CodeUtils {
       throw Boom.boom();
     }
     String result = "";
-    for (Label l : c.labels.keySet()) {
+    for (P2<Label, CodeRef> p : c.labels) {
       if (result.equals(""))
         result = "'";
       else
         result += ", '";
-      String la = labelAliases.get(l);
-      String ls = la == null ? l.label : la;
-      result += (ls + " " + renderCode(c.labels.get(l), labelAliases, depth));
+      Option<String> ola = labelAliases.get(p._1());
+      String ls = ola.isNone() ? p._1().label : ola.some();
+      result += (ls + " " + renderCode(p._2(), labelAliases, depth - 1));
     }
     return start + result + end;
   }
@@ -58,9 +57,10 @@ public final class CodeUtils {
     return p.foldLeft(new F2<Code, Label, Code>() {
       @Override
       public Code f(Code c, Label l) {
-        CodeRef cr = c.labels.get(l);
-        if (cr == null)
+        Option<CodeRef> ocr = c.labels.get(l);
+        if (ocr.isNone())
           return null;
+        CodeRef cr = ocr.some();
         if (cr.tag != CodeRef.Tag.CODE)
           return null;
         return cr.code;

@@ -1,10 +1,9 @@
 package com.example.kore.codes;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
-
 import com.example.unsuck.Null;
+
+import fj.data.TreeMap;
 
 public final class Code implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -14,12 +13,12 @@ public final class Code implements Serializable {
   }
 
   public final Tag tag;
-  public final Map<Label, CodeRef> labels;
+  public final TreeMap<Label, CodeRef> labels;
 
-  public Code(Tag tag, Map<Label, CodeRef> labels) {
-    Null.notNull(labels);
+  public Code(Tag tag, TreeMap<Label, CodeRef> labels) {
+    Null.notNull(tag, labels);
     this.tag = tag;
-    this.labels = Collections.unmodifiableMap(labels);
+    this.labels = labels;
   }
 
   @Override
@@ -27,11 +26,11 @@ public final class Code implements Serializable {
     return "Code [tag=" + tag + ", labels=" + labels + "]";
   }
 
-  public final static Code newUnion(Map<Label, CodeRef> labels) {
+  public final static Code newUnion(TreeMap<Label, CodeRef> labels) {
     return new Code(Tag.UNION, labels);
   }
 
-  public static Code newProduct(Map<Label, CodeRef> labels) {
+  public static Code newProduct(TreeMap<Label, CodeRef> labels) {
     return new Code(Tag.PRODUCT, labels);
   }
 

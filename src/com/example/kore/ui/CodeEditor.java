@@ -1,10 +1,5 @@
 package com.example.kore.ui;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -25,7 +20,9 @@ import com.example.kore.utils.Random;
 import com.example.unsuck.Boom;
 import com.example.unsuck.Null;
 
+import fj.P2;
 import fj.data.List;
+import fj.data.TreeMap;
 
 public class CodeEditor extends Fragment implements
     Field.LabelSelectedListener, Field.FieldChangedListener {
@@ -48,7 +45,7 @@ public class CodeEditor extends Fragment implements
   private Label selectedLabel;
   private LinearLayout fields;
   private Button switchCodeOpButton;
-  private Map<Label, String> labelAliases;
+  private TreeMap<Label, String> labelAliases;
   private DoneListener doneListener;
 
   @Override
@@ -58,6 +55,7 @@ public class CodeEditor extends Fragment implements
     doneListener = (DoneListener) activity;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
@@ -66,12 +64,7 @@ public class CodeEditor extends Fragment implements
     Bundle args = getArguments();
     code = (Code) args.get(ARG_CODE);
     rootCode = (Code) args.get(ARG_ROOT_CODE);
-    {
-      @SuppressWarnings("unchecked")
-      HashMap<Label, String> labelAliasesUnsafe =
-          (HashMap<Label, String>) args.get(ARG_LABEL_ALIASES);
-      labelAliases = Collections.unmodifiableMap(labelAliasesUnsafe);
-    }
+    labelAliases = (TreeMap<Label, String>) args.get(ARG_LABEL_ALIASES);
     Null.notNull(code, rootCode);
 
     fields = (LinearLayout) v.findViewById(R.id.layout_fields);
@@ -89,16 +82,15 @@ public class CodeEditor extends Fragment implements
         .setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View v) {
-            Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(code.labels);
             Label l = null;
             do {
               if (l != null)
                 Log.w("code editor", "generated duplicate label");
               l = new Label(Random.randomId());
-            } while (m.containsKey(l));
-            m.put(l, CodeRef.newCode(CodeUtils.unit));
-            code = new Code(code.tag, m);
-
+            } while (code.labels.contains(l));
+            code =
+                new Code(code.tag, code.labels.set(l,
+                    CodeRef.newCode(CodeUtils.unit)));
             codeEditedListener.onCodeEdited(code);
           }
         });
@@ -148,14 +140,13 @@ public class CodeEditor extends Fragment implements
     fields.removeAllViews();
     FragmentTransaction fragmentTransaction =
         getFragmentManager().beginTransaction();
-    for (final Entry<Label, CodeRef> e : code.labels.entrySet()) {
+    for (final P2<Label, CodeRef> e : code.labels) {
       Bundle args = new Bundle();
-      args.putBoolean(Field.ARG_SELECTED, e.getKey().equals(selectedLabel));
-      args.putSerializable(Field.ARG_LABEL, e.getKey());
-      args.putSerializable(Field.ARG_CODE_REF, e.getValue());
+      args.putBoolean(Field.ARG_SELECTED, e._1().equals(selectedLabel));
+      args.putSerializable(Field.ARG_LABEL, e._1());
+      args.putSerializable(Field.ARG_CODE_REF, e._2());
       args.putSerializable(Field.ARG_ROOT_CODE, rootCode);
-      args.putSerializable(Field.ARG_LABEL_ALIASES, new HashMap<Label, String>(
-          labelAliases));
+      args.putSerializable(Field.ARG_LABEL_ALIASES, labelAliases);
       Field f = new Field();
       f.setArguments(args);
       fragmentTransaction.add(R.id.layout_fields, f);
@@ -170,9 +161,7 @@ public class CodeEditor extends Fragment implements
     deleteButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(code.labels);
-        m.remove(l);
-        code = new Code(code.tag, m);
+        code = new Code(code.tag, code.labels.delete(l));
         codeEditedListener.onCodeEdited(code);
       }
     });
@@ -181,9 +170,7 @@ public class CodeEditor extends Fragment implements
 
   @Override
   public void fieldChanged(List<Label> path, Label label) {
-    Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(code.labels);
-    m.put(label, CodeRef.newPath(path));
-    code = new Code(code.tag, m);
+    code = new Code(code.tag, code.labels.set(label, CodeRef.newPath(path)));
     codeEditedListener.onCodeEdited(code);
   }
 

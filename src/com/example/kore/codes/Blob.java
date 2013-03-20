@@ -1,9 +1,10 @@
 package com.example.kore.codes;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.example.kore.utils.CodeUtils;
+
+import fj.data.TreeMap;
 
 public class Blob {
   private String id;
@@ -57,9 +58,10 @@ public class Blob {
       this.args = args;
       in = CodeUtils.unit;
 
-      Map<Label, CodeRef> subType = new HashMap<Label, CodeRef>();
+      TreeMap<Label, CodeRef> subType = TreeMap.empty(LabelOrd.ord());
       for (int i = 0; i < order.length; i++)
-        subType.put(order[i], CodeRef.newCode(args.get(order[i]).out));
+        subType =
+            subType.set(order[i], CodeRef.newCode(args.get(order[i]).out));
       out = Code.newProduct(subType);
     }
 
@@ -80,7 +82,7 @@ public class Blob {
     public Label label;
 
     public Proj(Blob arg, Label label) {
-      super(arg.in, arg.out.labels.get(label).code);
+      super(arg.in, arg.out.labels.get(label).some().code);
       this.arg = arg;
       this.label = label;
     }

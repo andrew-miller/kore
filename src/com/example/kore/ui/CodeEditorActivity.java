@@ -1,8 +1,5 @@
 package com.example.kore.ui;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -11,10 +8,12 @@ import com.example.kore.R;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
+import com.example.kore.codes.LabelOrd;
 import com.example.kore.utils.CodeUtils;
 import com.example.unsuck.Null;
 
 import fj.data.List;
+import fj.data.TreeMap;
 
 public class CodeEditorActivity extends FragmentActivity implements
     Field.CodeSelectedListener, CodeEditor.CodeEditedListener,
@@ -36,9 +35,9 @@ public class CodeEditorActivity extends FragmentActivity implements
   private Code code = CodeUtils.unit;
   private List<Label> path = List.nil();
   private Path pathFragment;
-  private HashMap<Label, String> labelAliases = new HashMap<Label, String>();
+  private TreeMap<Label, String> labelAliases = TreeMap
+      .<Label, String> empty(LabelOrd.ord());
 
-  @SuppressWarnings("unchecked")
   @Override
   protected void onCreate(Bundle b) {
     super.onCreate(b);
@@ -49,13 +48,13 @@ public class CodeEditorActivity extends FragmentActivity implements
 
     code = (Code) getIntent().getSerializableExtra(ARG_CODE);
     labelAliases =
-        new HashMap<Label, String>((HashMap<Label, String>) getIntent()
-            .getSerializableExtra(ARG_LABEL_ALIASES));
+        (TreeMap<Label, String>) getIntent().getSerializableExtra(
+            ARG_LABEL_ALIASES);
 
     if (b != null) {
       code = (Code) b.get(STATE_CODE);
       path = (List<Label>) b.get(STATE_PATH);
-      labelAliases = (HashMap<Label, String>) b.get(STATE_LABEL_ALIASES);
+      labelAliases = (TreeMap<Label, String>) b.get(STATE_LABEL_ALIASES);
     }
 
     initCodeEditor(CodeUtils.followPath(path, code));
@@ -87,20 +86,18 @@ public class CodeEditorActivity extends FragmentActivity implements
   private Code replaceCurrentCode(Code c, List<Label> p, Code newCode) {
     if (p.isEmpty())
       return newCode;
-    Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(c.labels);
     Label l = p.head();
-    m.put(l,
-        CodeRef.newCode(replaceCurrentCode(m.get(l).code, p.tail(), newCode)));
-    return new Code(c.tag, m);
+    return new Code(c.tag, c.labels.set(
+        l,
+        CodeRef.newCode(replaceCurrentCode(c.labels.get(l).some().code,
+            p.tail(), newCode))));
   }
 
   @Override
   public void codeSelected(Label l) {
     Null.notNull(l);
     Code c = CodeUtils.followPath(path, code);
-    CodeRef cr = c.labels.get(l);
-    if (cr == null)
-      throw new RuntimeException("non-existent label");
+    CodeRef cr = c.labels.get(l).some();
     if (cr.tag != CodeRef.Tag.CODE)
       throw new RuntimeException("you can't go there");
     path = path.append(List.single(l));
@@ -132,9 +129,9 @@ public class CodeEditorActivity extends FragmentActivity implements
   public void labelAliasChanged(Label label, String alias) {
     Null.notNull(label, alias);
     Code c = CodeUtils.followPath(path, code);
-    if (!c.labels.containsKey(label))
+    if (!c.labels.contains(label))
       throw new RuntimeException("non-existent label");
-    labelAliases.put(label, alias);
+    labelAliases = labelAliases.set(label, alias);
     initCodeEditor(c);
   }
 
@@ -143,8 +140,7 @@ public class CodeEditorActivity extends FragmentActivity implements
     Bundle b = new Bundle();
     b.putSerializable(CodeEditor.ARG_CODE, c);
     b.putSerializable(CodeEditor.ARG_ROOT_CODE, code);
-    b.putSerializable(CodeEditor.ARG_LABEL_ALIASES, new HashMap<Label, String>(
-        labelAliases));
+    b.putSerializable(CodeEditor.ARG_LABEL_ALIASES, labelAliases);
     codeEditor.setArguments(b);
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.container_code_editor, codeEditor).commit();
@@ -155,7 +151,7 @@ public class CodeEditorActivity extends FragmentActivity implements
     setResult(
         0,
         new Intent().putExtra(RESULT_CODE, code).putExtra(RESULT_LABEL_ALIASES,
-            new HashMap<Label, String>(labelAliases)));
+            labelAliases));
     finish();
   }
 }

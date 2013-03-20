@@ -1,7 +1,5 @@
 package com.example.kore.ui;
 
-import java.util.Collections;
-import java.util.Map;
 import com.example.kore.R;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeRef;
@@ -10,6 +8,8 @@ import com.example.kore.utils.CodeUtils;
 import com.example.unsuck.Null;
 
 import fj.data.List;
+import fj.data.Option;
+import fj.data.TreeMap;
 
 import android.app.Activity;
 import android.content.Context;
@@ -66,7 +66,7 @@ public class Field extends Fragment {
   private CodeRef codeRef;
   private Code rootCode;
   private boolean selected;
-  private Map<Label, String> labelAliases;
+  private TreeMap<Label, String> labelAliases;
   private Activity a;
   private Button labelButton;
   private Button codeButton;
@@ -83,6 +83,7 @@ public class Field extends Fragment {
     labelAliasChangedListener = (LabelAliasChangedListener) activity;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
@@ -91,13 +92,8 @@ public class Field extends Fragment {
     codeRef = (CodeRef) args.get(ARG_CODE_REF);
     rootCode = (Code) args.get(ARG_ROOT_CODE);
     selected = args.getBoolean(ARG_SELECTED);
-    {
-      @SuppressWarnings("unchecked")
-      Map<Label, String> labelAliasesUnsafe =
-          (Map<Label, String>) args.get(ARG_LABEL_ALIASES);
-      labelAliases = Collections.unmodifiableMap(labelAliasesUnsafe);
-    }
-    Null.notNull(label, codeRef, rootCode);
+    labelAliases = (TreeMap<Label, String>) args.get(ARG_LABEL_ALIASES);
+    Null.notNull(label, codeRef, rootCode, labelAliases);
 
     View v = inflater.inflate(R.layout.field, container, false);
     a = getActivity();
@@ -112,11 +108,11 @@ public class Field extends Fragment {
   private void initLabelButton() {
     labelButton.setBackgroundColor((int) Long.parseLong(
         label.label.substring(0, 8), 16));
-    String labelAlias = labelAliases.get(label);
-    if (labelAlias == null) {
+    Option<String> ola = labelAliases.get(label);
+    if (ola.isNone()) {
       labelButton.setText(label.label);
     } else {
-      labelButton.setText(labelAlias);
+      labelButton.setText(ola.some());
     }
     if (selected)
       labelButton.setText("---");
