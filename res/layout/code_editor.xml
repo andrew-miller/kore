@@ -16,23 +16,10 @@
             android:text="@string/button_new_field" />
 
         <Button
-            android:id="@+id/button_delete_field"
+            android:id="@+id/button_clear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:text="@string/button_delete_field"
-            android:visibility="invisible" />
-
-        <Button
-            android:id="@+id/button_switch_code_op"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:id="@+id/button_done"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/button_done" />
+            android:text="clear" />
 
     </LinearLayout>
 

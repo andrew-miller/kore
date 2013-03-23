@@ -6,12 +6,6 @@
     tools:context=".MainActivity"
     tools:ignore="MergeRootFrame" >
 
-    <fragment
-        android:id="@+id/fragment_path"
-        android:name="com.example.kore.ui.Path"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent" />
-
     <FrameLayout
         android:id="@+id/container_code_editor"
         android:layout_width="match_parent"
