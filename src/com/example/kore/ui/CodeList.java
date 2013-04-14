@@ -9,6 +9,7 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeRef;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
+import com.example.kore.utils.F;
 import com.example.unsuck.Null;
 
 import android.app.Activity;
@@ -18,27 +19,37 @@ import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 public class CodeList extends Fragment {
   public static final String ARG_CODES = "codes";
   public static final String ARG_CODE_LABEL_ALIASES = "code_label_aliases";
+  public static final String ARG_CODE_ALIASES = "code_aliases";
 
   public static interface CodeSelectListener {
     public void onCodeSelected(Code c);
+  }
+
+  public static interface CodeAliasChangedListener {
+    public void codeAliasChanged(Code code, String alias);
   }
 
   private CodeSelectListener codeSelectListener;
   private LinearLayout codeListLayout;
   private LinkedList<Code> codes;
   private HashMap<Code, HashMap<Label, String>> codeLabelAliases;
+  private CodeAliasChangedListener codeAliasChangedListener;
+  private HashMap<Code, String> codeAliases;
 
   @Override
   public void onAttach(Activity a) {
     super.onAttach(a);
     codeSelectListener = (CodeSelectListener) a;
+    codeAliasChangedListener = (CodeAliasChangedListener) a;
   }
 
   @SuppressWarnings("unchecked")
@@ -48,7 +59,8 @@ public class CodeList extends Fragment {
     View v = inflater.inflate(R.layout.code_list, container, false);
 
     Bundle args = getArguments();
-    codes = (LinkedList<Code>) args.getSerializable(ARG_CODES);
+    codes =
+        new LinkedList<Code>((LinkedList<Code>) args.getSerializable(ARG_CODES));
     Null.notNull(codes);
     {
       HashMap<Code, HashMap<Label, String>> m =
@@ -63,24 +75,48 @@ public class CodeList extends Fragment {
       }
       codeLabelAliases = m;
     }
-
+    codeAliases =
+        new HashMap<Code, String>(
+            (HashMap<Code, String>) args.getSerializable(ARG_CODE_ALIASES));
+    Null.notNull(codeAliases);
     codeListLayout = (LinearLayout) v.findViewById(R.id.layout_code_list);
 
-    FragmentActivity a = getActivity();
-    for (final Code c : codes) {
+    final FragmentActivity a = getActivity();
+    for (final Code code : codes) {
+      final FrameLayout fl = new FrameLayout(a);
       Button b = new Button(a);
-      b.setText(CodeUtils.renderCode(CodeRef.newCode(c),
-          codeLabelAliases.get(c), 1));
+      String codeName = codeAliases.get(code);
+      final String strCode =
+          codeName == null ? CodeUtils.renderCode(CodeRef.newCode(code),
+              codeLabelAliases.get(code), codeAliases, 1) : codeName;
+      b.setText(strCode);
       b.setOnClickListener(new OnClickListener() {
-
         @Override
         public void onClick(View v) {
-          codeSelectListener.onCodeSelected(c);
+          codeSelectListener.onCodeSelected(code);
         }
       });
-      codeListLayout.addView(b);
+      fl.addView(b);
+
+      b.setOnLongClickListener(new OnLongClickListener() {
+        @Override
+        public boolean onLongClick(final View v) {
+          UIUtils.replaceWithTextEntry(fl, v, a, strCode,
+              new F<String, Void>() {
+                @Override
+                public Void f(String s) {
+                  codeAliasChangedListener.codeAliasChanged(code, s);
+                  return null;
+                }
+              });
+          return true;
+        }
+      });
+
+      codeListLayout.addView(fl);
     }
 
     return v;
   }
+
 }

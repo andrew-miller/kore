@@ -25,18 +25,21 @@ public class CodeEditorActivity extends FragmentActivity implements
   private static final String STATE_CODE = "code";
   private static final String STATE_PATH = "path";
   private static final String STATE_LABEL_ALIASES = "label_aliases";
+  private static final String STATE_CODE_ALIASES = "code_aliases";
 
   public static final String RESULT_CODE = "code";
   public static final String RESULT_LABEL_ALIASES = "label_aliases";
 
   public static final String ARG_CODE = "code";
   public static final String ARG_LABEL_ALIASES = "label_aliases";
+  public static final String ARG_CODE_ALIASES = "code_aliases";
 
   private CodeEditor codeEditor;
   private Code code = CodeUtils.unit;
   private LinkedList<Label> path = new LinkedList<Label>();
   private Path pathFragment;
-  private HashMap<Label, String> labelAliases = new HashMap<Label, String>();
+  private HashMap<Label, String> labelAliases;
+  private HashMap<Code, String> codeAliases;
 
   @SuppressWarnings("unchecked")
   @Override
@@ -51,11 +54,15 @@ public class CodeEditorActivity extends FragmentActivity implements
     labelAliases =
         new HashMap<Label, String>((HashMap<Label, String>) getIntent()
             .getSerializableExtra(ARG_LABEL_ALIASES));
+    codeAliases =
+        new HashMap<Code, String>((HashMap<Code, String>) getIntent()
+            .getSerializableExtra(ARG_CODE_ALIASES));
 
     if (b != null) {
       code = (Code) b.get(STATE_CODE);
       path = (LinkedList<Label>) b.get(STATE_PATH);
       labelAliases = (HashMap<Label, String>) b.get(STATE_LABEL_ALIASES);
+      codeAliases = (HashMap<Code, String>) b.get(STATE_LABEL_ALIASES);
     }
 
     initCodeEditor(CodeUtils.followPath(path, code));
@@ -69,6 +76,7 @@ public class CodeEditorActivity extends FragmentActivity implements
     b.putSerializable(STATE_CODE, code);
     b.putSerializable(STATE_PATH, path);
     b.putSerializable(STATE_LABEL_ALIASES, labelAliases);
+    b.putSerializable(STATE_CODE_ALIASES, codeAliases);
   }
 
   @Override
@@ -148,6 +156,8 @@ public class CodeEditorActivity extends FragmentActivity implements
     b.putSerializable(CodeEditor.ARG_ROOT_CODE, code);
     b.putSerializable(CodeEditor.ARG_LABEL_ALIASES, new HashMap<Label, String>(
         labelAliases));
+    b.putSerializable(CodeEditor.ARG_CODE_ALIASES, new HashMap<Code, String>(
+        codeAliases));
     codeEditor.setArguments(b);
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.container_code_editor, codeEditor).commit();

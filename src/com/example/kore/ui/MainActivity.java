@@ -18,14 +18,16 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 
 public class MainActivity extends FragmentActivity implements
-    CodeList.CodeSelectListener {
+    CodeList.CodeSelectListener, CodeList.CodeAliasChangedListener {
 
   private static final String STATE_CODES = "codes";
   private static final String STATE_CODE_LABEL_ALIASES = "code_label_aliases";
+  private static final String STATE_CODE_ALIASES = "code_aliases";
 
   private LinkedList<Code> recentCodes = new LinkedList<Code>();
   private HashMap<Code, HashMap<Label, String>> codeLabelAliases =
       new HashMap<Code, HashMap<Label, String>>();
+  private HashMap<Code, String> codeAliases = new HashMap<Code, String>();
 
   @SuppressWarnings("unchecked")
   @Override
@@ -46,6 +48,7 @@ public class MainActivity extends FragmentActivity implements
       codeLabelAliases =
           (HashMap<Code, HashMap<Label, String>>) b
               .get(STATE_CODE_LABEL_ALIASES);
+      codeAliases = (HashMap<Code, String>) b.get(STATE_CODE_ALIASES);
     }
 
     initRecentCodes();
@@ -82,6 +85,7 @@ public class MainActivity extends FragmentActivity implements
     super.onSaveInstanceState(b);
     b.putSerializable(STATE_CODES, recentCodes);
     b.putSerializable(STATE_CODE_LABEL_ALIASES, codeLabelAliases);
+    b.putSerializable(STATE_CODE_ALIASES, codeAliases);
   }
 
   private void initRecentCodes() {
@@ -96,6 +100,8 @@ public class MainActivity extends FragmentActivity implements
       }
       b.putSerializable(CodeList.ARG_CODE_LABEL_ALIASES, m);
     }
+    b.putSerializable(CodeList.ARG_CODE_ALIASES, new HashMap<Code, String>(
+        codeAliases));
     recentCodesFragment.setArguments(b);
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.container_recent_codes, recentCodesFragment).commit();
@@ -103,9 +109,12 @@ public class MainActivity extends FragmentActivity implements
 
   private void startCodeEditor(Code c, HashMap<Label, String> la) {
     startActivityForResult(
-        new Intent(this, CodeEditorActivity.class).putExtra(
-            CodeEditorActivity.ARG_CODE, c).putExtra(
-            CodeEditorActivity.ARG_LABEL_ALIASES, la), 0);
+        new Intent(this, CodeEditorActivity.class)
+            .putExtra(CodeEditorActivity.ARG_CODE, c)
+            .putExtra(CodeEditorActivity.ARG_LABEL_ALIASES,
+                new HashMap<Label, String>(la))
+            .putExtra(CodeEditorActivity.ARG_CODE_ALIASES,
+                new HashMap<Code, String>(codeAliases)), 0);
   }
 
   @Override
@@ -113,6 +122,13 @@ public class MainActivity extends FragmentActivity implements
     HashMap<Label, String> la = codeLabelAliases.get(c);
     Null.notNull(la);
     startCodeEditor(c, la);
+  }
+
+  @Override
+  public void codeAliasChanged(Code code, String alias) {
+    Null.notNull(code, alias);
+    codeAliases.put(code, alias);
+    initRecentCodes();
   }
 
 }

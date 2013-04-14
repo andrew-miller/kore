@@ -15,7 +15,7 @@ public final class CodeUtils {
       .newProduct(new HashMap<Label, CodeRef>());
 
   public static String renderCode(CodeRef cr, Map<Label, String> labelAliases,
-      Integer depth) {
+      Map<Code, String> codeAliases, Integer depth) {
     if (depth < 0)
       throw new RuntimeException("negative depth");
     if (depth == 0)
@@ -25,6 +25,9 @@ public final class CodeUtils {
     if (cr.tag == CodeRef.Tag.PATH)
       return "^";
     Code c = cr.code;
+    String codeAlias = codeAliases.get(c);
+    if (codeAlias != null)
+      return codeAlias;
     String start;
     String end;
     switch (c.tag) {
@@ -47,7 +50,9 @@ public final class CodeUtils {
         result += ", '";
       String la = labelAliases.get(l);
       String ls = la == null ? l.label : la;
-      result += (ls + " " + renderCode(c.labels.get(l), labelAliases, depth));
+      result +=
+          (ls + " " + renderCode(c.labels.get(l), labelAliases, codeAliases,
+              depth));
     }
     return start + result + end;
   }
