@@ -1,6 +1,7 @@
 package com.example.kore.ui;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 
@@ -21,15 +22,16 @@ public class MainActivity extends FragmentActivity implements
     CodeList.CodeSelectListener, CodeList.CodeAliasChangedListener {
 
   private static final String STATE_CODES = "codes";
+  private static final String STATE_RECENT_CODES = "codes";
   private static final String STATE_CODE_LABEL_ALIASES = "code_label_aliases";
   private static final String STATE_CODE_ALIASES = "code_aliases";
 
+  private HashSet<Code> codes = new HashSet<Code>();
   private LinkedList<Code> recentCodes = new LinkedList<Code>();
   private HashMap<Code, HashMap<Label, String>> codeLabelAliases =
       new HashMap<Code, HashMap<Label, String>>();
   private HashMap<Code, String> codeAliases = new HashMap<Code, String>();
 
-  @SuppressWarnings("unchecked")
   @Override
   protected void onCreate(Bundle b) {
     super.onCreate(b);
@@ -44,7 +46,8 @@ public class MainActivity extends FragmentActivity implements
         });
 
     if (b != null) {
-      recentCodes = (LinkedList<Code>) b.get(STATE_CODES);
+      codes = (HashSet<Code>) b.get(STATE_CODES);
+      recentCodes = (LinkedList<Code>) b.get(STATE_RECENT_CODES);
       codeLabelAliases =
           (HashMap<Code, HashMap<Label, String>>) b
               .get(STATE_CODE_LABEL_ALIASES);
@@ -60,13 +63,14 @@ public class MainActivity extends FragmentActivity implements
       return;
     Code code =
         (Code) data.getSerializableExtra(CodeEditorActivity.RESULT_CODE);
-    @SuppressWarnings("unchecked")
     HashMap<Label, String> labelAliases =
         (HashMap<Label, String>) data
             .getSerializableExtra(CodeEditorActivity.RESULT_LABEL_ALIASES);
     Null.notNull(code, labelAliases);
     labelAliases = new HashMap<Label, String>(labelAliases);
-    recentCodes.addFirst(code);
+    if (!codes.contains(code))
+      recentCodes.addFirst(code);
+    codes.add(code);
     codeLabelAliases.put(code, labelAliases);
   }
 
@@ -83,7 +87,8 @@ public class MainActivity extends FragmentActivity implements
   @Override
   public void onSaveInstanceState(Bundle b) {
     super.onSaveInstanceState(b);
-    b.putSerializable(STATE_CODES, recentCodes);
+    b.putSerializable(STATE_CODES, codes);
+    b.putSerializable(STATE_RECENT_CODES, recentCodes);
     b.putSerializable(STATE_CODE_LABEL_ALIASES, codeLabelAliases);
     b.putSerializable(STATE_CODE_ALIASES, codeAliases);
   }
