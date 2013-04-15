@@ -15,13 +15,11 @@ public final class CodeUtils {
       .newProduct(new HashMap<Label, CodeRef>());
 
   public static String renderCode(CodeRef cr, Map<Label, String> labelAliases,
-      Map<Code, String> codeAliases, Integer depth) {
+      Map<Code, String> codeAliases, int depth) {
     if (depth < 0)
       throw new RuntimeException("negative depth");
     if (depth == 0)
       return "...";
-    if (depth != null)
-      depth--;
     if (cr.tag == CodeRef.Tag.PATH)
       return "^";
     Code c = cr.code;
@@ -52,7 +50,7 @@ public final class CodeUtils {
       String ls = la == null ? l.label : la;
       result +=
           (ls + " " + renderCode(c.labels.get(l), labelAliases, codeAliases,
-              depth));
+              depth - 1));
     }
     return start + result + end;
   }
