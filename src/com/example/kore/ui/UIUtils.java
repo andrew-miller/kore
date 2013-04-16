@@ -27,9 +27,6 @@ public class UIUtils {
       public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if (actionId == EditorInfo.IME_ACTION_DONE) {
           onDone.f(t.getText().toString());
-          ((InputMethodManager) a
-              .getSystemService(Context.INPUT_METHOD_SERVICE))
-              .hideSoftInputFromWindow(t.getWindowToken(), 0);
           return true;
         }
         return false;
@@ -39,6 +36,9 @@ public class UIUtils {
       @Override
       public void onFocusChange(View _, boolean hasFocus) {
         if (!hasFocus) {
+          ((InputMethodManager) a
+              .getSystemService(Context.INPUT_METHOD_SERVICE))
+              .hideSoftInputFromWindow(t.getWindowToken(), 0);
           vg.removeAllViews();
           // WTF if you change the above line to this, it messes up:
           // fl.removeView(v);
