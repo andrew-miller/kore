@@ -57,9 +57,9 @@ public class Blob {
       this.args = args;
       in = CodeUtils.unit;
 
-      Map<Label, CodeRef> subType = new HashMap<Label, CodeRef>();
+      Map<Label, CodeOrPath> subType = new HashMap<Label, CodeOrPath>();
       for (int i = 0; i < order.length; i++)
-        subType.put(order[i], CodeRef.newCode(args.get(order[i]).out));
+        subType.put(order[i], CodeOrPath.newCode(args.get(order[i]).out));
       out = Code.newProduct(subType);
     }
 

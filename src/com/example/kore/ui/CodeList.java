@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 
 import com.example.kore.R;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeRef;
+import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.F;
@@ -87,7 +87,7 @@ public class CodeList extends Fragment {
       Button b = new Button(a);
       String codeName = codeAliases.get(code);
       final String strCode =
-          codeName == null ? CodeUtils.renderCode(CodeRef.newCode(code),
+          codeName == null ? CodeUtils.renderCode(CodeOrPath.newCode(code),
               codeLabelAliases.get(code), codeAliases, 1) : codeName;
       b.setText(strCode);
       b.setOnClickListener(new OnClickListener() {

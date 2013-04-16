@@ -5,22 +5,22 @@ import java.util.List;
 import java.util.Map;
 
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeRef;
+import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.unsuck.Boom;
 
 public final class CodeUtils {
 
   public final static Code unit = Code
-      .newProduct(new HashMap<Label, CodeRef>());
+      .newProduct(new HashMap<Label, CodeOrPath>());
 
-  public static String renderCode(CodeRef cr, Map<Label, String> labelAliases,
+  public static String renderCode(CodeOrPath cr, Map<Label, String> labelAliases,
       Map<Code, String> codeAliases, int depth) {
     if (depth < 0)
       throw new RuntimeException("negative depth");
     if (depth == 0)
       return "...";
-    if (cr.tag == CodeRef.Tag.PATH)
+    if (cr.tag == CodeOrPath.Tag.PATH)
       return "^";
     Code c = cr.code;
     String codeAlias = codeAliases.get(c);
@@ -57,10 +57,10 @@ public final class CodeUtils {
 
   public static Code followPath(List<Label> path, Code c) {
     for (Label l : path) {
-      CodeRef cr = c.labels.get(l);
+      CodeOrPath cr = c.labels.get(l);
       if (cr == null)
         return null;
-      if (cr.tag != CodeRef.Tag.CODE)
+      if (cr.tag != CodeOrPath.Tag.CODE)
         return null;
       c = cr.code;
     }

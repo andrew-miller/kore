@@ -11,7 +11,7 @@ import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import com.example.kore.R;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeRef;
+import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.unsuck.Null;
@@ -96,11 +96,11 @@ public class CodeEditorActivity extends FragmentActivity implements
     if (p.size() == 0) {
       return newCode;
     }
-    Map<Label, CodeRef> m = new HashMap<Label, CodeRef>(c.labels);
+    Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>(c.labels);
     Label l = p.get(0);
     m.put(
         l,
-        CodeRef.newCode(replaceCurrentCode(m.get(l).code,
+        CodeOrPath.newCode(replaceCurrentCode(m.get(l).code,
             p.subList(1, p.size()), newCode)));
     return new Code(c.tag, m);
   }
@@ -109,10 +109,10 @@ public class CodeEditorActivity extends FragmentActivity implements
   public void codeSelected(Label l) {
     Null.notNull(l);
     Code c = CodeUtils.followPath(path, code);
-    CodeRef cr = c.labels.get(l);
+    CodeOrPath cr = c.labels.get(l);
     if (cr == null)
       throw new RuntimeException("non-existent label");
-    if (cr.tag != CodeRef.Tag.CODE)
+    if (cr.tag != CodeOrPath.Tag.CODE)
       throw new RuntimeException("you can't go there");
     path.add(l);
     pathFragment.setPath(code, path);

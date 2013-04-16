@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.example.unsuck.Null;
 
-public final class CodeRef implements Serializable {
+public final class CodeOrPath implements Serializable {
   private static final long serialVersionUID = 1L;
 
   public enum Tag {
@@ -17,20 +17,20 @@ public final class CodeRef implements Serializable {
   public final Code code;
   public final List<Label> path;
 
-  private CodeRef(Tag tag, Code code, List<Label> path) {
+  private CodeOrPath(Tag tag, Code code, List<Label> path) {
     this.tag = tag;
     this.code = code;
     this.path = path;
   }
 
-  public static CodeRef newCode(Code code) {
+  public static CodeOrPath newCode(Code code) {
     Null.notNull(code);
-    return new CodeRef(Tag.CODE, code, null);
+    return new CodeOrPath(Tag.CODE, code, null);
   }
 
-  public static CodeRef newPath(List<Label> path) {
+  public static CodeOrPath newPath(List<Label> path) {
     Null.notNull(path);
-    return new CodeRef(Tag.PATH, null, Collections.unmodifiableList(path));
+    return new CodeOrPath(Tag.PATH, null, Collections.unmodifiableList(path));
   }
 
   @Override
@@ -51,7 +51,7 @@ public final class CodeRef implements Serializable {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    CodeRef other = (CodeRef) obj;
+    CodeOrPath other = (CodeOrPath) obj;
     if (code == null) {
       if (other.code != null)
         return false;

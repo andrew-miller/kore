@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import com.example.kore.R;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeRef;
+import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.F;
@@ -57,7 +57,7 @@ public class Field extends Fragment {
   private LabelAliasChangedListener labelAliasChangedListener;
 
   private Label label;
-  private CodeRef codeRef;
+  private CodeOrPath codeRef;
   private Code rootCode;
   private boolean selected;
   private Map<Label, String> labelAliases;
@@ -80,7 +80,7 @@ public class Field extends Fragment {
       Bundle savedInstanceState) {
     Bundle args = getArguments();
     label = (Label) args.get(ARG_LABEL);
-    codeRef = (CodeRef) args.get(ARG_CODE_REF);
+    codeRef = (CodeOrPath) args.get(ARG_CODE_REF);
     rootCode = (Code) args.get(ARG_ROOT_CODE);
     selected = args.getBoolean(ARG_SELECTED);
     labelAliases = (Map<Label, String>) args.get(ARG_LABEL_ALIASES);
@@ -131,7 +131,7 @@ public class Field extends Fragment {
   }
 
   private void initCodeButton() {
-    if (codeRef.tag == CodeRef.Tag.CODE) {
+    if (codeRef.tag == CodeOrPath.Tag.CODE) {
       codeButton.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -144,13 +144,13 @@ public class Field extends Fragment {
       public boolean onLongClick(View v) {
         PopupMenu pm = new PopupMenu(a, v);
         Menu m = pm.getMenu();
-        fillMenu(m, CodeRef.newCode(rootCode), null, "",
+        fillMenu(m, CodeOrPath.newCode(rootCode), null, "",
             new LinkedList<Label>());
         pm.show();
         return true;
       }
 
-      private void fillMenu(Menu m, CodeRef codeRef, Label l, String space,
+      private void fillMenu(Menu m, CodeOrPath codeRef, Label l, String space,
           final List<Label> path) {
         String ls;
         if (l == null) {
@@ -169,8 +169,8 @@ public class Field extends Fragment {
             return true;
           }
         });
-        if (codeRef.tag == CodeRef.Tag.CODE) {
-          for (Entry<Label, CodeRef> e : codeRef.code.labels.entrySet()) {
+        if (codeRef.tag == CodeOrPath.Tag.CODE) {
+          for (Entry<Label, CodeOrPath> e : codeRef.code.labels.entrySet()) {
             List<Label> path2 = new LinkedList<Label>(path);
             path2.add(e.getKey());
             fillMenu(m, e.getValue(), e.getKey(), space + " ", path2);

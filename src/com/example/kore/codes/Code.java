@@ -14,9 +14,9 @@ public final class Code implements Serializable {
   }
 
   public final Tag tag;
-  public final Map<Label, CodeRef> labels;
+  public final Map<Label, CodeOrPath> labels;
 
-  public Code(Tag tag, Map<Label, CodeRef> labels) {
+  public Code(Tag tag, Map<Label, CodeOrPath> labels) {
     Null.notNull(labels);
     this.tag = tag;
     this.labels = Collections.unmodifiableMap(labels);
@@ -27,11 +27,11 @@ public final class Code implements Serializable {
     return "Code [tag=" + tag + ", labels=" + labels + "]";
   }
 
-  public final static Code newUnion(Map<Label, CodeRef> labels) {
+  public final static Code newUnion(Map<Label, CodeOrPath> labels) {
     return new Code(Tag.UNION, labels);
   }
 
-  public static Code newProduct(Map<Label, CodeRef> labels) {
+  public static Code newProduct(Map<Label, CodeOrPath> labels) {
     return new Code(Tag.PRODUCT, labels);
   }
 
