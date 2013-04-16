@@ -22,7 +22,7 @@ public class MainActivity extends FragmentActivity implements
     CodeList.CodeSelectListener, CodeList.CodeAliasChangedListener {
 
   private static final String STATE_CODES = "codes";
-  private static final String STATE_RECENT_CODES = "codes";
+  private static final String STATE_RECENT_CODES = "recent_codes";
   private static final String STATE_CODE_LABEL_ALIASES = "code_label_aliases";
   private static final String STATE_CODE_ALIASES = "code_aliases";
 
