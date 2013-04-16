@@ -15,12 +15,6 @@ import android.widget.TextView.OnEditorActionListener;
 
 public class UIUtils {
 
-  public static void hideKeyboard(Context a) {
-    InputMethodManager inputManager =
-        (InputMethodManager) a.getSystemService(Context.INPUT_METHOD_SERVICE);
-    inputManager.toggleSoftInput(0, 0);
-  }
-
   public static void replaceWithTextEntry(final ViewGroup vg, final View v,
       final Context a, String hint, final F<String, Void> onDone) {
     vg.removeView(v);
@@ -33,7 +27,9 @@ public class UIUtils {
       public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if (actionId == EditorInfo.IME_ACTION_DONE) {
           onDone.f(t.getText().toString());
-          UIUtils.hideKeyboard(a);
+          ((InputMethodManager) a
+              .getSystemService(Context.INPUT_METHOD_SERVICE))
+              .hideSoftInputFromWindow(t.getWindowToken(), 0);
           return true;
         }
         return false;
@@ -52,6 +48,7 @@ public class UIUtils {
     });
     t.setHint(hint);
     vg.addView(t);
+    ((InputMethodManager) a.getSystemService(Context.INPUT_METHOD_SERVICE))
+        .showSoftInput(t, 0);
   }
-
 }
