@@ -1,6 +1,7 @@
 package com.example.kore.utils;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,8 +15,9 @@ public final class CodeUtils {
   public final static Code unit = Code
       .newProduct(new HashMap<Label, CodeOrPath>());
 
-  public static String renderCode(CodeOrPath cr, Map<Label, String> labelAliases,
-      Map<Code, String> codeAliases, int depth) {
+  public static String
+      renderCode(CodeOrPath cr, Map<Label, String> labelAliases,
+          Map<Code, String> codeAliases, int depth) {
     if (depth < 0)
       throw new RuntimeException("negative depth");
     if (depth == 0)
@@ -66,4 +68,30 @@ public final class CodeUtils {
     }
     return c;
   }
+
+  public static LinkedList<Label> longestValidSubPath(List<Label> path, Code c) {
+    LinkedList<Label> p = new LinkedList<Label>();
+    for (Label l : path) {
+      CodeOrPath cr = c.labels.get(l);
+      if (cr == null)
+        return p;
+      if (cr.tag != CodeOrPath.Tag.CODE)
+        return p;
+      c = cr.code;
+      p.add(l);
+    }
+    return p;
+  }
+
+  public static Code replaceCodeAt(Code c, List<Label> p, Code newCode) {
+    if (p.size() == 0) {
+      return newCode;
+    }
+    Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>(c.labels);
+    Label l = p.get(0);
+    m.put(l, CodeOrPath.newCode(replaceCodeAt(m.get(l).code,
+        p.subList(1, p.size()), newCode)));
+    return new Code(c.tag, m);
+  }
+
 }

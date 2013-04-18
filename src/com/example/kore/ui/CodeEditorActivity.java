@@ -3,8 +3,6 @@ package com.example.kore.ui;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -14,6 +12,7 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
+import com.example.kore.utils.ListUtils;
 import com.example.unsuck.Null;
 
 public class CodeEditorActivity extends FragmentActivity implements
@@ -26,6 +25,7 @@ public class CodeEditorActivity extends FragmentActivity implements
   private static final String STATE_PATH = "path";
   private static final String STATE_LABEL_ALIASES = "label_aliases";
   private static final String STATE_CODE_ALIASES = "code_aliases";
+  private static final String STATE_PATH_SHADOW = "path_shadow";
 
   public static final String RESULT_CODE = "code";
   public static final String RESULT_LABEL_ALIASES = "label_aliases";
@@ -40,6 +40,7 @@ public class CodeEditorActivity extends FragmentActivity implements
   private Path pathFragment;
   private HashMap<Label, String> labelAliases;
   private HashMap<Code, String> codeAliases;
+  private LinkedList<Label> pathShadow = new LinkedList<Label>();
 
   @SuppressWarnings("unchecked")
   @Override
@@ -63,10 +64,11 @@ public class CodeEditorActivity extends FragmentActivity implements
       path = (LinkedList<Label>) b.get(STATE_PATH);
       labelAliases = (HashMap<Label, String>) b.get(STATE_LABEL_ALIASES);
       codeAliases = (HashMap<Code, String>) b.get(STATE_LABEL_ALIASES);
+      pathShadow = (LinkedList<Label>) b.get(STATE_PATH_SHADOW);
     }
 
     initCodeEditor(CodeUtils.followPath(path, code));
-    pathFragment.setPath(code, path);
+    pathFragment.setPath(code, pathShadow);
 
   }
 
@@ -77,6 +79,7 @@ public class CodeEditorActivity extends FragmentActivity implements
     b.putSerializable(STATE_PATH, path);
     b.putSerializable(STATE_LABEL_ALIASES, labelAliases);
     b.putSerializable(STATE_CODE_ALIASES, codeAliases);
+    b.putSerializable(STATE_PATH_SHADOW, pathShadow);
   }
 
   @Override
@@ -87,22 +90,10 @@ public class CodeEditorActivity extends FragmentActivity implements
 
   @Override
   public void onCodeEdited(Code c) {
-    code = replaceCurrentCode(code, path, c);
-    pathFragment.setPath(code, path);
+    code = CodeUtils.replaceCodeAt(code, path, c);
+    pathShadow = CodeUtils.longestValidSubPath(pathShadow, code);
+    pathFragment.setPath(code, pathShadow);
     initCodeEditor(c);
-  }
-
-  private Code replaceCurrentCode(Code c, List<Label> p, Code newCode) {
-    if (p.size() == 0) {
-      return newCode;
-    }
-    Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>(c.labels);
-    Label l = p.get(0);
-    m.put(
-        l,
-        CodeOrPath.newCode(replaceCurrentCode(m.get(l).code,
-            p.subList(1, p.size()), newCode)));
-    return new Code(c.tag, m);
   }
 
   @Override
@@ -115,17 +106,23 @@ public class CodeEditorActivity extends FragmentActivity implements
     if (cr.tag != CodeOrPath.Tag.CODE)
       throw new RuntimeException("you can't go there");
     path.add(l);
-    pathFragment.setPath(code, path);
+    if (!ListUtils.isSubList(path, pathShadow)) {
+      pathShadow = new LinkedList<Label>(path);
+      pathFragment.setPath(code, pathShadow);
+    }
     initCodeEditor(cr.code);
   }
 
   @Override
-  public void onCodeInPathSelected(List<Label> subpath) {
-    LinkedList<Label> p = new LinkedList<Label>(subpath);
-    Code c = CodeUtils.followPath(subpath, code);
+  public void onCodeInPathSelected(List<Label> p) {
+    Code c = CodeUtils.followPath(p, code);
     if (c == null)
       throw new RuntimeException("invalid path");
-    path = p;
+    if (!ListUtils.isSubList(p, pathShadow)) {
+      pathShadow = new LinkedList<Label>(p);
+      pathFragment.setPath(code, pathShadow);
+    }
+    path = new LinkedList<Label>(p);
     initCodeEditor(c);
   }
 
