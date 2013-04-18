@@ -6,7 +6,6 @@ import java.util.List;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.view.Menu;
 import com.example.kore.R;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeOrPath;
@@ -80,12 +79,6 @@ public class CodeEditorActivity extends FragmentActivity implements
     b.putSerializable(STATE_LABEL_ALIASES, labelAliases);
     b.putSerializable(STATE_CODE_ALIASES, codeAliases);
     b.putSerializable(STATE_PATH_SHADOW, pathShadow);
-  }
-
-  @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    getMenuInflater().inflate(R.menu.activity_main, menu);
-    return true;
   }
 
   @Override

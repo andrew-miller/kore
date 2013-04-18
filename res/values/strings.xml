@@ -2,13 +2,6 @@
 <resources>
 
     <string name="app_name">Kore</string>
-    <string name="tab_new_product">New Product</string>
-    <string name="tab_new_sum">New Sum</string>
-    <string name="tab_new_function">New Function</string>
-    <string name="menu_settings">Settings!</string>
-    <string name="welcome_thing">WTF MATE</string>
-    <string name="menu_submenu">some submenu</string>
-    <string name="menu_submenu2">some other submenu</string>
     <string name="button_new_field">+</string>
     <string name="button_delete_field">-</string>
     <string name="button_done">done</string>
