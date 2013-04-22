@@ -1,14 +1,15 @@
 package com.example.kore.utils;
 
+import static com.example.kore.utils.ListUtils.append;
+import static com.example.kore.utils.ListUtils.iter;
+import static com.example.kore.utils.ListUtils.nil;
+
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
-import com.example.unsuck.Boom;
 
 public final class CodeUtils {
 
@@ -58,7 +59,7 @@ public final class CodeUtils {
   }
 
   public static Code followPath(List<Label> path, Code c) {
-    for (Label l : path) {
+    for (Label l : iter(path)) {
       CodeOrPath cr = c.labels.get(l);
       if (cr == null)
         return null;
@@ -69,28 +70,27 @@ public final class CodeUtils {
     return c;
   }
 
-  public static LinkedList<Label> longestValidSubPath(List<Label> path, Code c) {
-    LinkedList<Label> p = new LinkedList<Label>();
-    for (Label l : path) {
-      CodeOrPath cr = c.labels.get(l);
-      if (cr == null)
+  public static List<Label> longestValidSubPath(List<Label> path, Code c) {
+    List<Label> p = nil(Label.class);
+    for (Label l : iter(path)) {
+      CodeOrPath cp = c.labels.get(l);
+      if (cp == null)
         return p;
-      if (cr.tag != CodeOrPath.Tag.CODE)
+      if (cp.tag != CodeOrPath.Tag.CODE)
         return p;
-      c = cr.code;
-      p.add(l);
+      c = cp.code;
+      p = append(l, p);
     }
     return p;
   }
 
   public static Code replaceCodeAt(Code c, List<Label> p, Code newCode) {
-    if (p.size() == 0) {
+    if (p.isEmpty())
       return newCode;
-    }
     Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>(c.labels);
-    Label l = p.get(0);
-    m.put(l, CodeOrPath.newCode(replaceCodeAt(m.get(l).code,
-        p.subList(1, p.size()), newCode)));
+    Label l = p.cons().x;
+    m.put(l, CodeOrPath.newCode(replaceCodeAt(m.get(l).code, p.cons().tail,
+        newCode)));
     return new Code(c.tag, m);
   }
 

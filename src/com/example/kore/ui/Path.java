@@ -1,8 +1,7 @@
 package com.example.kore.ui;
 
-import java.util.LinkedList;
-import java.util.List;
-
+import static com.example.kore.utils.ListUtils.append;
+import static com.example.kore.utils.ListUtils.nil;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -18,8 +17,9 @@ import com.example.kore.R;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
-import com.example.unsuck.Boom;
-import com.example.unsuck.Null;
+import com.example.kore.utils.Boom;
+import com.example.kore.utils.List;
+import com.example.kore.utils.Null;
 
 public class Path extends Fragment {
   private ViewGroup path;
@@ -46,11 +46,11 @@ public class Path extends Fragment {
 
   public void setPath(Code code, List<Label> path) {
     Null.notNull(code);
-    path = new LinkedList<Label>(path);
+    path.checkType(Label.class);
     FragmentActivity a = getActivity();
     this.path.removeAllViews();
 
-    LinkedList<Label> subpath = new LinkedList<Label>();
+    List<Label> subpath = nil(Label.class);
     while (true) {
       Button b = new Button(a);
       switch (code.tag) {
@@ -65,7 +65,7 @@ public class Path extends Fragment {
       }
       b.setWidth(0);
       b.setHeight(LayoutParams.MATCH_PARENT);
-      final LinkedList<Label> subpathS = new LinkedList<Label>(subpath);
+      final List<Label> subpathS = subpath;
       b.setOnClickListener(new OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -73,23 +73,21 @@ public class Path extends Fragment {
         }
       });
       this.path.addView(b);
-      if (path.size() == 0) {
+      if (path.isEmpty())
         break;
-      } else {
-        Label l = path.get(0);
-        path = path.subList(1, path.size());
-        subpath.add(l);
-        CodeOrPath codeRef = code.labels.get(l);
-        if (codeRef.tag != CodeOrPath.Tag.CODE) {
-          throw new RuntimeException("path exits the spanning tree");
-        }
-        code = codeRef.code;
-        Button b2 = new Button(a);
-        b2.setBackgroundColor((int) Long.parseLong(l.label.substring(0, 8), 16));
-        b2.setWidth(0);
-        b2.setHeight(LayoutParams.MATCH_PARENT);
-        this.path.addView(b2);
+      Label l = path.cons().x;
+      path = path.cons().tail;
+      subpath = append(l, subpath);
+      CodeOrPath codeOrPath = code.labels.get(l);
+      if (codeOrPath.tag != CodeOrPath.Tag.CODE) {
+        throw new RuntimeException("path exits the spanning tree");
       }
+      code = codeOrPath.code;
+      Button b2 = new Button(a);
+      b2.setBackgroundColor((int) Long.parseLong(l.label.substring(0, 8), 16));
+      b2.setWidth(0);
+      b2.setHeight(LayoutParams.MATCH_PARENT);
+      this.path.addView(b2);
     }
   }
 }

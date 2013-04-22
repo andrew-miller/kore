@@ -1,7 +1,9 @@
 package com.example.kore.ui;
 
-import java.util.LinkedList;
-import java.util.List;
+import static com.example.kore.utils.ListUtils.append;
+import static com.example.kore.utils.ListUtils.nil;
+import static com.example.kore.utils.Null.notNull;
+
 import java.util.Map;
 import java.util.Map.Entry;
 import com.example.kore.R;
@@ -10,7 +12,7 @@ import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.F;
-import com.example.unsuck.Null;
+import com.example.kore.utils.List;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -29,7 +31,7 @@ import android.widget.PopupMenu;
 
 public class Field extends Fragment {
   public static final String ARG_LABEL = "label";
-  public static final String ARG_CODE_REF = "code_ref";
+  public static final String ARG_CODE_OR_PATH = "code_or_path";
   public static final String ARG_ROOT_CODE = "root_code";
   public static final String ARG_SELECTED = "selected";
   public static final String ARG_LABEL_ALIASES = "label_aliases";
@@ -57,7 +59,7 @@ public class Field extends Fragment {
   private LabelAliasChangedListener labelAliasChangedListener;
 
   private Label label;
-  private CodeOrPath codeRef;
+  private CodeOrPath codeOrPath;
   private Code rootCode;
   private boolean selected;
   private Map<Label, String> labelAliases;
@@ -80,12 +82,12 @@ public class Field extends Fragment {
       Bundle savedInstanceState) {
     Bundle args = getArguments();
     label = (Label) args.get(ARG_LABEL);
-    codeRef = (CodeOrPath) args.get(ARG_CODE_REF);
+    codeOrPath = (CodeOrPath) args.get(ARG_CODE_OR_PATH);
     rootCode = (Code) args.get(ARG_ROOT_CODE);
     selected = args.getBoolean(ARG_SELECTED);
     labelAliases = (Map<Label, String>) args.get(ARG_LABEL_ALIASES);
     codeAliases = (Map<Code, String>) args.get(ARG_CODE_ALIASES);
-    Null.notNull(label, codeRef, rootCode, labelAliases, codeAliases);
+    notNull(label, codeOrPath, rootCode, labelAliases, codeAliases);
 
     View v = inflater.inflate(R.layout.field, container, false);
     a = getActivity();
@@ -131,7 +133,7 @@ public class Field extends Fragment {
   }
 
   private void initCodeButton() {
-    if (codeRef.tag == CodeOrPath.Tag.CODE) {
+    if (codeOrPath.tag == CodeOrPath.Tag.CODE) {
       codeButton.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -144,13 +146,12 @@ public class Field extends Fragment {
       public boolean onLongClick(View v) {
         PopupMenu pm = new PopupMenu(a, v);
         Menu m = pm.getMenu();
-        fillMenu(m, CodeOrPath.newCode(rootCode), null, "",
-            new LinkedList<Label>());
+        fillMenu(m, CodeOrPath.newCode(rootCode), null, "", nil(Label.class));
         pm.show();
         return true;
       }
 
-      private void fillMenu(Menu m, CodeOrPath codeRef, Label l, String space,
+      private void fillMenu(Menu m, CodeOrPath codeOrPath, Label l, String space,
           final List<Label> path) {
         String ls;
         if (l == null) {
@@ -161,7 +162,7 @@ public class Field extends Fragment {
         }
         MenuItem i =
             m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
-                + CodeUtils.renderCode(codeRef, labelAliases, codeAliases, 1));
+                + CodeUtils.renderCode(codeOrPath, labelAliases, codeAliases, 1));
         i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
           @Override
           public boolean onMenuItemClick(MenuItem i) {
@@ -169,18 +170,17 @@ public class Field extends Fragment {
             return true;
           }
         });
-        if (codeRef.tag == CodeOrPath.Tag.CODE) {
-          for (Entry<Label, CodeOrPath> e : codeRef.code.labels.entrySet()) {
-            List<Label> path2 = new LinkedList<Label>(path);
-            path2.add(e.getKey());
-            fillMenu(m, e.getValue(), e.getKey(), space + " ", path2);
+        if (codeOrPath.tag == CodeOrPath.Tag.CODE) {
+          for (Entry<Label, CodeOrPath> e : codeOrPath.code.labels.entrySet()) {
+            fillMenu(m, e.getValue(), e.getKey(), space + " ",
+                append(e.getKey(), path));
           }
         }
 
       }
 
     });
-    codeButton.setText(CodeUtils.renderCode(codeRef, labelAliases, codeAliases,
+    codeButton.setText(CodeUtils.renderCode(codeOrPath, labelAliases, codeAliases,
         1));
   }
 }

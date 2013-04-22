@@ -1,7 +1,8 @@
 package com.example.kore.ui;
 
+import static com.example.kore.utils.Null.notNull;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -20,10 +21,11 @@ import com.example.kore.R;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
+import com.example.kore.utils.Boom;
 import com.example.kore.utils.CodeUtils;
+import com.example.kore.utils.List;
+import com.example.kore.utils.Null;
 import com.example.kore.utils.Random;
-import com.example.unsuck.Boom;
-import com.example.unsuck.Null;
 
 public class CodeEditor extends Fragment implements
     Field.LabelSelectedListener, Field.FieldChangedListener {
@@ -37,7 +39,7 @@ public class CodeEditor extends Fragment implements
   }
 
   public static interface DoneListener {
-    public void onDone(Code c);
+    public void onDone();
   }
 
   private Code code;
@@ -85,7 +87,8 @@ public class CodeEditor extends Fragment implements
         .setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View v) {
-            Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>(code.labels);
+            Map<Label, CodeOrPath> m =
+                new HashMap<Label, CodeOrPath>(code.labels);
             Label l = null;
             do {
               if (l != null)
@@ -103,7 +106,7 @@ public class CodeEditor extends Fragment implements
         .setOnClickListener(new OnClickListener() {
           @Override
           public void onClick(View v) {
-            doneListener.onDone(code);
+            doneListener.onDone();
           }
         });
 
@@ -148,7 +151,7 @@ public class CodeEditor extends Fragment implements
       Bundle args = new Bundle();
       args.putBoolean(Field.ARG_SELECTED, e.getKey().equals(selectedLabel));
       args.putSerializable(Field.ARG_LABEL, e.getKey());
-      args.putSerializable(Field.ARG_CODE_REF, e.getValue());
+      args.putSerializable(Field.ARG_CODE_OR_PATH, e.getValue());
       args.putSerializable(Field.ARG_ROOT_CODE, rootCode);
       args.putSerializable(Field.ARG_LABEL_ALIASES, new HashMap<Label, String>(
           labelAliases));
@@ -163,6 +166,7 @@ public class CodeEditor extends Fragment implements
 
   @Override
   public void labelSelected(final Label l) {
+    notNull(l);
     deleteButton.setVisibility(View.VISIBLE);
     selectedLabel = l;
     deleteButton.setOnClickListener(new View.OnClickListener() {
@@ -179,6 +183,8 @@ public class CodeEditor extends Fragment implements
 
   @Override
   public void fieldChanged(List<Label> path, Label label) {
+    notNull(label);
+    path.checkType(Label.class);
     Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>(code.labels);
     m.put(label, CodeOrPath.newPath(path));
     code = new Code(code.tag, m);

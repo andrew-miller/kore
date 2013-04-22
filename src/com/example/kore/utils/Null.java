@@ -1,4 +1,4 @@
-package com.example.unsuck;
+package com.example.kore.utils;
 
 public class Null {
   public static void notNull(Object... o) {

@@ -1,8 +1,11 @@
 package com.example.kore.ui;
 
+import static com.example.kore.utils.ListUtils.append;
+import static com.example.kore.utils.ListUtils.isSubList;
+import static com.example.kore.utils.ListUtils.nil;
+import static com.example.kore.utils.Null.notNull;
+
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -11,8 +14,7 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
-import com.example.kore.utils.ListUtils;
-import com.example.unsuck.Null;
+import com.example.kore.utils.List;
 
 public class CodeEditorActivity extends FragmentActivity implements
     Field.CodeSelectedListener, CodeEditor.CodeEditedListener,
@@ -35,13 +37,12 @@ public class CodeEditorActivity extends FragmentActivity implements
 
   private CodeEditor codeEditor;
   private Code code = CodeUtils.unit;
-  private LinkedList<Label> path = new LinkedList<Label>();
+  private List<Label> path = nil(Label.class);
   private Path pathFragment;
   private HashMap<Label, String> labelAliases;
   private HashMap<Code, String> codeAliases;
-  private LinkedList<Label> pathShadow = new LinkedList<Label>();
+  private List<Label> pathShadow = nil(Label.class);
 
-  @SuppressWarnings("unchecked")
   @Override
   protected void onCreate(Bundle b) {
     super.onCreate(b);
@@ -57,13 +58,14 @@ public class CodeEditorActivity extends FragmentActivity implements
     codeAliases =
         new HashMap<Code, String>((HashMap<Code, String>) getIntent()
             .getSerializableExtra(ARG_CODE_ALIASES));
+    notNull(code, labelAliases, codeAliases);
 
     if (b != null) {
       code = (Code) b.get(STATE_CODE);
-      path = (LinkedList<Label>) b.get(STATE_PATH);
+      path = (List<Label>) b.get(STATE_PATH);
       labelAliases = (HashMap<Label, String>) b.get(STATE_LABEL_ALIASES);
       codeAliases = (HashMap<Code, String>) b.get(STATE_LABEL_ALIASES);
-      pathShadow = (LinkedList<Label>) b.get(STATE_PATH_SHADOW);
+      pathShadow = (List<Label>) b.get(STATE_PATH_SHADOW);
     }
 
     initCodeEditor(CodeUtils.followPath(path, code));
@@ -83,6 +85,7 @@ public class CodeEditorActivity extends FragmentActivity implements
 
   @Override
   public void onCodeEdited(Code c) {
+    notNull(c);
     code = CodeUtils.replaceCodeAt(code, path, c);
     pathShadow = CodeUtils.longestValidSubPath(pathShadow, code);
     pathFragment.setPath(code, pathShadow);
@@ -91,16 +94,16 @@ public class CodeEditorActivity extends FragmentActivity implements
 
   @Override
   public void codeSelected(Label l) {
-    Null.notNull(l);
+    notNull(l);
     Code c = CodeUtils.followPath(path, code);
     CodeOrPath cr = c.labels.get(l);
     if (cr == null)
       throw new RuntimeException("non-existent label");
     if (cr.tag != CodeOrPath.Tag.CODE)
       throw new RuntimeException("you can't go there");
-    path.add(l);
-    if (!ListUtils.isSubList(path, pathShadow)) {
-      pathShadow = new LinkedList<Label>(path);
+    path = append(l, path);
+    if (!isSubList(path, pathShadow)) {
+      pathShadow = path;
       pathFragment.setPath(code, pathShadow);
     }
     initCodeEditor(cr.code);
@@ -108,30 +111,34 @@ public class CodeEditorActivity extends FragmentActivity implements
 
   @Override
   public void onCodeInPathSelected(List<Label> p) {
+    p.checkType(Label.class);
     Code c = CodeUtils.followPath(p, code);
     if (c == null)
       throw new RuntimeException("invalid path");
-    if (!ListUtils.isSubList(p, pathShadow)) {
-      pathShadow = new LinkedList<Label>(p);
+    if (!isSubList(p, pathShadow)) {
+      pathShadow = p;
       pathFragment.setPath(code, pathShadow);
     }
-    path = new LinkedList<Label>(p);
+    path = p;
     initCodeEditor(c);
   }
 
   @Override
   public void labelSelected(Label l) {
+    notNull(l);
     codeEditor.labelSelected(l);
   }
 
   @Override
   public void fieldChanged(List<Label> path, Label label) {
+    notNull(label);
+    path.checkType(Label.class);
     codeEditor.fieldChanged(path, label);
   }
 
   @Override
   public void labelAliasChanged(Label label, String alias) {
-    Null.notNull(label, alias);
+    notNull(label, alias);
     Code c = CodeUtils.followPath(path, code);
     if (!c.labels.containsKey(label))
       throw new RuntimeException("non-existent label");
@@ -154,7 +161,7 @@ public class CodeEditorActivity extends FragmentActivity implements
   }
 
   @Override
-  public void onDone(Code c) {
+  public void onDone() {
     setResult(
         0,
         new Intent().putExtra(RESULT_CODE, code).putExtra(RESULT_LABEL_ALIASES,

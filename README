@@ -1,0 +1,8 @@
+Set the stack size as high as possible. the default 8K is unworkable and I don't feel like encoding the stack in the heap.
+One way to do this is run these commands in adb shell as root:
+# setprop dalvik.vm.extra-opts "-Xss256k"
+# start
+# stop
+or permanently, by setting in /system/build.prop:
+dalvik.vm.extra-opts=-Xss256k
+

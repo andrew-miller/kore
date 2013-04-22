@@ -1,7 +1,8 @@
 package com.example.kore.ui;
 
+import static com.example.kore.utils.ListUtils.iter;
+
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import com.example.kore.R;
@@ -10,7 +11,8 @@ import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.F;
-import com.example.unsuck.Null;
+import com.example.kore.utils.List;
+import com.example.kore.utils.Null;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -40,7 +42,7 @@ public class CodeList extends Fragment {
 
   private CodeSelectListener codeSelectListener;
   private LinearLayout codeListLayout;
-  private LinkedList<Code> codes;
+  private List<Code> codes;
   private HashMap<Code, HashMap<Label, String>> codeLabelAliases;
   private CodeAliasChangedListener codeAliasChangedListener;
   private HashMap<Code, String> codeAliases;
@@ -52,15 +54,13 @@ public class CodeList extends Fragment {
     codeAliasChangedListener = (CodeAliasChangedListener) a;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     View v = inflater.inflate(R.layout.code_list, container, false);
 
     Bundle args = getArguments();
-    codes =
-        new LinkedList<Code>((LinkedList<Code>) args.getSerializable(ARG_CODES));
+    codes = (List<Code>) args.getSerializable(ARG_CODES);
     Null.notNull(codes);
     {
       HashMap<Code, HashMap<Label, String>> m =
@@ -82,7 +82,7 @@ public class CodeList extends Fragment {
     codeListLayout = (LinearLayout) v.findViewById(R.id.layout_code_list);
 
     final FragmentActivity a = getActivity();
-    for (final Code code : codes) {
+    for (final Code code : iter(codes)) {
       final FrameLayout fl = new FrameLayout(a);
       Button b = new Button(a);
       String codeName = codeAliases.get(code);

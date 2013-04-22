@@ -4,11 +4,9 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
-import com.example.unsuck.Null;
+import com.example.kore.utils.Null;
 
 public final class Code implements Serializable {
-  private static final long serialVersionUID = 1L;
-
   public enum Tag {
     UNION, PRODUCT
   }
@@ -17,7 +15,7 @@ public final class Code implements Serializable {
   public final Map<Label, CodeOrPath> labels;
 
   public Code(Tag tag, Map<Label, CodeOrPath> labels) {
-    Null.notNull(labels);
+    Null.notNull(tag, labels);
     this.tag = tag;
     this.labels = Collections.unmodifiableMap(labels);
   }

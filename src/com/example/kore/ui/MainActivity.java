@@ -1,15 +1,18 @@
 package com.example.kore.ui;
 
+import static com.example.kore.utils.ListUtils.cons;
+import static com.example.kore.utils.ListUtils.nil;
+
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import com.example.kore.R;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
-import com.example.unsuck.Null;
+import com.example.kore.utils.List;
+import com.example.kore.utils.Null;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,7 +30,7 @@ public class MainActivity extends FragmentActivity implements
   private static final String STATE_CODE_ALIASES = "code_aliases";
 
   private HashSet<Code> codes = new HashSet<Code>();
-  private LinkedList<Code> recentCodes = new LinkedList<Code>();
+  private List<Code> recentCodes = nil(Code.class);
   private HashMap<Code, HashMap<Label, String>> codeLabelAliases =
       new HashMap<Code, HashMap<Label, String>>();
   private HashMap<Code, String> codeAliases = new HashMap<Code, String>();
@@ -36,7 +39,6 @@ public class MainActivity extends FragmentActivity implements
   protected void onCreate(Bundle b) {
     super.onCreate(b);
     setContentView(R.layout.activity_main);
-
     ((Button) findViewById(R.id.button_new_code))
         .setOnClickListener(new OnClickListener() {
           @Override
@@ -47,7 +49,7 @@ public class MainActivity extends FragmentActivity implements
 
     if (b != null) {
       codes = (HashSet<Code>) b.get(STATE_CODES);
-      recentCodes = (LinkedList<Code>) b.get(STATE_RECENT_CODES);
+      recentCodes = (List<Code>) b.get(STATE_RECENT_CODES);
       codeLabelAliases =
           (HashMap<Code, HashMap<Label, String>>) b
               .get(STATE_CODE_LABEL_ALIASES);
@@ -69,7 +71,7 @@ public class MainActivity extends FragmentActivity implements
     Null.notNull(code, labelAliases);
     labelAliases = new HashMap<Label, String>(labelAliases);
     if (!codes.contains(code))
-      recentCodes.addFirst(code);
+      recentCodes = cons(code, recentCodes);
     codes.add(code);
     codeLabelAliases.put(code, labelAliases);
   }

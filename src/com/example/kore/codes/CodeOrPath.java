@@ -1,14 +1,11 @@
 package com.example.kore.codes;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
 
-import com.example.unsuck.Null;
+import com.example.kore.utils.List;
+import com.example.kore.utils.Null;
 
 public final class CodeOrPath implements Serializable {
-  private static final long serialVersionUID = 1L;
-
   public enum Tag {
     CODE, PATH;
   }
@@ -29,8 +26,8 @@ public final class CodeOrPath implements Serializable {
   }
 
   public static CodeOrPath newPath(List<Label> path) {
-    Null.notNull(path);
-    return new CodeOrPath(Tag.PATH, null, Collections.unmodifiableList(path));
+    path.checkType(Label.class);
+    return new CodeOrPath(Tag.PATH, null, path);
   }
 
   @Override

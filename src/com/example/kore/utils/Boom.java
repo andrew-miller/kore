@@ -1,4 +1,4 @@
-package com.example.unsuck;
+package com.example.kore.utils;
 
 public class Boom {
   public static RuntimeException boom() {
