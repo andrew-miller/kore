@@ -70,7 +70,7 @@ public class NodeEditor extends Fragment implements Field.LabelSelectedListener 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
-    View v = inflater.inflate(R.layout.code_editor, container, false);
+    View v = inflater.inflate(R.layout.node_editor, container, false);
 
     Bundle args = getArguments();
     code = (Code) args.get(ARG_CODE);
