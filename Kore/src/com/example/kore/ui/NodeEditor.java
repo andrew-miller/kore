@@ -8,95 +8,84 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
+import com.example.kore.ui.Field.CodeSelectedListener;
+import com.example.kore.ui.Field.FieldReplacedListener;
+import com.example.kore.ui.Field.LabelAliasChangedListener;
+import com.example.kore.ui.Field.LabelSelectedListener;
 import com.example.kore.utils.Boom;
 import com.example.kore.utils.List;
 import com.example.kore.utils.MapUtils;
 
-public class NodeEditor extends Fragment implements Field.LabelSelectedListener {
-  public static final String ARG_CODE = "code";
-  public static final String ARG_ROOT_CODE = "root_code";
-  public static final String ARG_CODE_LABEL_ALIASES = "code_label_aliases";
-  public static final String ARG_CODE_ALIASES = "code_aliases";
-  public static final String ARG_CODES = "codes";
-  public static final String ARG_PATH = "path";
-
+public class NodeEditor extends FrameLayout {
   public static interface NodeEditorListener {
     void newField();
 
     void switchCodeOp();
 
     void deleteField(Label l);
+
+    void codeSelected(Label l);
+
+    void fieldReplaced(CodeOrPath cp, Label l);
+
+    void labelAliasChanged(Label label, String alias);
   }
 
   public static interface DoneListener {
     public void onDone();
   }
 
-  private Code code;
-  private Code rootCode;
-  private NodeEditorListener nodeEditorListener;
-  private Button deleteButton;
+  private final Code code;
+  private final Code rootCode;
+  private final NodeEditorListener nodeEditorListener;
+  private final Button deleteButton;
   private Label selectedLabel;
-  private LinearLayout fields;
-  private Button switchCodeOpButton;
-  private DoneListener doneListener;
-  private Map<CanonicalCode, String> codeAliases;
-  private List<Code> codes;
-  private List<Label> path;
-  private HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases;
+  private final LinearLayout fields;
+  private final Button switchCodeOpButton;
+  private final Map<CanonicalCode, String> codeAliases;
+  private final List<Code> codes;
+  private final List<Label> path;
+  private final HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases;
 
-  @Override
-  public void onAttach(Activity activity) {
-    super.onAttach(activity);
-    nodeEditorListener = (NodeEditorListener) activity;
-    doneListener = (DoneListener) activity;
-  }
-
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
-    View v = inflater.inflate(R.layout.node_editor, container, false);
-
-    Bundle args = getArguments();
-    code = (Code) args.get(ARG_CODE);
-    rootCode = (Code) args.get(ARG_ROOT_CODE);
-    codeLabelAliases =
-        MapUtils
-            .cloneNestedMap((HashMap<CanonicalCode, HashMap<Label, String>>) args
-                .get(ARG_CODE_LABEL_ALIASES));
-    codeAliases = (Map<CanonicalCode, String>) args.get(ARG_CODE_ALIASES);
-    codes = (List<Code>) args.get(ARG_CODES);
-    codes.checkType(Code.class);
-    path = (List<Label>) args.get(ARG_PATH);
-    path.checkType(Label.class);
+  public NodeEditor(Context context, Code code, Code rootCode,
+      final NodeEditorListener nodeEditorListener,
+      final DoneListener doneListener, Map<CanonicalCode, String> codeAliases,
+      List<Code> codes, List<Label> path,
+      HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases) {
+    super(context);
     notNull(code, rootCode, codeAliases);
-
+    codes.checkType(Code.class);
+    path.checkType(Label.class);
+    this.code = code;
+    this.rootCode = rootCode;
+    this.nodeEditorListener = nodeEditorListener;
+    this.codeAliases = codeAliases;
+    this.codes = codes;
+    this.path = path;
+    this.codeLabelAliases = MapUtils.cloneNestedMap(codeLabelAliases);
+    View v =
+        LayoutInflater.from(context).inflate(R.layout.node_editor, this, true);
     fields = (LinearLayout) v.findViewById(R.id.layout_fields);
     deleteButton = (Button) v.findViewById(R.id.button_delete_field);
     switchCodeOpButton = (Button) v.findViewById(R.id.button_switch_code_op);
-
     switchCodeOpButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
         nodeEditorListener.switchCodeOp();
       }
     });
-
     ((Button) v.findViewById(R.id.button_new_field))
         .setOnClickListener(new View.OnClickListener() {
           @Override
@@ -113,12 +102,6 @@ public class NodeEditor extends Fragment implements Field.LabelSelectedListener 
           }
         });
 
-    return v;
-  }
-
-  @Override
-  public void onStart() {
-    super.onStart();
     render();
   }
 
@@ -134,45 +117,54 @@ public class NodeEditor extends Fragment implements Field.LabelSelectedListener 
       throw Boom.boom();
     }
     fields.removeAllViews();
-    FragmentTransaction fragmentTransaction =
-        getFragmentManager().beginTransaction();
     HashMap<Label, String> las =
         codeLabelAliases.get(new CanonicalCode(rootCode, path));
     for (final Entry<Label, CodeOrPath> e : code.labels.entrySet()) {
-      Bundle args = new Bundle();
-      args.putBoolean(Field.ARG_SELECTED, e.getKey().equals(selectedLabel));
-      args.putSerializable(Field.ARG_LABEL, e.getKey());
-      args.putSerializable(Field.ARG_CODE_OR_PATH, e.getValue());
-      args.putSerializable(Field.ARG_ROOT_CODE, rootCode);
-      args.putSerializable(Field.ARG_CODE_LABEL_ALIASES,
-          MapUtils.cloneNestedMap(codeLabelAliases));
-      args.putSerializable(Field.ARG_CODE_ALIASES,
-          new HashMap<CanonicalCode, String>(codeAliases));
-      args.putSerializable(Field.ARG_CODES, codes);
-      args.putSerializable(
-          Field.ARG_LABEL_ALIAS,
-          las == null ? nothing(String.class) : fromObject(las.get(e.getKey()),
-              String.class));
-      args.putSerializable(Field.ARG_PATH, path);
-      Field f = new Field();
-      f.setArguments(args);
-      fragmentTransaction.add(R.id.layout_fields, f);
-    }
-    fragmentTransaction.commit();
-  }
+      final Label l = e.getKey();
+      LabelSelectedListener lsl = new Field.LabelSelectedListener() {
+        @Override
+        public void labelSelected() {
+          notNull(l);
+          deleteButton.setVisibility(View.VISIBLE);
+          selectedLabel = l;
+          deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+              nodeEditorListener.deleteField(l);
+            }
+          });
+          render();
+        }
+      };
 
-  @Override
-  public void labelSelected(final Label l) {
-    notNull(l);
-    deleteButton.setVisibility(View.VISIBLE);
-    selectedLabel = l;
-    deleteButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        nodeEditorListener.deleteField(l);
-      }
-    });
-    render();
+      CodeSelectedListener csl = new Field.CodeSelectedListener() {
+        @Override
+        public void codeSelected() {
+          nodeEditorListener.codeSelected(l);
+        }
+      };
+
+      FieldReplacedListener frl = new Field.FieldReplacedListener() {
+        @Override
+        public void fieldReplaced(CodeOrPath cp) {
+          nodeEditorListener.fieldReplaced(cp, l);
+        }
+      };
+
+      LabelAliasChangedListener lacl = new Field.LabelAliasChangedListener() {
+        @Override
+        public void labelAliasChanged(String alias) {
+          nodeEditorListener.labelAliasChanged(l, alias);
+        }
+      };
+
+      fields.addView(new Field(getContext(), csl, lsl, frl, lacl, l, e
+          .getValue(), rootCode, l.equals(selectedLabel), MapUtils
+          .cloneNestedMap(codeLabelAliases),
+          new HashMap<CanonicalCode, String>(codeAliases), codes, path,
+          las == null ? nothing(String.class) : fromObject(las.get(l),
+              String.class)));
+    }
   }
 
 }

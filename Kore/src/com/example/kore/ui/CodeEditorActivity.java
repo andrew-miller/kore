@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.ViewGroup;
 
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
@@ -27,9 +28,7 @@ import com.example.kore.utils.Optional;
 import com.example.kore.utils.Random;
 
 public class CodeEditorActivity extends FragmentActivity implements
-    Field.CodeSelectedListener, NodeEditor.NodeEditorListener,
-    Path.SubpathSelectedListener, Field.LabelSelectedListener,
-    Field.FieldReplacedListener, Field.LabelAliasChangedListener,
+    NodeEditor.NodeEditorListener, Path.SubpathSelectedListener,
     NodeEditor.DoneListener {
 
   private static final String STATE_CODE = "code";
@@ -201,12 +200,6 @@ public class CodeEditorActivity extends FragmentActivity implements
   }
 
   @Override
-  public void labelSelected(Label l) {
-    notNull(l);
-    codeEditor.labelSelected(l);
-  }
-
-  @Override
   public void fieldReplaced(CodeOrPath cp, Label l) {
     Code c = CodeUtils.codeAt(path, code).some().x;
     notNull(cp, l);
@@ -236,19 +229,13 @@ public class CodeEditorActivity extends FragmentActivity implements
   }
 
   private void initCodeEditor(Code c) {
-    codeEditor = new NodeEditor();
-    Bundle b = new Bundle();
-    b.putSerializable(NodeEditor.ARG_CODE, c);
-    b.putSerializable(NodeEditor.ARG_ROOT_CODE, code);
-    b.putSerializable(NodeEditor.ARG_CODE_LABEL_ALIASES,
-        MapUtils.cloneNestedMap(codeLabelAliases));
-    b.putSerializable(NodeEditor.ARG_CODE_ALIASES,
-        new HashMap<CanonicalCode, String>(codeAliases));
-    b.putSerializable(NodeEditor.ARG_CODES, codes);
-    b.putSerializable(NodeEditor.ARG_PATH, path);
-    codeEditor.setArguments(b);
-    getSupportFragmentManager().beginTransaction()
-        .replace(R.id.container_code_editor, codeEditor).commit();
+    codeEditor =
+        new NodeEditor(this, c, code, this, this,
+            new HashMap<CanonicalCode, String>(codeAliases), codes, path,
+            MapUtils.cloneNestedMap(codeLabelAliases));
+    ViewGroup cont = (ViewGroup) findViewById(R.id.container_code_editor);
+    cont.removeAllViews();
+    cont.addView(codeEditor);
   }
 
   @Override

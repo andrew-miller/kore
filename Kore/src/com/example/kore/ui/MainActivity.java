@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 
 public class MainActivity extends FragmentActivity implements
@@ -96,16 +97,13 @@ public class MainActivity extends FragmentActivity implements
   }
 
   private void initRecentCodes() {
-    CodeList recentCodesFragment = new CodeList();
-    Bundle b = new Bundle();
-    b.putSerializable(CodeList.ARG_CODES, recentCodes);
-    b.putSerializable(CodeList.ARG_CODE_LABEL_ALIASES,
-        MapUtils.cloneNestedMap(codeLabelAliases));
-    b.putSerializable(CodeList.ARG_CODE_ALIASES,
-        new HashMap<CanonicalCode, String>(codeAliases));
-    recentCodesFragment.setArguments(b);
-    getSupportFragmentManager().beginTransaction()
-        .replace(R.id.container_recent_codes, recentCodesFragment).commit();
+    CodeList cl =
+        new CodeList(this, this, recentCodes,
+            MapUtils.cloneNestedMap(codeLabelAliases), this,
+            new HashMap<CanonicalCode, String>(codeAliases));
+    ViewGroup v = (ViewGroup) findViewById(R.id.container_recent_codes);
+    v.removeAllViews();
+    v.addView(cl);
   }
 
   private void startCodeEditor(Code c) {

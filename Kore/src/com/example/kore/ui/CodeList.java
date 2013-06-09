@@ -5,8 +5,6 @@ import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
 
 import java.util.HashMap;
-import java.util.Map.Entry;
-
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
@@ -14,20 +12,16 @@ import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
-import android.app.Activity;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
+import com.example.kore.utils.MapUtils;
+
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-public class CodeList extends Fragment {
+public class CodeList extends FrameLayout {
   public static final String ARG_CODES = "codes";
   public static final String ARG_CODE_LABEL_ALIASES = "code_label_aliases";
   public static final String ARG_CODE_ALIASES = "code_aliases";
@@ -40,52 +34,24 @@ public class CodeList extends Fragment {
     public void codeAliasChanged(Code code, List<Label> path, String alias);
   }
 
-  private CodeSelectListener codeSelectListener;
-  private LinearLayout codeListLayout;
-  private List<Code> codes;
-  private HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases;
-  private CodeAliasChangedListener codeAliasChangedListener;
-  private HashMap<CanonicalCode, String> codeAliases;
-
-  @Override
-  public void onAttach(Activity a) {
-    super.onAttach(a);
-    codeSelectListener = (CodeSelectListener) a;
-    codeAliasChangedListener = (CodeAliasChangedListener) a;
-  }
-
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
-    View v = inflater.inflate(R.layout.code_list, container, false);
-
-    Bundle args = getArguments();
-    codes = (List<Code>) args.getSerializable(ARG_CODES);
-    notNull(codes);
-    {
-      HashMap<CanonicalCode, HashMap<Label, String>> m =
-          new HashMap<CanonicalCode, HashMap<Label, String>>();
-      HashMap<CanonicalCode, HashMap<Label, String>> cla =
-          (HashMap<CanonicalCode, HashMap<Label, String>>) args
-              .getSerializable(ARG_CODE_LABEL_ALIASES);
-      notNull(cla);
-      for (Entry<CanonicalCode, HashMap<Label, String>> e : cla.entrySet()) {
-        notNull(e.getKey(), e.getValue());
-        m.put(e.getKey(), new HashMap<Label, String>(e.getValue()));
-      }
-      codeLabelAliases = m;
-    }
-    codeAliases =
-        new HashMap<CanonicalCode, String>(
-            (HashMap<CanonicalCode, String>) args
-                .getSerializable(ARG_CODE_ALIASES));
-    notNull(codeAliases);
-    codeListLayout = (LinearLayout) v.findViewById(R.id.layout_code_list);
-
-    final FragmentActivity a = getActivity();
+  public CodeList(Context context, final CodeSelectListener codeSelectListener,
+      List<Code> codes,
+      HashMap<CanonicalCode, HashMap<Label, String>> _codeLabelAliases,
+      final CodeAliasChangedListener codeAliasChangedListener,
+      HashMap<CanonicalCode, String> _codeAliases) {
+    super(context);
+    notNull(codes, codeSelectListener);
+    HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases =
+        MapUtils.cloneNestedMap(_codeLabelAliases);
+    HashMap<CanonicalCode, String> codeAliases =
+        new HashMap<CanonicalCode, String>(_codeAliases);
+    View v =
+        LayoutInflater.from(context).inflate(R.layout.code_list, this, true);
+    LinearLayout codeListLayout =
+        (LinearLayout) v.findViewById(R.id.layout_code_list);
     for (final Code code : iter(codes)) {
-      final FrameLayout fl = new FrameLayout(a);
-      Button b = new Button(a);
+      final FrameLayout fl = new FrameLayout(context);
+      Button b = new Button(context);
       String codeName =
           codeAliases.get(new CanonicalCode(code, nil(Label.class)));
       final String strCode =
@@ -103,7 +69,7 @@ public class CodeList extends Fragment {
       b.setOnLongClickListener(new OnLongClickListener() {
         @Override
         public boolean onLongClick(final View v) {
-          UIUtils.replaceWithTextEntry(fl, v, a, strCode,
+          UIUtils.replaceWithTextEntry(fl, v, getContext(), strCode,
               new F<String, Void>() {
                 @Override
                 public Void f(String s) {
@@ -118,8 +84,6 @@ public class CodeList extends Fragment {
 
       codeListLayout.addView(fl);
     }
-
-    return v;
   }
 
 }

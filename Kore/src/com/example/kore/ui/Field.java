@@ -8,6 +8,7 @@ import static com.example.kore.utils.Null.notNull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
@@ -20,105 +21,84 @@ import com.example.kore.utils.List;
 import com.example.kore.utils.MapUtils;
 import com.example.kore.utils.Optional;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.PopupMenu;
 
-public class Field extends Fragment {
-  public static final String ARG_LABEL = "label";
-  public static final String ARG_CODE_OR_PATH = "code_or_path";
-  public static final String ARG_ROOT_CODE = "root_code";
-  public static final String ARG_SELECTED = "selected";
-  public static final String ARG_CODE_LABEL_ALIASES = "code_label_aliases";
-  public static final String ARG_CODE_ALIASES = "code_aliases";
-  public static final String ARG_CODES = "codes";
-  /** The path to the code containing this field */
-  public static final String ARG_PATH = "path";
-  public static final String ARG_LABEL_ALIAS = "label_alias";
-
+public class Field extends FrameLayout {
   public static interface CodeSelectedListener {
-    public void codeSelected(Label l);
+    public void codeSelected();
   }
 
   public static interface LabelSelectedListener {
-    public void labelSelected(Label l);
+    public void labelSelected();
   }
 
   public static interface FieldReplacedListener {
-    public void fieldReplaced(CodeOrPath cp, Label l);
+    public void fieldReplaced(CodeOrPath cp);
   }
 
   public static interface LabelAliasChangedListener {
-    public void labelAliasChanged(Label l, String alias);
+    public void labelAliasChanged(String alias);
   }
 
-  private CodeSelectedListener codeSelectedListener;
-  private LabelSelectedListener labelSelectedListener;
-  private FieldReplacedListener fieldReplacedListener;
-  private LabelAliasChangedListener labelAliasChangedListener;
+  private final Context a;
+  private final CodeSelectedListener codeSelectedListener;
+  private final LabelSelectedListener labelSelectedListener;
+  private final FieldReplacedListener fieldReplacedListener;
+  private final LabelAliasChangedListener labelAliasChangedListener;
+  private final Label label;
+  private final CodeOrPath codeOrPath;
+  private final Code rootCode;
+  private final boolean selected;
+  private final HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases;
+  private final Button labelButton;
+  private final Button codeButton;
+  private final Map<CanonicalCode, String> codeAliases;
+  private final List<Code> codes;
+  private final List<Label> path;
+  private final Optional<String> labelAlias;
 
-  private Label label;
-  private CodeOrPath codeOrPath;
-  private Code rootCode;
-  private boolean selected;
-  private HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases;
-  private FragmentActivity a;
-  private Button labelButton;
-  private Button codeButton;
-  private Map<CanonicalCode, String> codeAliases;
-  private List<Code> codes;
-  private List<Label> path;
-  private Optional<String> labelAlias;
-
-  @Override
-  public void onAttach(Activity activity) {
-    super.onAttach(activity);
-    codeSelectedListener = (CodeSelectedListener) activity;
-    labelSelectedListener = (LabelSelectedListener) activity;
-    fieldReplacedListener = (FieldReplacedListener) activity;
-    labelAliasChangedListener = (LabelAliasChangedListener) activity;
-  }
-
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
-    Bundle args = getArguments();
-    label = (Label) args.get(ARG_LABEL);
-    codeOrPath = (CodeOrPath) args.get(ARG_CODE_OR_PATH);
-    rootCode = (Code) args.get(ARG_ROOT_CODE);
-    selected = args.getBoolean(ARG_SELECTED);
-    codeLabelAliases =
-        MapUtils
-            .cloneNestedMap((HashMap<CanonicalCode, HashMap<Label, String>>) args
-                .get(ARG_CODE_LABEL_ALIASES));
-    codeAliases = (Map<CanonicalCode, String>) args.get(ARG_CODE_ALIASES);
-    codes = (List<Code>) args.get(ARG_CODES);
+  public Field(Context context, CodeSelectedListener codeSelectedListener,
+      LabelSelectedListener labelSelectedListener,
+      FieldReplacedListener fieldReplacedListener,
+      LabelAliasChangedListener labelAliasChangedListener, Label label,
+      CodeOrPath codeOrPath, Code rootCode, boolean selected,
+      HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases,
+      Map<CanonicalCode, String> codeAliases, List<Code> codes,
+      List<Label> path, Optional<String> labelAlias) {
+    super(context);
     codes.checkType(Code.class);
-    path = (List<Label>) args.get(ARG_PATH);
     path.checkType(Label.class);
-    labelAlias = (Optional<String>) args.get(ARG_LABEL_ALIAS);
     labelAlias.checkType(String.class);
-    notNull(label, codeOrPath, rootCode, codeAliases);
-
-    View v = inflater.inflate(R.layout.field, container, false);
-    a = getActivity();
-
+    notNull(codeSelectedListener, labelSelectedListener, fieldReplacedListener,
+        labelAliasChangedListener, label, codeOrPath, rootCode, codeAliases);
+    this.codeSelectedListener = codeSelectedListener;
+    this.labelSelectedListener = labelSelectedListener;
+    this.fieldReplacedListener = fieldReplacedListener;
+    this.labelAliasChangedListener = labelAliasChangedListener;
+    this.label = label;
+    this.codeOrPath = codeOrPath;
+    this.rootCode = rootCode;
+    this.selected = selected;
+    this.codeLabelAliases = MapUtils.cloneNestedMap(codeLabelAliases);
+    this.codeAliases = codeAliases;
+    this.codes = codes;
+    this.path = path;
+    this.labelAlias = labelAlias;
+    this.a = context;
+    View v = LayoutInflater.from(context).inflate(R.layout.field, this, true);
     labelButton = (Button) v.findViewById(R.id.button_label);
     initLabelButton();
     codeButton = (Button) v.findViewById(R.id.button_code);
     initCodeButton();
-    return v;
   }
 
   private void initLabelButton() {
@@ -131,7 +111,7 @@ public class Field extends Fragment {
     labelButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        labelSelectedListener.labelSelected(label);
+        labelSelectedListener.labelSelected();
       }
     });
     labelButton.setOnLongClickListener(new OnLongClickListener() {
@@ -141,7 +121,7 @@ public class Field extends Fragment {
             label.label, new F<String, Void>() {
               @Override
               public Void f(String s) {
-                labelAliasChangedListener.labelAliasChanged(label, s);
+                labelAliasChangedListener.labelAliasChanged(s);
                 return null;
               }
             });
@@ -155,7 +135,7 @@ public class Field extends Fragment {
       codeButton.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-          codeSelectedListener.codeSelected(label);
+          codeSelectedListener.codeSelected();
         }
       });
     }
@@ -189,8 +169,7 @@ public class Field extends Fragment {
             public boolean onMenuItemClick(MenuItem i) {
               if (CodeUtils.validCode(CodeUtils.replaceCodeAt(rootCode,
                   append(label, Field.this.path), CodeOrPath.newPath(path))))
-                fieldReplacedListener.fieldReplaced(CodeOrPath.newPath(path),
-                    label);
+                fieldReplacedListener.fieldReplaced(CodeOrPath.newPath(path));
               return true;
             }
           });
@@ -215,10 +194,9 @@ public class Field extends Fragment {
         i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
           @Override
           public boolean onMenuItemClick(MenuItem i) {
-            fieldReplacedListener.fieldReplaced(
-                CodeOrPath.newCode(CodeUtils.rebase(
-                    append(label, Field.this.path),
-                    CodeUtils.reRoot(root, path))), label);
+            fieldReplacedListener.fieldReplaced(CodeOrPath.newCode(CodeUtils
+                .rebase(append(label, Field.this.path),
+                    CodeUtils.reRoot(root, path))));
             return true;
           }
         });
