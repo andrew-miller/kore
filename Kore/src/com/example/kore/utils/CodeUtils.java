@@ -18,13 +18,17 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jgrapht.alg.StrongConnectivityInspector;
 import org.jgrapht.graph.DirectedMultigraph;
+
+import android.util.Log;
 
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Code.Tag;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
+import com.example.kore.ui.CodeEditorActivity;
 
 public final class CodeUtils {
 
@@ -80,6 +84,92 @@ public final class CodeUtils {
               codeLabelAliases, codeAliases, depth - 1));
     }
     return start + result + end;
+  }
+
+  /**
+   * @return a pair <tt>(c', i)</tt> where c' is isomorphic to <tt>c</tt>. All
+   *         labels of the nodes within the strongly connected components
+   *         containing any node on <tt>path</tt> are randomized. <tt>i</tt> is
+   *         the isomorphism itself.
+   */
+  public static Pair<Code, HashMap<List<Label>, HashMap<Label, Label>>>
+      dissassociate(Code c, List<Label> path) {
+    Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
+        codeToGraph(c);
+    Set<Identity<Tag>> vs = new HashSet<Identity<Tag>>();
+    for (Set<Identity<Tag>> scc : new StrongConnectivityInspector<Identity<Tag>, Pair<Identity<Tag>, Label>>(
+        p.x).stronglyConnectedSets()) {
+      Identity<Tag> v = p.y;
+      for (Label l : iter(path)) {
+        if (scc.contains(v))
+          vs.addAll(scc);
+        v = p.x.getEdgeTarget(pair(v, l));
+      }
+      if (scc.contains(v))
+        vs.addAll(scc);
+    }
+    HashMap<List<Label>, HashMap<Label, Label>> i =
+        new HashMap<List<Label>, HashMap<Label, Label>>();
+    return pair(
+        mapPaths(dissassociate_(p.x, p.y, c, vs, i, nil(Label.class)), i,
+            nil(Label.class)), i);
+  }
+
+  private static Code mapPaths(Code c,
+      HashMap<List<Label>, HashMap<Label, Label>> i, List<Label> path) {
+    HashMap<Label, Label> m = i.get(path);
+    HashMap<Label, CodeOrPath> m2 = new HashMap<Label, CodeOrPath>();
+    for (Entry<Label, CodeOrPath> e : c.labels.entrySet())
+      if (e.getValue().tag == CodeOrPath.Tag.PATH)
+        m2.put(e.getKey(), CodeOrPath.newPath(mapPath(e.getValue().path, i)));
+      else
+        m2.put(
+            e.getKey(),
+            CodeOrPath.newCode(mapPaths(e.getValue().code, i,
+                append(e.getKey(), path))));
+    return new Code(c.tag, m2);
+  }
+
+  public static List<Label> mapPath(List<Label> path,
+      HashMap<List<Label>, HashMap<Label, Label>> m) {
+    List<Label> p = nil(Label.class);
+    List<Label> b = nil(Label.class);
+    for (Label l : iter(path)) {
+      p = append(m.get(b).get(l), p);
+      b = append(l, b);
+    }
+    return p;
+  }
+
+  private static Code dissassociate_(
+      DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g,
+      Identity<Tag> v, Code c, Set<Identity<Tag>> vs,
+      HashMap<List<Label>, HashMap<Label, Label>> i, List<Label> path) {
+    boolean randomize = vs.contains(v);
+    HashMap<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>();
+    HashMap<Label, Label> lm = new HashMap<Label, Label>();
+    for (Entry<Label, CodeOrPath> e : c.labels.entrySet()) {
+      Label l = null;
+      if (randomize) {
+        do {
+          if (l != null)
+            Log.e(CodeEditorActivity.class.getName(),
+                "generated duplicate label");
+          l = new Label(Random.randomId());
+        } while (m.containsKey(l));
+      } else {
+        l = e.getKey();
+      }
+      lm.put(e.getKey(), l);
+      m.put(
+          l,
+          e.getValue().tag == CodeOrPath.Tag.CODE ? CodeOrPath
+              .newCode(dissassociate_(g, g.getEdgeTarget(pair(v, e.getKey())),
+                  e.getValue().code, vs, i, append(e.getKey(), path))) : e
+              .getValue());
+    }
+    i.put(path, lm);
+    return new Code(c.tag, m);
   }
 
   public static Optional<Code> codeAt(List<Label> path, Code c) {

@@ -25,6 +25,7 @@ import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.List;
 import com.example.kore.utils.MapUtils;
 import com.example.kore.utils.Optional;
+import com.example.kore.utils.Pair;
 import com.example.kore.utils.Random;
 
 public class CodeEditorActivity extends FragmentActivity implements
@@ -107,9 +108,34 @@ public class CodeEditorActivity extends FragmentActivity implements
     Code code2 = CodeUtils.replaceCodeAt(code, path, CodeOrPath.newCode(c));
     remapAliases(code, code2, nil(Label.class), invalidatedPath);
     pathShadow = CodeUtils.longestValidSubPath(pathShadow, code2);
-    pathFragment.setPath(code2, pathShadow);
-    code = code2;
-    initCodeEditor(c);
+    Pair<Code, HashMap<List<Label>, HashMap<Label, Label>>> p =
+        CodeUtils.dissassociate(code2, path);
+    mapAliases(code2, nil(Label.class), p.x, nil(Label.class), code2, p.y);
+    code = p.x;
+    path = CodeUtils.mapPath(path, p.y);
+    pathShadow = CodeUtils.mapPath(pathShadow, p.y);
+    pathFragment.setPath(code, pathShadow);
+    initCodeEditor(CodeUtils.codeAt(path, code).some().x);
+  }
+
+  private void mapAliases(Code cRoot, List<Label> cPath, Code c2root,
+      List<Label> c2Path, Code cNode,
+      HashMap<List<Label>, HashMap<Label, Label>> i) {
+    CanonicalCode cc = new CanonicalCode(cRoot, cPath);
+    CanonicalCode cc2 = new CanonicalCode(c2root, c2Path);
+    HashMap<Label, String> la = codeLabelAliases.get(cc);
+    HashMap<Label, String> la2 = new HashMap<Label, String>();
+    HashMap<Label, Label> m = i.get(cPath);
+    for (Entry<Label, CodeOrPath> e : cNode.labels.entrySet()) {
+      Label l = e.getKey();
+      Label l2 = m.get(l);
+      if (la != null)
+        la2.put(l2, la.get(l));
+      if (e.getValue().tag == CodeOrPath.Tag.CODE)
+        mapAliases(cRoot, append(e.getKey(), cPath), c2root,
+            append(l2, c2Path), e.getValue().code, i);
+    }
+    codeLabelAliases.put(cc2, la2);
   }
 
   @Override
