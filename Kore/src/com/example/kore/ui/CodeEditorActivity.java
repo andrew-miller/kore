@@ -159,7 +159,8 @@ public class CodeEditorActivity extends FragmentActivity implements
     Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>(c.labels);
     m.remove(l);
     Code c2 = new Code(c.tag, m);
-    if (CodeUtils.validCode(c2))
+    if (CodeUtils.validCode(CodeUtils.replaceCodeAt(code, path,
+        CodeOrPath.newCode(c2))))
       onCodeEdited(c2, append(l, path));
   }
 
