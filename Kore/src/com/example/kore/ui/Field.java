@@ -2,7 +2,6 @@ package com.example.kore.ui;
 
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
-import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
 
 import java.util.HashMap;
@@ -18,6 +17,7 @@ import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
+import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.MapUtils;
 import com.example.kore.utils.Optional;
 
@@ -75,11 +75,9 @@ public class Field extends FrameLayout {
       Map<CanonicalCode, String> codeAliases, List<Code> codes,
       List<Label> path, Optional<String> labelAlias) {
     super(context);
-    codes.checkType(Code.class);
-    path.checkType(Label.class);
-    labelAlias.checkType(String.class);
     notNull(codeSelectedListener, labelSelectedListener, fieldReplacedListener,
-        labelAliasChangedListener, label, codeOrPath, rootCode, codeAliases);
+        labelAliasChangedListener, label, codeOrPath, rootCode, codeAliases,
+        codes, path, labelAlias);
     this.codeSelectedListener = codeSelectedListener;
     this.labelSelectedListener = labelSelectedListener;
     this.fieldReplacedListener = fieldReplacedListener;
@@ -145,11 +143,11 @@ public class Field extends FrameLayout {
         PopupMenu pm = new PopupMenu(a, v);
         Menu m = pm.getMenu();
         addRootCodeToMenu(m, CodeOrPath.newCode(rootCode), "", "",
-            nil(Label.class));
+            ListUtils.<Label> nil());
         m.add("---");
         for (Code c : iter(codes))
           addOtherCodeToMenu(c, m, CodeOrPath.newCode(c), "", "",
-              nil(Label.class));
+              ListUtils.<Label> nil());
 
         pm.show();
         return true;

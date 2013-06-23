@@ -111,8 +111,8 @@ public final class CodeUtils {
     HashMap<List<Label>, HashMap<Label, Label>> i =
         new HashMap<List<Label>, HashMap<Label, Label>>();
     return pair(
-        mapPaths(dissassociate_(p.x, p.y, c, vs, i, nil(Label.class)), i,
-            nil(Label.class)), i);
+        mapPaths(dissassociate_(p.x, p.y, c, vs, i, ListUtils.<Label> nil()),
+            i, ListUtils.<Label> nil()), i);
   }
 
   private static Code mapPaths(Code c,
@@ -132,8 +132,8 @@ public final class CodeUtils {
 
   public static List<Label> mapPath(List<Label> path,
       HashMap<List<Label>, HashMap<Label, Label>> m) {
-    List<Label> p = nil(Label.class);
-    List<Label> b = nil(Label.class);
+    List<Label> p = nil();
+    List<Label> b = nil();
     for (Label l : iter(path)) {
       p = append(m.get(b).get(l), p);
       b = append(l, b);
@@ -176,9 +176,9 @@ public final class CodeUtils {
     for (Label l : iter(path)) {
       CodeOrPath cp = c.labels.get(l);
       if (cp == null)
-        return nothing(Code.class);
+        return nothing();
       if (cp.tag != CodeOrPath.Tag.CODE)
-        return nothing(Code.class);
+        return nothing();
       c = cp.code;
     }
     return some(c);
@@ -194,7 +194,7 @@ public final class CodeUtils {
   }
 
   public static List<Label> longestValidSubPath(List<Label> path, Code c) {
-    List<Label> p = nil(Label.class);
+    List<Label> p = nil();
     for (Label l : iter(path)) {
       CodeOrPath cp = c.labels.get(l);
       if (cp == null)
@@ -298,7 +298,7 @@ public final class CodeUtils {
     HashMap<Identity<Tag>, List<Label>> m =
         new HashMap<Identity<Tag>, List<Label>>();
     Identity<Tag> r = followPath(path, g, root);
-    buildCanonicalSpanningTreeOfCodeGraph(g, r, m, nil(Label.class),
+    buildCanonicalSpanningTreeOfCodeGraph(g, r, m, ListUtils.<Label> nil(),
         spanningTreeEdges);
     return buildCodeFromSpanningTree(g, m, r, spanningTreeEdges);
   }
@@ -313,7 +313,8 @@ public final class CodeUtils {
     HashMap<Identity<Tag>, List<Label>> m =
         new HashMap<Identity<Tag>, List<Label>>();
     Identity<Tag> r = followPath(path, g, root);
-    buildSpanningTreeOfCodeGraph(g, r, m, nil(Label.class), spanningTreeEdges);
+    buildSpanningTreeOfCodeGraph(g, r, m, ListUtils.<Label> nil(),
+        spanningTreeEdges);
     return buildCodeFromSpanningTree(g, m, r, spanningTreeEdges);
   }
 

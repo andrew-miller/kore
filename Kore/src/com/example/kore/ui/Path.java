@@ -45,12 +45,11 @@ public class Path extends Fragment {
   }
 
   public void setPath(Code code, List<Label> path) {
-    notNull(code);
-    path.checkType(Label.class);
+    notNull(code, path);
     FragmentActivity a = getActivity();
     this.path.removeAllViews();
 
-    List<Label> subpath = nil(Label.class);
+    List<Label> subpath = nil();
     while (true) {
       Button b = new Button(a);
       switch (code.tag) {

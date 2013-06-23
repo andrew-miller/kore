@@ -32,7 +32,7 @@ public final class CodeOrPath implements Serializable {
   }
 
   public static CodeOrPath newPath(List<Label> path) {
-    path.checkType(Label.class);
+    notNull(path);
     return new CodeOrPath(Tag.PATH, null, path);
   }
 

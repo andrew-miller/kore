@@ -5,7 +5,7 @@ import static com.example.kore.utils.Null.notNull;
 import java.io.Serializable;
 
 /**
- * Immutable, thread-safe, heap-pollution-free, null-free.
+ * Immutable, thread-safe, null-free.
  * 
  * default serialization
  */
@@ -34,16 +34,6 @@ public final class Optional<T> implements Serializable {
     return some;
   }
 
-  public void checkType(Class<T> c) {
-    notNull(c);
-    if (some != null)
-      if (!some.x.getClass().equals(c))
-        throw new RuntimeException("failed type check");
-    if (nothing != null)
-      if (!nothing.tClass.equals(c))
-        throw new RuntimeException("failed type check");
-  }
-
   public static <T> Optional<T> some(Some<T> some) {
     notNull(some);
     return new Optional<T>(null, some);
@@ -55,12 +45,6 @@ public final class Optional<T> implements Serializable {
   }
 
   public static final class Nothing<T> implements Serializable {
-    public final Class<T> tClass;
-
-    public Nothing(Class<T> tClass) {
-      notNull(tClass);
-      this.tClass = tClass;
-    }
   }
 
   public static final class Some<T> implements Serializable {

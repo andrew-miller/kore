@@ -23,6 +23,7 @@ import com.example.kore.codes.Label;
 import com.example.kore.utils.Boom;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.List;
+import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.MapUtils;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.Pair;
@@ -49,11 +50,11 @@ public class CodeEditorActivity extends FragmentActivity implements
 
   private NodeEditor codeEditor;
   private Code code = CodeUtils.unit;
-  private List<Label> path = nil(Label.class);
+  private List<Label> path = nil();
   private Path pathFragment;
   private HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases;
   private HashMap<CanonicalCode, String> codeAliases;
-  private List<Label> pathShadow = nil(Label.class);
+  private List<Label> pathShadow = nil();
   private List<Code> codes;
 
   @Override
@@ -74,8 +75,7 @@ public class CodeEditorActivity extends FragmentActivity implements
             (HashMap<CanonicalCode, String>) getIntent().getSerializableExtra(
                 ARG_CODE_ALIASES));
     codes = (List<Code>) getIntent().getSerializableExtra(ARG_CODES);
-    codes.checkType(Code.class);
-    notNull(code, codeAliases);
+    notNull(code, codeAliases, codes);
 
     if (b != null) {
       code = (Code) b.get(STATE_CODE);
@@ -106,11 +106,12 @@ public class CodeEditorActivity extends FragmentActivity implements
 
   private void onCodeEdited(Code c, List<Label> invalidatedPath) {
     Code code2 = CodeUtils.replaceCodeAt(code, path, CodeOrPath.newCode(c));
-    remapAliases(code, code2, nil(Label.class), invalidatedPath);
+    remapAliases(code, code2, ListUtils.<Label> nil(), invalidatedPath);
     pathShadow = CodeUtils.longestValidSubPath(pathShadow, code2);
     Pair<Code, HashMap<List<Label>, HashMap<Label, Label>>> p =
         CodeUtils.dissassociate(code2, path);
-    mapAliases(code2, nil(Label.class), p.x, nil(Label.class), code2, p.y);
+    mapAliases(code2, ListUtils.<Label> nil(), p.x, ListUtils.<Label> nil(),
+        code2, p.y);
     code = p.x;
     path = CodeUtils.mapPath(path, p.y);
     pathShadow = CodeUtils.mapPath(pathShadow, p.y);
@@ -214,7 +215,7 @@ public class CodeEditorActivity extends FragmentActivity implements
 
   @Override
   public void onCodeInPathSelected(List<Label> p) {
-    p.checkType(Label.class);
+    notNull(p);
     Optional<Code> oc = CodeUtils.codeAt(p, code);
     if (oc.isNothing())
       throw new RuntimeException("invalid path");

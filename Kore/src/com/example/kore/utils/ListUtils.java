@@ -3,8 +3,8 @@ package com.example.kore.utils;
 import java.util.Iterator;
 
 public class ListUtils {
-  public static <T> List<T> nil(Class<T> c) {
-    return List.nil(new List.Nil<T>(c));
+  public static <T> List<T> nil() {
+    return List.nil(new List.Nil<T>());
   }
 
   public static <T> List<T> cons(T x, List<T> l) {
@@ -12,12 +12,8 @@ public class ListUtils {
   }
 
   public static <T, T2> List<T2> map(F<T, T2> f, Class<T2> t2, List<T> l) {
-    if (l.isEmpty()) {
-      return List.nil(new List.Nil<T2>(t2));
-    } else {
-      return List.cons(new List.Cons<T2>(f.f(l.cons().x), map(f, t2,
-          l.cons().tail)));
-    }
+    return l.isEmpty() ? List.nil(new List.Nil<T2>()) : List
+        .cons(new List.Cons<T2>(f.f(l.cons().x), map(f, t2, l.cons().tail)));
   }
 
   public static <T> List<T> append(T x, List<T> l) {

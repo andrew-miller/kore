@@ -31,7 +31,7 @@ public class MainActivity extends FragmentActivity implements
   private static final String STATE_CODE_ALIASES = "code_aliases";
 
   private HashSet<Code> codes = new HashSet<Code>();
-  private List<Code> recentCodes = nil(Code.class);
+  private List<Code> recentCodes = nil();
   private HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases =
       new HashMap<CanonicalCode, HashMap<Label, String>>();
   private HashMap<CanonicalCode, String> codeAliases =

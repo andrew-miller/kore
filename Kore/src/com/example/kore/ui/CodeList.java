@@ -1,7 +1,6 @@
 package com.example.kore.ui;
 
 import static com.example.kore.utils.ListUtils.iter;
-import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
 
 import java.util.HashMap;
@@ -12,6 +11,7 @@ import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
+import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.MapUtils;
 
 import android.content.Context;
@@ -53,10 +53,11 @@ public class CodeList extends FrameLayout {
       final FrameLayout fl = new FrameLayout(context);
       Button b = new Button(context);
       String codeName =
-          codeAliases.get(new CanonicalCode(code, nil(Label.class)));
+          codeAliases.get(new CanonicalCode(code, ListUtils.<Label> nil()));
       final String strCode =
-          codeName == null ? CodeUtils.renderCode(code, nil(Label.class),
-              codeLabelAliases, codeAliases, 1) : codeName;
+          codeName == null ? CodeUtils.renderCode(code,
+              ListUtils.<Label> nil(), codeLabelAliases, codeAliases, 1)
+              : codeName;
       b.setText(strCode);
       b.setOnClickListener(new OnClickListener() {
         @Override
@@ -74,7 +75,7 @@ public class CodeList extends FrameLayout {
                 @Override
                 public Void f(String s) {
                   codeAliasChangedListener.codeAliasChanged(code,
-                      nil(Label.class), s);
+                      ListUtils.<Label> nil(), s);
                   return null;
                 }
               });

@@ -2,8 +2,6 @@ package com.example.kore.ui;
 
 import static com.example.kore.utils.Null.notNull;
 import static com.example.kore.utils.OptionalUtils.fromObject;
-import static com.example.kore.utils.OptionalUtils.nothing;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,6 +25,7 @@ import com.example.kore.ui.Field.LabelSelectedListener;
 import com.example.kore.utils.Boom;
 import com.example.kore.utils.List;
 import com.example.kore.utils.MapUtils;
+import com.example.kore.utils.OptionalUtils;
 
 public class NodeEditor extends FrameLayout {
   public static interface NodeEditorListener {
@@ -65,9 +64,7 @@ public class NodeEditor extends FrameLayout {
       List<Code> codes, List<Label> path,
       HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases) {
     super(context);
-    notNull(code, rootCode, codeAliases);
-    codes.checkType(Code.class);
-    path.checkType(Label.class);
+    notNull(code, rootCode, codeAliases, codes, path);
     this.code = code;
     this.rootCode = rootCode;
     this.nodeEditorListener = nodeEditorListener;
@@ -162,8 +159,8 @@ public class NodeEditor extends FrameLayout {
           .getValue(), rootCode, l.equals(selectedLabel), MapUtils
           .cloneNestedMap(codeLabelAliases),
           new HashMap<CanonicalCode, String>(codeAliases), codes, path,
-          las == null ? nothing(String.class) : fromObject(las.get(l),
-              String.class)));
+          las == null ? OptionalUtils.<String> nothing() : fromObject(las
+              .get(l))));
     }
   }
 
