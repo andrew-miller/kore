@@ -45,6 +45,23 @@ public final class Optional<T> implements Serializable {
   }
 
   public static final class Nothing<T> implements Serializable {
+
+    @Override
+    public String toString() {
+      return "Nothing []";
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o == null)
+        return false;
+      return (o.getClass().equals(getClass()));
+    }
   }
 
   public static final class Some<T> implements Serializable {
@@ -55,5 +72,71 @@ public final class Optional<T> implements Serializable {
       this.x = x;
     }
 
+    @Override
+    public String toString() {
+      return "Some [x=" + x + "]";
+    }
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((x == null) ? 0 : x.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      Some other = (Some) obj;
+      if (x == null) {
+        if (other.x != null)
+          return false;
+      } else if (!x.equals(other.x))
+        return false;
+      return true;
+    }
+
+  }
+
+  @Override
+  public String toString() {
+    return "Optional [nothing=" + nothing + ", some=" + some + "]";
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((nothing == null) ? 0 : nothing.hashCode());
+    result = prime * result + ((some == null) ? 0 : some.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Optional other = (Optional) obj;
+    if (nothing == null) {
+      if (other.nothing != null)
+        return false;
+    } else if (!nothing.equals(other.nothing))
+      return false;
+    if (some == null) {
+      if (other.some != null)
+        return false;
+    } else if (!some.equals(other.some))
+      return false;
+    return true;
   }
 }

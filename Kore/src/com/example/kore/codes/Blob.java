@@ -1,9 +1,7 @@
 package com.example.kore.codes;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.example.kore.utils.CodeUtils;
+import com.example.kore.utils.Map;
 
 public class Blob {
   private String id;
@@ -57,9 +55,11 @@ public class Blob {
       this.args = args;
       in = CodeUtils.unit;
 
-      Map<Label, CodeOrPath> subType = new HashMap<Label, CodeOrPath>();
+      Map<Label, CodeOrPath> subType = Map.empty();
       for (int i = 0; i < order.length; i++)
-        subType.put(order[i], CodeOrPath.newCode(args.get(order[i]).out));
+        subType =
+            subType.put(order[i],
+                CodeOrPath.newCode(args.get(order[i]).some().x.out));
       out = Code.newProduct(subType);
     }
 
@@ -80,7 +80,7 @@ public class Blob {
     public Label label;
 
     public Proj(Blob arg, Label label) {
-      super(arg.in, arg.out.labels.get(label).code);
+      super(arg.in, arg.out.labels.get(label).some().x.code);
       this.arg = arg;
       this.label = label;
     }

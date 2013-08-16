@@ -3,11 +3,6 @@ package com.example.kore.ui;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.Null.notNull;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
@@ -18,7 +13,9 @@ import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-import com.example.kore.utils.MapUtils;
+import com.example.kore.utils.Map;
+import com.example.kore.utils.OptionalUtils;
+import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
 
 import android.content.Context;
@@ -58,7 +55,7 @@ public class Field extends FrameLayout {
   private final CodeOrPath codeOrPath;
   private final Code rootCode;
   private final boolean selected;
-  private final HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases;
+  private final Map<CanonicalCode, Map<Label, String>> codeLabelAliases;
   private final Button labelButton;
   private final Button codeButton;
   private final Map<CanonicalCode, String> codeAliases;
@@ -71,7 +68,7 @@ public class Field extends FrameLayout {
       FieldReplacedListener fieldReplacedListener,
       LabelAliasChangedListener labelAliasChangedListener, Label label,
       CodeOrPath codeOrPath, Code rootCode, boolean selected,
-      HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases,
+      Map<CanonicalCode, Map<Label, String>> codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, List<Code> codes,
       List<Label> path, Optional<String> labelAlias) {
     super(context);
@@ -86,7 +83,7 @@ public class Field extends FrameLayout {
     this.codeOrPath = codeOrPath;
     this.rootCode = rootCode;
     this.selected = selected;
-    this.codeLabelAliases = MapUtils.cloneNestedMap(codeLabelAliases);
+    this.codeLabelAliases = codeLabelAliases;
     this.codeAliases = codeAliases;
     this.codes = codes;
     this.path = path;
@@ -171,12 +168,14 @@ public class Field extends FrameLayout {
               return true;
             }
           });
-          HashMap<Label, String> las =
+          Optional<Map<Label, String>> las =
               codeLabelAliases.get(new CanonicalCode(rootCode, path));
-          for (Entry<Label, CodeOrPath> e : cp.code.labels.entrySet()) {
-            ls = las == null ? null : las.get(e.getKey());
-            addRootCodeToMenu(m, e.getValue(), ls == null ? e.getKey().label
-                : ls, space + "  ", append(e.getKey(), path));
+          for (Entry<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
+            Optional<String> ls2 =
+                las.isNothing() ? OptionalUtils.<String> nothing()
+                    : las.some().x.get(e.k);
+            addRootCodeToMenu(m, e.v, ls2.isNothing() ? e.k.label
+                : ls2.some().x, space + "  ", append(e.k, path));
           }
         }
       }
@@ -198,14 +197,16 @@ public class Field extends FrameLayout {
             return true;
           }
         });
-        HashMap<Label, String> las =
+        Optional<Map<Label, String>> las =
             codeLabelAliases.get(new CanonicalCode(root, path));
         if (cp.tag == CodeOrPath.Tag.CODE) {
-          for (Entry<Label, CodeOrPath> e : cp.code.labels.entrySet()) {
-            ls = las == null ? null : las.get(e.getKey());
-            addOtherCodeToMenu(root, m, e.getValue(),
-                ls == null ? e.getKey().label : ls, space + "  ",
-                append(e.getKey(), path));
+          for (Entry<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
+            Optional<String> ls2 =
+                las.isNothing() ? OptionalUtils.<String> nothing()
+                    : las.some().x.get(e.k);
+            addOtherCodeToMenu(root, m, e.v,
+                ls2.isNothing() ? e.k.label : ls2.some().x, space + "  ",
+                append(e.k, path));
           }
         }
       }

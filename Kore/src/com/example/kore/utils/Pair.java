@@ -2,7 +2,9 @@ package com.example.kore.utils;
 
 import static com.example.kore.utils.Null.notNull;
 
-public final class Pair<X, Y> {
+import java.io.Serializable;
+
+public final class Pair<X, Y> implements Serializable {
   public final X x;
   public final Y y;
 
@@ -18,7 +20,7 @@ public final class Pair<X, Y> {
 
   @Override
   public String toString() {
-    return "Pair [x=" + x + ", y=" + y + "]";
+    return "{" + x + ", " + y + "}";
   }
 
   @Override

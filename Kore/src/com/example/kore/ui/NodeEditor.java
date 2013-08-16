@@ -1,11 +1,7 @@
 package com.example.kore.ui;
 
+import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.Null.notNull;
-import static com.example.kore.utils.OptionalUtils.fromObject;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,7 +20,9 @@ import com.example.kore.ui.Field.LabelAliasChangedListener;
 import com.example.kore.ui.Field.LabelSelectedListener;
 import com.example.kore.utils.Boom;
 import com.example.kore.utils.List;
-import com.example.kore.utils.MapUtils;
+import com.example.kore.utils.Map;
+import com.example.kore.utils.Map.Entry;
+import com.example.kore.utils.Optional;
 import com.example.kore.utils.OptionalUtils;
 
 public class NodeEditor extends FrameLayout {
@@ -56,13 +54,13 @@ public class NodeEditor extends FrameLayout {
   private final Map<CanonicalCode, String> codeAliases;
   private final List<Code> codes;
   private final List<Label> path;
-  private final HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases;
+  private final Map<CanonicalCode, Map<Label, String>> codeLabelAliases;
 
   public NodeEditor(Context context, Code code, Code rootCode,
       final NodeEditorListener nodeEditorListener,
       final DoneListener doneListener, Map<CanonicalCode, String> codeAliases,
       List<Code> codes, List<Label> path,
-      HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases) {
+      Map<CanonicalCode, Map<Label, String>> codeLabelAliases) {
     super(context);
     notNull(code, rootCode, codeAliases, codes, path);
     this.code = code;
@@ -71,7 +69,7 @@ public class NodeEditor extends FrameLayout {
     this.codeAliases = codeAliases;
     this.codes = codes;
     this.path = path;
-    this.codeLabelAliases = MapUtils.cloneNestedMap(codeLabelAliases);
+    this.codeLabelAliases = codeLabelAliases;
     View v =
         LayoutInflater.from(context).inflate(R.layout.node_editor, this, true);
     fields = (LinearLayout) v.findViewById(R.id.layout_fields);
@@ -114,10 +112,10 @@ public class NodeEditor extends FrameLayout {
       throw Boom.boom();
     }
     fields.removeAllViews();
-    HashMap<Label, String> las =
+    Optional<Map<Label, String>> las =
         codeLabelAliases.get(new CanonicalCode(rootCode, path));
-    for (final Entry<Label, CodeOrPath> e : code.labels.entrySet()) {
-      final Label l = e.getKey();
+    for (final Entry<Label, CodeOrPath> e : iter(code.labels.entrySet())) {
+      final Label l = e.k;
       LabelSelectedListener lsl = new Field.LabelSelectedListener() {
         @Override
         public void labelSelected() {
@@ -155,12 +153,10 @@ public class NodeEditor extends FrameLayout {
         }
       };
 
-      fields.addView(new Field(getContext(), csl, lsl, frl, lacl, l, e
-          .getValue(), rootCode, l.equals(selectedLabel), MapUtils
-          .cloneNestedMap(codeLabelAliases),
-          new HashMap<CanonicalCode, String>(codeAliases), codes, path,
-          las == null ? OptionalUtils.<String> nothing() : fromObject(las
-              .get(l))));
+      fields.addView(new Field(getContext(), csl, lsl, frl, lacl, l, e.v,
+          rootCode, l.equals(selectedLabel), codeLabelAliases, codeAliases,
+          codes, path, las.isNothing() ? OptionalUtils.<String> nothing() : las
+              .some().x.get(l)));
     }
   }
 

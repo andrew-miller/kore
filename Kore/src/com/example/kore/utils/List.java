@@ -11,7 +11,15 @@ public final class List<T> implements Serializable {
 
   @Override
   public String toString() {
-    return "List [nil=" + nil + ", cons=" + cons + "]";
+    if (isEmpty())
+      return "<>";
+    String s = "<" + cons().x;
+    List<T> head = cons().tail;
+    while (!head.isEmpty()) {
+      s += "," + head.cons().x;
+      head = head.cons().tail;
+    }
+    return s + ">";
   }
 
   public static final class Nil<T> implements Serializable {

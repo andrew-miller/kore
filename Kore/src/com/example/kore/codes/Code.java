@@ -3,8 +3,7 @@ package com.example.kore.codes;
 import static com.example.kore.utils.Null.notNull;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import com.example.kore.utils.Map;
 
 public final class Code implements Serializable {
   public enum Tag {
@@ -17,7 +16,7 @@ public final class Code implements Serializable {
   public Code(Tag tag, Map<Label, CodeOrPath> labels) {
     notNull(tag, labels);
     this.tag = tag;
-    this.labels = new HashMap<Label, CodeOrPath>(labels);
+    this.labels = labels;
   }
 
   @Override

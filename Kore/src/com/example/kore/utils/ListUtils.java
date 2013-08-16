@@ -1,6 +1,7 @@
 package com.example.kore.utils;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 
 public class ListUtils {
   public static <T> List<T> nil() {
@@ -63,7 +64,7 @@ public class ListUtils {
 
           @Override
           public void remove() {
-            throw new RuntimeException("wtf");
+            throw new UnsupportedOperationException();
           }
 
         };
@@ -71,4 +72,75 @@ public class ListUtils {
     };
   }
 
+  public static <T> List<T> singleton(T x) {
+    return cons(x, ListUtils.<T> nil());
+  }
+
+  public static <T> List<T> reverse(List<T> l) {
+    List<T> l2 = nil();
+    while (!l.isEmpty()) {
+      l2 = cons(l.cons().x, l2);
+      l = l.cons().tail;
+    }
+    return l2;
+  }
+
+  public static <T> List<T> sort(List<T> l, Comparer<T> c) {
+    LinkedList<LinkedList<T>> p = new LinkedList<LinkedList<T>>();
+    for (T t : iter(l)) {
+      LinkedList<T> s = new LinkedList<T>();
+      s.add(t);
+      p.add(s);
+    }
+    return fromLinkedList(sort_(p, c));
+  }
+
+  private static <T> LinkedList<T> sort_(LinkedList<LinkedList<T>> p,
+      Comparer<T> c) {
+    if (p.isEmpty())
+      return new LinkedList<T>();
+    if (p.size() == 1)
+      return p.remove(0);
+    LinkedList<LinkedList<T>> p2 = new LinkedList<LinkedList<T>>();
+    while (p.size() >= 2) {
+      LinkedList<T> l = new LinkedList<T>();
+      LinkedList<T> a = p.remove(0);
+      LinkedList<T> b = p.remove(0);
+      while (!a.isEmpty() && !b.isEmpty()) {
+        switch (c.compare(a.get(0), b.get(0))) {
+        case LT:
+        case EQ:
+          l.add(a.remove(0));
+          break;
+        case GT:
+          l.add(b.remove(0));
+        }
+      }
+      if (!a.isEmpty())
+        l.addAll(a);
+      if (!b.isEmpty())
+        l.addAll(b);
+      p2.add(l);
+    }
+    if (!p.isEmpty())
+      p2.add(p.remove(0));
+    return sort_(p2, c);
+  }
+
+  public static <T> List<T> fromArray(T... a) {
+    List<T> l = nil();
+    for (int i = a.length - 1; i >= 0; i--) {
+      l = cons(a[i], l);
+    }
+    return l;
+  }
+
+  public static <T> List<T> fromLinkedList(LinkedList<T> ll) {
+    List<T> l = nil();
+    Iterator<T> i = ll.descendingIterator();
+    while (i.hasNext()) {
+      l = cons(i.next(), l);
+    }
+    return l;
+  }
 }

@@ -2,9 +2,6 @@ package com.example.kore;
 
 import static com.example.kore.utils.Pair.pair;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jgrapht.graph.DirectedMultigraph;
 
 import com.example.kore.codes.Code;
@@ -14,6 +11,7 @@ import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.Identity;
 import com.example.kore.utils.ListUtils;
+import com.example.kore.utils.Map;
 import com.example.kore.utils.Pair;
 
 import junit.framework.TestCase;
@@ -32,8 +30,8 @@ public class CodeToGraphTest extends TestCase {
 
   // {'a {}}
   public static void testCodeToGraphProd1() {
-    Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>();
-    m.put(new Label("a"), CodeOrPath.newCode(CodeUtils.unit));
+    Map<Label, CodeOrPath> m = Map.empty();
+    m = m.put(new Label("a"), CodeOrPath.newCode(CodeUtils.unit));
     Code c = Code.newProduct(m);
     Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
         CodeUtils.codeToGraph(c);
@@ -49,9 +47,9 @@ public class CodeToGraphTest extends TestCase {
 
   // {'a {}, 'b, {}}
   public static void testCodeToGraphProd1_1() {
-    Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>();
-    m.put(new Label("a"), CodeOrPath.newCode(CodeUtils.unit));
-    m.put(new Label("b"), CodeOrPath.newCode(CodeUtils.unit));
+    Map<Label, CodeOrPath> m = Map.empty();
+    m = m.put(new Label("a"), CodeOrPath.newCode(CodeUtils.unit));
+    m = m.put(new Label("b"), CodeOrPath.newCode(CodeUtils.unit));
     Code c = Code.newProduct(m);
     Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
         CodeUtils.codeToGraph(c);
@@ -71,8 +69,8 @@ public class CodeToGraphTest extends TestCase {
 
   // {'a <>}
   public static void testCodeToGraphProdLoop() {
-    Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>();
-    m.put(new Label("a"), CodeOrPath.newPath(ListUtils.<Label> nil()));
+    Map<Label, CodeOrPath> m = Map.empty();
+    m = m.put(new Label("a"), CodeOrPath.newPath(ListUtils.<Label> nil()));
     Code c = Code.newProduct(m);
     Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
         CodeUtils.codeToGraph(c);
@@ -86,11 +84,11 @@ public class CodeToGraphTest extends TestCase {
 
   // {'a {'b <>}}
   public static void testCodeToGraphProdLoop2() {
-    Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>();
-    m.put(new Label("b"), CodeOrPath.newPath(ListUtils.<Label> nil()));
+    Map<Label, CodeOrPath> m = Map.empty();
+    m = m.put(new Label("b"), CodeOrPath.newPath(ListUtils.<Label> nil()));
     Code c = Code.newProduct(m);
-    m = new HashMap<Label, CodeOrPath>();
-    m.put(new Label("a"), CodeOrPath.newCode(c));
+    m = Map.empty();
+    m = m.put(new Label("a"), CodeOrPath.newCode(c));
     c = Code.newProduct(m);
     Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
         CodeUtils.codeToGraph(c);
@@ -107,12 +105,12 @@ public class CodeToGraphTest extends TestCase {
 
   // {'a {'b <>}, 'b <>}
   public static void testCodeToGraphProdLoop2_() {
-    Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>();
-    m.put(new Label("b"), CodeOrPath.newPath(ListUtils.<Label> nil()));
+    Map<Label, CodeOrPath> m = Map.empty();
+    m = m.put(new Label("b"), CodeOrPath.newPath(ListUtils.<Label> nil()));
     Code c = Code.newProduct(m);
-    m = new HashMap<Label, CodeOrPath>();
-    m.put(new Label("a"), CodeOrPath.newCode(c));
-    m.put(new Label("b"), CodeOrPath.newPath(ListUtils.<Label> nil()));
+    m = Map.empty();
+    m = m.put(new Label("a"), CodeOrPath.newCode(c));
+    m = m.put(new Label("b"), CodeOrPath.newPath(ListUtils.<Label> nil()));
     c = Code.newProduct(m);
     Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
         CodeUtils.codeToGraph(c);

@@ -4,17 +4,16 @@ import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
+import static com.example.kore.utils.MapUtils.containsKey;
+import static com.example.kore.utils.MapUtils.values;
 import static com.example.kore.utils.Null.notNull;
 import static com.example.kore.utils.OptionalUtils.nothing;
 import static com.example.kore.utils.OptionalUtils.some;
 import static com.example.kore.utils.Pair.pair;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.SortedMap;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -29,21 +28,23 @@ import com.example.kore.codes.Code.Tag;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.ui.CodeEditorActivity;
+import com.example.kore.utils.Map.Entry;
 
 public final class CodeUtils {
+  private static String className = CodeEditorActivity.class.getName();
 
-  public final static Code unit = Code
-      .newProduct(new HashMap<Label, CodeOrPath>());
+  public final static Code unit = Code.newProduct(Map
+      .<Label, CodeOrPath> empty());
 
   public static String renderCode(Code c, List<Label> p,
-      HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases,
+      Map<CanonicalCode, Map<Label, String>> codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, int depth) {
     return renderCode(p, c, codeOrLabelAt(p, c), codeLabelAliases, codeAliases,
         depth);
   }
 
   private static String renderCode(List<Label> path, Code root, CodeOrPath cp,
-      HashMap<CanonicalCode, HashMap<Label, String>> codeLabelAliases,
+      Map<CanonicalCode, Map<Label, String>> codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, int depth) {
     if (depth < 0)
       throw new RuntimeException("negative depth");
@@ -52,9 +53,9 @@ public final class CodeUtils {
     if (cp.tag == CodeOrPath.Tag.PATH)
       return "^";
     CanonicalCode cc = new CanonicalCode(root, path);
-    String codeAlias = codeAliases.get(cc);
-    if (codeAlias != null)
-      return codeAlias;
+    Optional<String> codeAlias = codeAliases.get(cc);
+    if (!codeAlias.isNothing())
+      return codeAlias.some().x;
     Code c = cp.code;
     String start;
     String end;
@@ -70,18 +71,21 @@ public final class CodeUtils {
     default:
       throw Boom.boom();
     }
-    HashMap<Label, String> labelAliases = codeLabelAliases.get(cc);
+    Optional<Map<Label, String>> labelAliases = codeLabelAliases.get(cc);
     String result = "";
-    for (Label l : c.labels.keySet()) {
+    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
+      Label l = e.k;
       if (result.equals(""))
         result = "'";
       else
         result += ", '";
-      String la = labelAliases == null ? null : labelAliases.get(l);
-      String ls = la == null ? l.label : la;
+      Optional<String> la =
+          labelAliases.isNothing() ? OptionalUtils.<String> nothing()
+              : labelAliases.some().x.get(l);
+      String ls = la.isNothing() ? l.label : la.some().x;
       result +=
-          (ls + " " + renderCode(append(l, path), root, c.labels.get(l),
-              codeLabelAliases, codeAliases, depth - 1));
+          (ls + " " + renderCode(append(l, path), root, e.v, codeLabelAliases,
+              codeAliases, depth - 1));
     }
     return start + result + end;
   }
@@ -92,8 +96,8 @@ public final class CodeUtils {
    *         containing any node on <tt>path</tt> are randomized. <tt>i</tt> is
    *         the isomorphism itself.
    */
-  public static Pair<Code, HashMap<List<Label>, HashMap<Label, Label>>>
-      dissassociate(Code c, List<Label> path) {
+  public static Pair<Code, Map<List<Label>, Map<Label, Label>>> dissassociate(
+      Code c, List<Label> path) {
     Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
         codeToGraph(c);
     Set<Identity<Tag>> vs = new HashSet<Identity<Tag>>();
@@ -108,34 +112,33 @@ public final class CodeUtils {
       if (scc.contains(v))
         vs.addAll(scc);
     }
-    HashMap<List<Label>, HashMap<Label, Label>> i =
-        new HashMap<List<Label>, HashMap<Label, Label>>();
+    Ref<Map<List<Label>, Map<Label, Label>>> i =
+        new Ref<Map<List<Label>, Map<Label, Label>>>(
+            Map.<List<Label>, Map<Label, Label>> empty());
     return pair(
         mapPaths(dissassociate_(p.x, p.y, c, vs, i, ListUtils.<Label> nil()),
-            i, ListUtils.<Label> nil()), i);
+            i.get(), ListUtils.<Label> nil()), i.get());
   }
 
-  private static Code mapPaths(Code c,
-      HashMap<List<Label>, HashMap<Label, Label>> i, List<Label> path) {
-    HashMap<Label, Label> m = i.get(path);
-    HashMap<Label, CodeOrPath> m2 = new HashMap<Label, CodeOrPath>();
-    for (Entry<Label, CodeOrPath> e : c.labels.entrySet())
-      if (e.getValue().tag == CodeOrPath.Tag.PATH)
-        m2.put(e.getKey(), CodeOrPath.newPath(mapPath(e.getValue().path, i)));
+  private static Code mapPaths(Code c, Map<List<Label>, Map<Label, Label>> i,
+      List<Label> path) {
+    Map<Label, CodeOrPath> m2 = Map.empty();
+    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet()))
+      if (e.v.tag == CodeOrPath.Tag.PATH)
+        m2 = m2.put(e.k, CodeOrPath.newPath(mapPath(e.v.path, i)));
       else
-        m2.put(
-            e.getKey(),
-            CodeOrPath.newCode(mapPaths(e.getValue().code, i,
-                append(e.getKey(), path))));
+        m2 =
+            m2.put(e.k,
+                CodeOrPath.newCode(mapPaths(e.v.code, i, append(e.k, path))));
     return new Code(c.tag, m2);
   }
 
   public static List<Label> mapPath(List<Label> path,
-      HashMap<List<Label>, HashMap<Label, Label>> m) {
+      Map<List<Label>, Map<Label, Label>> m) {
     List<Label> p = nil();
     List<Label> b = nil();
     for (Label l : iter(path)) {
-      p = append(m.get(b).get(l), p);
+      p = append(m.get(b).some().x.get(l).some().x, p);
       b = append(l, b);
     }
     return p;
@@ -144,39 +147,38 @@ public final class CodeUtils {
   private static Code dissassociate_(
       DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g,
       Identity<Tag> v, Code c, Set<Identity<Tag>> vs,
-      HashMap<List<Label>, HashMap<Label, Label>> i, List<Label> path) {
+      Ref<Map<List<Label>, Map<Label, Label>>> i, List<Label> path) {
     boolean randomize = vs.contains(v);
-    HashMap<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>();
-    HashMap<Label, Label> lm = new HashMap<Label, Label>();
-    for (Entry<Label, CodeOrPath> e : c.labels.entrySet()) {
+    Map<Label, CodeOrPath> m = Map.empty();
+    Map<Label, Label> lm = Map.empty();
+    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
       Label l = null;
-      if (randomize) {
+      if (randomize)
         do {
           if (l != null)
-            Log.e(CodeEditorActivity.class.getName(),
-                "generated duplicate label");
+            Log.e(className, "generated duplicate label");
           l = new Label(Random.randomId());
-        } while (m.containsKey(l));
-      } else {
-        l = e.getKey();
-      }
-      lm.put(e.getKey(), l);
-      m.put(
-          l,
-          e.getValue().tag == CodeOrPath.Tag.CODE ? CodeOrPath
-              .newCode(dissassociate_(g, g.getEdgeTarget(pair(v, e.getKey())),
-                  e.getValue().code, vs, i, append(e.getKey(), path))) : e
-              .getValue());
+        } while (containsKey(m, l));
+      else
+        l = e.k;
+      lm = lm.put(e.k, l);
+      m =
+          m.put(
+              l,
+              e.v.tag == CodeOrPath.Tag.CODE ? CodeOrPath
+                  .newCode(dissassociate_(g, g.getEdgeTarget(pair(v, e.k)),
+                      e.v.code, vs, i, append(e.k, path))) : e.v);
     }
-    i.put(path, lm);
+    i.set(i.get().put(path, lm));
     return new Code(c.tag, m);
   }
 
   public static Optional<Code> codeAt(List<Label> path, Code c) {
     for (Label l : iter(path)) {
-      CodeOrPath cp = c.labels.get(l);
-      if (cp == null)
+      Optional<CodeOrPath> ocp = c.labels.get(l);
+      if (ocp.isNothing())
         return nothing();
+      CodeOrPath cp = ocp.some().x;
       if (cp.tag != CodeOrPath.Tag.CODE)
         return nothing();
       c = cp.code;
@@ -187,7 +189,7 @@ public final class CodeUtils {
   private static CodeOrPath codeOrLabelAt(List<Label> path, Code c) {
     CodeOrPath cp = CodeOrPath.newCode(c);
     for (Label l : iter(path)) {
-      cp = cp.code.labels.get(l);
+      cp = cp.code.labels.get(l).some().x;
     }
     notNull(cp);
     return cp;
@@ -196,9 +198,10 @@ public final class CodeUtils {
   public static List<Label> longestValidSubPath(List<Label> path, Code c) {
     List<Label> p = nil();
     for (Label l : iter(path)) {
-      CodeOrPath cp = c.labels.get(l);
-      if (cp == null)
+      Optional<CodeOrPath> ocp = c.labels.get(l);
+      if (ocp.isNothing())
         return p;
+      CodeOrPath cp = ocp.some().x;
       if (cp.tag != CodeOrPath.Tag.CODE)
         return p;
       c = cp.code;
@@ -215,9 +218,12 @@ public final class CodeUtils {
       CodeOrPath newCode) {
     if (p.isEmpty())
       return newCode;
-    Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>(c.labels);
     Label l = p.cons().x;
-    m.put(l, replaceCodeAt_(m.get(l).code, p.cons().tail, newCode));
+    Map<Label, CodeOrPath> m =
+        c.labels.put(
+            l,
+            replaceCodeAt_(c.labels.get(l).some().x.code, p.cons().tail,
+                newCode));
     return CodeOrPath.newCode(new Code(c.tag, m));
   }
 
@@ -240,18 +246,18 @@ public final class CodeUtils {
   private static void addLinksToCodeGraph(Code c,
       DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g,
       Identity<Tag> root, Identity<Tag> parent) {
-    for (Entry<Label, CodeOrPath> e : c.labels.entrySet()) {
-      CodeOrPath cp = e.getValue();
+    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
+      CodeOrPath cp = e.v;
       switch (cp.tag) {
       case PATH:
         Identity<Tag> v = root;
         for (Label l : iter(cp.path))
           v = g.getEdgeTarget(pair(v, l));
-        g.addEdge(parent, v, pair(parent, e.getKey()));
+        g.addEdge(parent, v, pair(parent, e.k));
         break;
       case CODE:
         addLinksToCodeGraph(cp.code, g, root,
-            g.getEdgeTarget(pair(parent, e.getKey())));
+            g.getEdgeTarget(pair(parent, e.k)));
         break;
       default:
         throw boom();
@@ -266,12 +272,12 @@ public final class CodeUtils {
           Code c) {
     Identity<Code.Tag> v = new Identity<Code.Tag>(c.tag);
     g.addVertex(v);
-    for (Entry<Label, CodeOrPath> e : c.labels.entrySet()) {
-      CodeOrPath cp = e.getValue();
+    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
+      CodeOrPath cp = e.v;
       if (cp.tag != CodeOrPath.Tag.CODE)
         continue;
       Identity<Code.Tag> v2 = codeSpanningTreeToGraph(g, cp.code);
-      g.addEdge(v, v2, pair(v, e.getKey()));
+      g.addEdge(v, v2, pair(v, e.k));
     }
     return v;
   }
@@ -295,12 +301,13 @@ public final class CodeUtils {
     Identity<Tag> root = p.y;
     Set<Pair<Identity<Tag>, Label>> spanningTreeEdges =
         new HashSet<Pair<Identity<Tag>, Label>>();
-    HashMap<Identity<Tag>, List<Label>> m =
-        new HashMap<Identity<Tag>, List<Label>>();
+    Ref<Map<Identity<Tag>, List<Label>>> m =
+        new Ref<Map<Identity<Tag>, List<Label>>>(
+            Map.<Identity<Tag>, List<Label>> empty());
     Identity<Tag> r = followPath(path, g, root);
     buildCanonicalSpanningTreeOfCodeGraph(g, r, m, ListUtils.<Label> nil(),
         spanningTreeEdges);
-    return buildCodeFromSpanningTree(g, m, r, spanningTreeEdges);
+    return buildCodeFromSpanningTree(g, m.get(), r, spanningTreeEdges);
   }
 
   public static Code reRoot(Code c, List<Label> path) {
@@ -310,29 +317,30 @@ public final class CodeUtils {
     Identity<Tag> root = p.y;
     Set<Pair<Identity<Tag>, Label>> spanningTreeEdges =
         new HashSet<Pair<Identity<Tag>, Label>>();
-    HashMap<Identity<Tag>, List<Label>> m =
-        new HashMap<Identity<Tag>, List<Label>>();
+    Ref<Map<Identity<Tag>, List<Label>>> m =
+        new Ref<Map<Identity<Tag>, List<Label>>>(
+            Map.<Identity<Tag>, List<Label>> empty());
     Identity<Tag> r = followPath(path, g, root);
     buildSpanningTreeOfCodeGraph(g, r, m, ListUtils.<Label> nil(),
         spanningTreeEdges);
-    return buildCodeFromSpanningTree(g, m, r, spanningTreeEdges);
+    return buildCodeFromSpanningTree(g, m.get(), r, spanningTreeEdges);
   }
 
   private static Code buildCodeFromSpanningTree(
       DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g,
-      HashMap<Identity<Tag>, List<Label>> m, Identity<Tag> v,
+      Map<Identity<Tag>, List<Label>> m, Identity<Tag> v,
       Set<Pair<Identity<Tag>, Label>> spanningTreeEdges) {
-    Map<Label, CodeOrPath> lm = new HashMap<Label, CodeOrPath>();
-    for (Pair<Identity<Tag>, Label> e : g.outgoingEdgesOf(v)) {
-      if (spanningTreeEdges.contains(e)) {
-        lm.put(
-            e.y,
-            CodeOrPath.newCode(buildCodeFromSpanningTree(g, m,
-                g.getEdgeTarget(e), spanningTreeEdges)));
-      } else {
-        lm.put(e.y, CodeOrPath.newPath(m.get(g.getEdgeTarget(e))));
-      }
-    }
+    Map<Label, CodeOrPath> lm = Map.empty();
+    for (Pair<Identity<Tag>, Label> e : g.outgoingEdgesOf(v))
+      if (spanningTreeEdges.contains(e))
+        lm =
+            lm.put(
+                e.y,
+                CodeOrPath.newCode(buildCodeFromSpanningTree(g, m,
+                    g.getEdgeTarget(e), spanningTreeEdges)));
+      else
+        lm =
+            lm.put(e.y, CodeOrPath.newPath(m.get(g.getEdgeTarget(e)).some().x));
     switch (v.t) {
     case PRODUCT:
       return Code.newProduct(lm);
@@ -345,9 +353,9 @@ public final class CodeUtils {
 
   private static void buildCanonicalSpanningTreeOfCodeGraph(
       DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g,
-      Identity<Tag> v, Map<Identity<Tag>, List<Label>> m, List<Label> path,
-      Set<Pair<Identity<Code.Tag>, Label>> spanningTreeEdges) {
-    m.put(v, path);
+      Identity<Tag> v, Ref<Map<Identity<Tag>, List<Label>>> m,
+      List<Label> path, Set<Pair<Identity<Code.Tag>, Label>> spanningTreeEdges) {
+    m.set(m.get().put(v, path));
     SortedMap<Label, Pair<Identity<Tag>, Label>> sm =
         new TreeMap<Label, Pair<Identity<Tag>, Label>>(new Comparator<Label>() {
           @Override
@@ -359,7 +367,7 @@ public final class CodeUtils {
       sm.put(e.y, e);
     for (Pair<Identity<Tag>, Label> e : sm.values()) {
       Identity<Tag> v2 = g.getEdgeTarget(e);
-      if (!m.containsKey(v2)) {
+      if (!containsKey(m.get(), v2)) {
         buildCanonicalSpanningTreeOfCodeGraph(g, v2, m, append(e.y, path),
             spanningTreeEdges);
         spanningTreeEdges.add(e);
@@ -369,12 +377,12 @@ public final class CodeUtils {
 
   private static void buildSpanningTreeOfCodeGraph(
       DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g,
-      Identity<Tag> v, Map<Identity<Tag>, List<Label>> m, List<Label> path,
-      Set<Pair<Identity<Code.Tag>, Label>> spanningTreeEdges) {
-    m.put(v, path);
+      Identity<Tag> v, Ref<Map<Identity<Tag>, List<Label>>> m,
+      List<Label> path, Set<Pair<Identity<Code.Tag>, Label>> spanningTreeEdges) {
+    m.set(m.get().put(v, path));
     for (Pair<Identity<Tag>, Label> e : g.outgoingEdgesOf(v)) {
       Identity<Tag> v2 = g.getEdgeTarget(e);
-      if (!m.containsKey(v2)) {
+      if (!containsKey(m.get(), v2)) {
         buildSpanningTreeOfCodeGraph(g, v2, m, append(e.y, path),
             spanningTreeEdges);
         spanningTreeEdges.add(e);
@@ -383,16 +391,16 @@ public final class CodeUtils {
   }
 
   public static Code rebase(List<Label> p, Code c) {
-    Map<Label, CodeOrPath> m = new HashMap<Label, CodeOrPath>();
-    for (Entry<Label, CodeOrPath> e : c.labels.entrySet()) {
-      Label l = e.getKey();
-      CodeOrPath cp = e.getValue();
+    Map<Label, CodeOrPath> m = Map.empty();
+    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
+      Label l = e.k;
+      CodeOrPath cp = e.v;
       switch (cp.tag) {
       case CODE:
-        m.put(l, CodeOrPath.newCode(rebase(p, cp.code)));
+        m = m.put(l, CodeOrPath.newCode(rebase(p, cp.code)));
         break;
       case PATH:
-        m.put(l, CodeOrPath.newPath(append(p, cp.path)));
+        m = m.put(l, CodeOrPath.newPath(append(p, cp.path)));
         break;
       default:
         throw boom();
@@ -414,7 +422,7 @@ public final class CodeUtils {
   }
 
   private static boolean validCode(Code root, Code c) {
-    for (CodeOrPath cp : c.labels.values()) {
+    for (CodeOrPath cp : iter(values(c.labels))) {
       switch (cp.tag) {
       case PATH:
         if (codeAt(cp.path, root).isNothing())
