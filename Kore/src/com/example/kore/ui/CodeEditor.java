@@ -32,7 +32,7 @@ import com.example.kore.utils.Optional;
 import com.example.kore.utils.Pair;
 import com.example.kore.utils.Random;
 
-public class CodeEditorActivity extends FrameLayout implements
+public class CodeEditor extends FrameLayout implements
     NodeEditor.NodeEditorListener, Path.SubpathSelectedListener,
     NodeEditor.DoneListener {
 
@@ -59,7 +59,7 @@ public class CodeEditorActivity extends FrameLayout implements
         Map<CanonicalCode, Map<Label, String>> codeLabelAliases);
   }
 
-  public CodeEditorActivity(Context context, Code code,
+  public CodeEditor(Context context, Code code,
       Map<CanonicalCode, Map<Label, String>> codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, List<Code> codes,
       DoneListener doneListener) {
@@ -80,7 +80,7 @@ public class CodeEditorActivity extends FrameLayout implements
     setPath(code, pathShadow);
   }
 
-  public CodeEditorActivity(Context context, Bundle b, DoneListener doneListener) {
+  public CodeEditor(Context context, Bundle b, DoneListener doneListener) {
     super(context);
     notNull(doneListener, b);
     this.context = context;
@@ -162,7 +162,7 @@ public class CodeEditorActivity extends FrameLayout implements
     Label l = null;
     do {
       if (l != null)
-        Log.e(CodeEditorActivity.class.getName(), "generated duplicate label");
+        Log.e(CodeEditor.class.getName(), "generated duplicate label");
       l = new Label(Random.randomId());
     } while (containsKey(m, l));
     m = m.put(l, CodeOrPath.newCode(CodeUtils.unit));

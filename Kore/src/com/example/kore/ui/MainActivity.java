@@ -21,7 +21,7 @@ import android.widget.Button;
 
 public class MainActivity extends FragmentActivity implements
     CodeList.CodeSelectListener, CodeList.CodeAliasChangedListener,
-    CodeEditorActivity.DoneListener {
+    CodeEditor.DoneListener {
 
   private static final String STATE_CODES = "codes";
   private static final String STATE_RECENT_CODES = "recent_codes";
@@ -35,7 +35,7 @@ public class MainActivity extends FragmentActivity implements
   private Map<CanonicalCode, String> codeAliases = Map.empty();
   private View mainLayout;
   private ViewGroup codeEditorContainer;
-  private CodeEditorActivity codeEditor;
+  private CodeEditor codeEditor;
 
   @Override
   protected void onCreate(Bundle b) {
@@ -67,7 +67,7 @@ public class MainActivity extends FragmentActivity implements
     initRecentCodes();
 
     if (codeEditorState != null) {
-      codeEditor = new CodeEditorActivity(this, codeEditorState, this);
+      codeEditor = new CodeEditor(this, codeEditorState, this);
       mainLayout.setVisibility(View.GONE);
       codeEditorContainer.addView(codeEditor);
       codeEditorContainer.setVisibility(View.VISIBLE);
@@ -106,7 +106,7 @@ public class MainActivity extends FragmentActivity implements
 
   private void startCodeEditor(Code c) {
     codeEditor =
-        new CodeEditorActivity(this, c, codeLabelAliases, codeAliases,
+        new CodeEditor(this, c, codeLabelAliases, codeAliases,
             recentCodes, this);
     mainLayout.setVisibility(View.GONE);
     codeEditorContainer.addView(codeEditor);

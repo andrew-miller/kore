@@ -27,11 +27,10 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.Code.Tag;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
-import com.example.kore.ui.CodeEditorActivity;
 import com.example.kore.utils.Map.Entry;
 
 public final class CodeUtils {
-  private static String className = CodeEditorActivity.class.getName();
+  private static String className = CodeUtils.class.getName();
 
   public final static Code unit = Code.newProduct(Map
       .<Label, CodeOrPath> empty());
