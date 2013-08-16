@@ -50,12 +50,12 @@ public final class CodeUtils {
       throw new RuntimeException("negative depth");
     if (depth == 0)
       return "...";
-    if (cp.tag == CodeOrPath.Tag.PATH)
-      return "^";
     CanonicalCode cc = new CanonicalCode(root, path);
     Optional<String> codeAlias = codeAliases.get(cc);
     if (!codeAlias.isNothing())
       return codeAlias.some().x;
+    if (cp.tag == CodeOrPath.Tag.PATH)
+      return "^";
     Code c = cp.code;
     String start;
     String end;
