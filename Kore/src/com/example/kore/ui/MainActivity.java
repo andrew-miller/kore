@@ -9,6 +9,7 @@ import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
+import com.example.kore.ui.CodeEditor.DoneListener;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
@@ -20,8 +21,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 public class MainActivity extends FragmentActivity implements
-    CodeList.CodeSelectListener, CodeList.CodeAliasChangedListener,
-    CodeEditor.DoneListener {
+    CodeList.CodeSelectListener, CodeList.CodeAliasChangedListener {
 
   private static final String STATE_CODES = "codes";
   private static final String STATE_RECENT_CODES = "recent_codes";
@@ -36,6 +36,7 @@ public class MainActivity extends FragmentActivity implements
   private View mainLayout;
   private ViewGroup codeEditorContainer;
   private CodeEditor codeEditor;
+  private DoneListener codeEditorDoneListener;
 
   @Override
   protected void onCreate(Bundle b) {
@@ -67,7 +68,9 @@ public class MainActivity extends FragmentActivity implements
     initRecentCodes();
 
     if (codeEditorState != null) {
-      codeEditor = new CodeEditor(this, codeEditorState, this);
+      newCodeEditorDoneListener();
+      codeEditor =
+          new CodeEditor(this, codeEditorState, codeEditorDoneListener);
       mainLayout.setVisibility(View.GONE);
       codeEditorContainer.addView(codeEditor);
       codeEditorContainer.setVisibility(View.VISIBLE);
@@ -105,12 +108,45 @@ public class MainActivity extends FragmentActivity implements
   }
 
   private void startCodeEditor(Code c) {
+    /*
+     * Workaround android behavior (can't tell if bug or feature): Without this,
+     * a user could create multiple superimposed CodeEditors. He could do this
+     * by pressing on two codes in the recent code list at the same time, or by
+     * quickly pressing the "new code" button multiple times.
+     */
+    if (codeEditorDoneListener != null)
+      return;
+
+    newCodeEditorDoneListener();
     codeEditor =
-        new CodeEditor(this, c, codeLabelAliases, codeAliases,
-            recentCodes, this);
+        new CodeEditor(this, c, codeLabelAliases, codeAliases, recentCodes,
+            codeEditorDoneListener);
     mainLayout.setVisibility(View.GONE);
     codeEditorContainer.addView(codeEditor);
     codeEditorContainer.setVisibility(View.VISIBLE);
+  }
+
+  private void newCodeEditorDoneListener() {
+    codeEditorDoneListener = new CodeEditor.DoneListener() {
+      @Override
+      public void onDone(Code code,
+          Map<CanonicalCode, Map<Label, String>> codeLabelAliases) {
+        if (this != codeEditorDoneListener)
+          throw new RuntimeException(
+              "got CodeEditor.DoneListener event from old CodeEditor");
+        notNull(code, codeLabelAliases);
+        codeEditor = null;
+        codeEditorContainer.removeAllViews();
+        codeEditorContainer.setVisibility(View.GONE);
+        mainLayout.setVisibility(View.VISIBLE);
+        if (!codes.contains(code))
+          recentCodes = cons(code, recentCodes);
+        codes.add(code);
+        MainActivity.this.codeLabelAliases = codeLabelAliases;
+        initRecentCodes();
+        codeEditorDoneListener = null;
+      }
+    };
   }
 
   @Override
@@ -123,21 +159,6 @@ public class MainActivity extends FragmentActivity implements
   public void codeAliasChanged(Code code, List<Label> path, String alias) {
     notNull(code, alias);
     codeAliases = codeAliases.put(new CanonicalCode(code, path), alias);
-    initRecentCodes();
-  }
-
-  @Override
-  public void onDone(Code code,
-      Map<CanonicalCode, Map<Label, String>> codeLabelAliases) {
-    notNull(code, codeLabelAliases);
-    codeEditor = null;
-    codeEditorContainer.removeAllViews();
-    codeEditorContainer.setVisibility(View.GONE);
-    mainLayout.setVisibility(View.VISIBLE);
-    if (!codes.contains(code))
-      recentCodes = cons(code, recentCodes);
-    codes.add(code);
-    this.codeLabelAliases = codeLabelAliases;
     initRecentCodes();
   }
 
