@@ -1,6 +1,7 @@
 package com.example.kore.ui;
 
 import static com.example.kore.utils.ListUtils.cons;
+import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
 
@@ -13,6 +14,8 @@ import com.example.kore.ui.CodeEditor.DoneListener;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
+import com.example.kore.utils.Map.Entry;
+
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
@@ -142,7 +145,10 @@ public class MainActivity extends FragmentActivity implements
         if (!codes.contains(code))
           recentCodes = cons(code, recentCodes);
         codes.add(code);
-        MainActivity.this.codeLabelAliases = codeLabelAliases;
+        for (Entry<CanonicalCode, Map<Label, String>> e : iter(codeLabelAliases
+            .entrySet()))
+          MainActivity.this.codeLabelAliases =
+              MainActivity.this.codeLabelAliases.put(e.k, e.v);
         initRecentCodes();
         codeEditorDoneListener = null;
       }
