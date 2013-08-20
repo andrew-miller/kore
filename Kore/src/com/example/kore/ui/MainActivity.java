@@ -11,6 +11,8 @@ import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.ui.CodeEditor.DoneListener;
+import com.example.kore.ui.CodeList.CodeAliasChangedListener;
+import com.example.kore.ui.CodeList.CodeSelectListener;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
@@ -23,8 +25,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-public class MainActivity extends FragmentActivity implements
-    CodeList.CodeSelectListener, CodeList.CodeAliasChangedListener {
+public class MainActivity extends FragmentActivity {
 
   private static final String STATE_CODES = "codes";
   private static final String STATE_RECENT_CODES = "recent_codes";
@@ -39,6 +40,7 @@ public class MainActivity extends FragmentActivity implements
   private View mainLayout;
   private ViewGroup codeEditorContainer;
   private CodeEditor codeEditor;
+  // if not null, a code editor is open
   private DoneListener codeEditorDoneListener;
 
   @Override
@@ -102,8 +104,26 @@ public class MainActivity extends FragmentActivity implements
   }
 
   private void initRecentCodes() {
+    CodeSelectListener csl = new CodeList.CodeSelectListener() {
+      @Override
+      public void onCodeSelected(Code c) {
+        notNull(c);
+        startCodeEditor(c);
+      }
+    };
+    CodeAliasChangedListener cacl = new CodeList.CodeAliasChangedListener() {
+      @Override
+      public void codeAliasChanged(Code code, List<Label> path, String alias) {
+        notNull(code, alias);
+        if (codeEditorDoneListener != null)
+          throw new RuntimeException(
+              "code list tried to change alias while code editor was open");
+        codeAliases = codeAliases.put(new CanonicalCode(code, path), alias);
+        initRecentCodes();
+      }
+    };
     CodeList cl =
-        new CodeList(this, this, recentCodes, codeLabelAliases, this,
+        new CodeList(this, csl, recentCodes, codeLabelAliases, cacl,
             codeAliases);
     ViewGroup v = (ViewGroup) findViewById(R.id.container_recent_codes);
     v.removeAllViews();
@@ -136,7 +156,7 @@ public class MainActivity extends FragmentActivity implements
           Map<CanonicalCode, Map<Label, String>> codeLabelAliases) {
         if (this != codeEditorDoneListener)
           throw new RuntimeException(
-              "got CodeEditor.DoneListener event from old CodeEditor");
+              "got \"done editing\" event from non-current code editor");
         notNull(code, codeLabelAliases);
         codeEditor = null;
         codeEditorContainer.removeAllViews();
@@ -153,19 +173,6 @@ public class MainActivity extends FragmentActivity implements
         codeEditorDoneListener = null;
       }
     };
-  }
-
-  @Override
-  public void onCodeSelected(Code c) {
-    notNull(c);
-    startCodeEditor(c);
-  }
-
-  @Override
-  public void codeAliasChanged(Code code, List<Label> path, String alias) {
-    notNull(code, alias);
-    codeAliases = codeAliases.put(new CanonicalCode(code, path), alias);
-    initRecentCodes();
   }
 
 }
