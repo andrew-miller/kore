@@ -214,14 +214,19 @@ public class CodeEditor extends FrameLayout implements
     notNull(l);
     Code c = CodeUtils.codeAt(path, code).some().x;
     CodeOrPath cr = c.labels.get(l).some().x;
-    if (cr.tag != CodeOrPath.Tag.CODE)
-      throw new RuntimeException("you can't go there");
-    path = append(l, path);
+    Code c2;
+    if (cr.tag != CodeOrPath.Tag.CODE) {
+      path = cr.path;
+      c2 = CodeUtils.codeAt(path, code).some().x;
+    } else {
+      path = append(l, path);
+      c2 = cr.code;
+    }
     if (!isSubList(path, pathShadow)) {
       pathShadow = path;
       setPath(code, pathShadow);
     }
-    initCodeEditor(cr.code);
+    initCodeEditor(c2);
   }
 
   @Override

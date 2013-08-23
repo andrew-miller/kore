@@ -126,14 +126,12 @@ public class Field extends FrameLayout {
   }
 
   private void initCodeButton() {
-    if (codeOrPath.tag == CodeOrPath.Tag.CODE) {
-      codeButton.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-          codeSelectedListener.codeSelected();
-        }
-      });
-    }
+    codeButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        codeSelectedListener.codeSelected();
+      }
+    });
     codeButton.setOnLongClickListener(new OnLongClickListener() {
       @Override
       public boolean onLongClick(View v) {
