@@ -83,16 +83,6 @@ public class MainActivity extends FragmentActivity {
   }
 
   @Override
-  protected void onResume() {
-    super.onResume();
-    /*
-     * calling initRecentCodes here instead of onActivityResult because calling
-     * it from onActivityResult causes IllegalStateException
-     */
-    initRecentCodes();
-  }
-
-  @Override
   public void onSaveInstanceState(Bundle b) {
     super.onSaveInstanceState(b);
     b.putSerializable(STATE_CODES, codes);
