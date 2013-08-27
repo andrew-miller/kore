@@ -14,7 +14,6 @@ import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
-import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
 
@@ -52,10 +51,9 @@ public class Field extends FrameLayout {
   private final FieldReplacedListener fieldReplacedListener;
   private final LabelAliasChangedListener labelAliasChangedListener;
   private final Label label;
-  private final CodeOrPath codeOrPath;
   private final Code rootCode;
   private final boolean selected;
-  private final Map<CanonicalCode, Map<Label, String>> codeLabelAliases;
+  private final CodeLabelAliasMap codeLabelAliases;
   private final Button labelButton;
   private final Button codeButton;
   private final Map<CanonicalCode, String> codeAliases;
@@ -68,9 +66,8 @@ public class Field extends FrameLayout {
       FieldReplacedListener fieldReplacedListener,
       LabelAliasChangedListener labelAliasChangedListener, Label label,
       CodeOrPath codeOrPath, Code rootCode, boolean selected,
-      Map<CanonicalCode, Map<Label, String>> codeLabelAliases,
-      Map<CanonicalCode, String> codeAliases, List<Code> codes,
-      List<Label> path, Optional<String> labelAlias) {
+      CodeLabelAliasMap codeLabelAliases, Map<CanonicalCode, String> codeAliases,
+      List<Code> codes, List<Label> path, Optional<String> labelAlias) {
     super(context);
     notNull(codeSelectedListener, labelSelectedListener, fieldReplacedListener,
         labelAliasChangedListener, label, codeOrPath, rootCode, codeAliases,
@@ -80,7 +77,6 @@ public class Field extends FrameLayout {
     this.fieldReplacedListener = fieldReplacedListener;
     this.labelAliasChangedListener = labelAliasChangedListener;
     this.label = label;
-    this.codeOrPath = codeOrPath;
     this.rootCode = rootCode;
     this.selected = selected;
     this.codeLabelAliases = codeLabelAliases;
@@ -166,12 +162,10 @@ public class Field extends FrameLayout {
               return true;
             }
           });
-          Optional<Map<Label, String>> las =
-              codeLabelAliases.get(new CanonicalCode(rootCode, path));
+          Map<Label, String> las =
+              codeLabelAliases.getAliases(new CanonicalCode(rootCode, path));
           for (Entry<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
-            Optional<String> ls2 =
-                las.isNothing() ? OptionalUtils.<String> nothing()
-                    : las.some().x.get(e.k);
+            Optional<String> ls2 = las.get(e.k);
             addRootCodeToMenu(m, e.v, ls2.isNothing() ? e.k.label
                 : ls2.some().x, space + "  ", append(e.k, path));
           }
@@ -184,8 +178,8 @@ public class Field extends FrameLayout {
             m.add(space
                 + ls.substring(0, Math.min(10, ls.length()))
                 + " "
-                + CodeUtils.renderCode(root, path, codeLabelAliases,
-                    codeAliases, 1));
+                + CodeUtils
+                    .renderCode(root, path, codeLabelAliases, codeAliases, 1));
         i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
           @Override
           public boolean onMenuItemClick(MenuItem i) {
@@ -195,13 +189,11 @@ public class Field extends FrameLayout {
             return true;
           }
         });
-        Optional<Map<Label, String>> las =
-            codeLabelAliases.get(new CanonicalCode(root, path));
+        Map<Label, String> las =
+            codeLabelAliases.getAliases(new CanonicalCode(root, path));
         if (cp.tag == CodeOrPath.Tag.CODE) {
           for (Entry<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
-            Optional<String> ls2 =
-                las.isNothing() ? OptionalUtils.<String> nothing()
-                    : las.some().x.get(e.k);
+            Optional<String> ls2 = las.get(e.k);
             addOtherCodeToMenu(root, m, e.v,
                 ls2.isNothing() ? e.k.label : ls2.some().x, space + "  ",
                 append(e.k, path));

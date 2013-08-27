@@ -27,6 +27,7 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.Code.Tag;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
+import com.example.kore.ui.CodeLabelAliasMap;
 import com.example.kore.utils.Map.Entry;
 
 public final class CodeUtils {
@@ -36,15 +37,15 @@ public final class CodeUtils {
       .<Label, CodeOrPath> empty());
 
   public static String renderCode(Code c, List<Label> p,
-      Map<CanonicalCode, Map<Label, String>> codeLabelAliases,
-      Map<CanonicalCode, String> codeAliases, int depth) {
+      CodeLabelAliasMap codeLabelAliases, Map<CanonicalCode, String> codeAliases,
+      int depth) {
     return renderCode(p, c, codeOrLabelAt(p, c), codeLabelAliases, codeAliases,
         depth);
   }
 
   private static String renderCode(List<Label> path, Code root, CodeOrPath cp,
-      Map<CanonicalCode, Map<Label, String>> codeLabelAliases,
-      Map<CanonicalCode, String> codeAliases, int depth) {
+      CodeLabelAliasMap codeLabelAliases, Map<CanonicalCode, String> codeAliases,
+      int depth) {
     if (depth < 0)
       throw new RuntimeException("negative depth");
     if (depth == 0)
@@ -70,7 +71,7 @@ public final class CodeUtils {
     default:
       throw Boom.boom();
     }
-    Optional<Map<Label, String>> labelAliases = codeLabelAliases.get(cc);
+    Map<Label, String> labelAliases = codeLabelAliases.getAliases(cc);
     String result = "";
     for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
       Label l = e.k;
@@ -78,9 +79,7 @@ public final class CodeUtils {
         result = "'";
       else
         result += ", '";
-      Optional<String> la =
-          labelAliases.isNothing() ? OptionalUtils.<String> nothing()
-              : labelAliases.some().x.get(l);
+      Optional<String> la = labelAliases.get(l);
       String ls = la.isNothing() ? l.label : la.some().x;
       result +=
           (ls + " " + renderCode(append(l, path), root, e.v, codeLabelAliases,

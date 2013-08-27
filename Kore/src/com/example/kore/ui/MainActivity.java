@@ -1,7 +1,6 @@
 package com.example.kore.ui;
 
 import static com.example.kore.utils.ListUtils.cons;
-import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
 
@@ -16,7 +15,7 @@ import com.example.kore.ui.CodeList.CodeSelectListener;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
-import com.example.kore.utils.Map.Entry;
+import com.example.kore.utils.Optional;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -42,6 +41,41 @@ public class MainActivity extends FragmentActivity {
   private CodeEditor codeEditor;
   // if not null, a code editor is open
   private DoneListener codeEditorDoneListener;
+
+  CodeLabelAliasMap codeLabelAliasMap = new CodeLabelAliasMap() {
+    @Override
+    public void setAlias(CanonicalCode c, Label l, String alias) {
+      Optional<Map<Label, String>> o = codeLabelAliases.get(c);
+      if (o.isNothing())
+        codeLabelAliases =
+            codeLabelAliases.put(c, Map.<Label, String> empty().put(l, alias));
+      else
+        codeLabelAliases = codeLabelAliases.put(c, o.some().x.put(l, alias));
+    }
+
+    @Override
+    public void deleteAlias(CanonicalCode c, Label l) {
+      Optional<Map<Label, String>> o = codeLabelAliases.get(c);
+      if (o.isNothing())
+        codeLabelAliases =
+            codeLabelAliases.put(c, Map.<Label, String> empty().delete(l));
+      else
+        codeLabelAliases = codeLabelAliases.put(c, o.some().x.delete(l));
+    }
+
+    @Override
+    public Map<Label, String> getAliases(CanonicalCode c) {
+      Optional<Map<Label, String>> o = codeLabelAliases.get(c);
+      if (o.isNothing())
+        return Map.empty();
+      return o.some().x;
+    }
+
+    @Override
+    public void setAliases(CanonicalCode c, Map<Label, String> aliases) {
+      codeLabelAliases = codeLabelAliases.put(c, aliases);
+    }
+  };
 
   @Override
   protected void onCreate(Bundle b) {
@@ -75,7 +109,8 @@ public class MainActivity extends FragmentActivity {
     if (codeEditorState != null) {
       newCodeEditorDoneListener();
       codeEditor =
-          new CodeEditor(this, codeEditorState, codeEditorDoneListener);
+          new CodeEditor(this, codeEditorState, codeLabelAliasMap,
+              codeEditorDoneListener);
       mainLayout.setVisibility(View.GONE);
       codeEditorContainer.addView(codeEditor);
       codeEditorContainer.setVisibility(View.VISIBLE);
@@ -113,7 +148,7 @@ public class MainActivity extends FragmentActivity {
       }
     };
     CodeList cl =
-        new CodeList(this, csl, recentCodes, codeLabelAliases, cacl,
+        new CodeList(this, csl, recentCodes, codeLabelAliasMap, cacl,
             codeAliases);
     ViewGroup v = (ViewGroup) findViewById(R.id.container_recent_codes);
     v.removeAllViews();
@@ -132,7 +167,7 @@ public class MainActivity extends FragmentActivity {
 
     newCodeEditorDoneListener();
     codeEditor =
-        new CodeEditor(this, c, codeLabelAliases, codeAliases, recentCodes,
+        new CodeEditor(this, c, codeLabelAliasMap, codeAliases, recentCodes,
             codeEditorDoneListener);
     mainLayout.setVisibility(View.GONE);
     codeEditorContainer.addView(codeEditor);
@@ -142,8 +177,7 @@ public class MainActivity extends FragmentActivity {
   private void newCodeEditorDoneListener() {
     codeEditorDoneListener = new CodeEditor.DoneListener() {
       @Override
-      public void onDone(Code code,
-          Map<CanonicalCode, Map<Label, String>> codeLabelAliases) {
+      public void onDone(Code code) {
         if (this != codeEditorDoneListener)
           throw new RuntimeException(
               "got \"done editing\" event from non-current code editor");
@@ -155,10 +189,6 @@ public class MainActivity extends FragmentActivity {
         if (!codes.contains(code))
           recentCodes = cons(code, recentCodes);
         codes.add(code);
-        for (Entry<CanonicalCode, Map<Label, String>> e : iter(codeLabelAliases
-            .entrySet()))
-          MainActivity.this.codeLabelAliases =
-              MainActivity.this.codeLabelAliases.put(e.k, e.v);
         initRecentCodes();
         codeEditorDoneListener = null;
       }

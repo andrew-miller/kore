@@ -6,8 +6,6 @@ import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.MapUtils.containsKey;
 import static com.example.kore.utils.Null.notNull;
-import static com.example.kore.utils.OptionalUtils.some;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
@@ -38,7 +36,6 @@ public class CodeEditor extends FrameLayout implements
 
   private static final String STATE_CODE = "code";
   private static final String STATE_PATH = "path";
-  private static final String STATE_CODE_LABEL_ALIASES = "code_label_aliases";
   private static final String STATE_CODE_ALIASES = "code_aliases";
   private static final String STATE_PATH_SHADOW = "path_shadow";
   private static final String STATE_CODES = "codes";
@@ -46,7 +43,7 @@ public class CodeEditor extends FrameLayout implements
   private NodeEditor codeEditor;
   private Code code = CodeUtils.unit;
   private List<Label> path = nil();
-  private Map<CanonicalCode, Map<Label, String>> codeLabelAliases;
+  private final CodeLabelAliasMap codeLabelAliases;
   private final Map<CanonicalCode, String> codeAliases;
   private List<Label> pathShadow = nil();
   private final List<Code> codes;
@@ -55,12 +52,10 @@ public class CodeEditor extends FrameLayout implements
   private final DoneListener doneListener;
 
   public interface DoneListener {
-    public void onDone(Code code,
-        Map<CanonicalCode, Map<Label, String>> codeLabelAliases);
+    public void onDone(Code code);
   }
 
-  public CodeEditor(Context context, Code code,
-      Map<CanonicalCode, Map<Label, String>> codeLabelAliases,
+  public CodeEditor(Context context, Code code, CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, List<Code> codes,
       DoneListener doneListener) {
     super(context);
@@ -80,15 +75,14 @@ public class CodeEditor extends FrameLayout implements
     setPath(code, pathShadow);
   }
 
-  public CodeEditor(Context context, Bundle b, DoneListener doneListener) {
+  public CodeEditor(Context context, Bundle b, CodeLabelAliasMap codeLabelAliases,
+      DoneListener doneListener) {
     super(context);
     notNull(doneListener, b);
     this.context = context;
     code = (Code) b.get(STATE_CODE);
     path = (List<Label>) b.get(STATE_PATH);
-    codeLabelAliases =
-        (Map<CanonicalCode, Map<Label, String>>) b
-            .get(STATE_CODE_LABEL_ALIASES);
+    this.codeLabelAliases = codeLabelAliases;
     codeAliases = (Map<CanonicalCode, String>) b.get(STATE_CODE_ALIASES);
     pathShadow = (List<Label>) b.get(STATE_PATH_SHADOW);
     codes = (List<Code>) b.get(STATE_CODES);
@@ -106,7 +100,6 @@ public class CodeEditor extends FrameLayout implements
     Bundle b = new Bundle();
     b.putSerializable(STATE_CODE, code);
     b.putSerializable(STATE_PATH, path);
-    b.putSerializable(STATE_CODE_LABEL_ALIASES, codeLabelAliases);
     b.putSerializable(STATE_CODE_ALIASES, codeAliases);
     b.putSerializable(STATE_PATH_SHADOW, pathShadow);
     b.putSerializable(STATE_CODES, codes);
@@ -137,22 +130,20 @@ public class CodeEditor extends FrameLayout implements
       List<Label> c2Path, Code cNode, Map<List<Label>, Map<Label, Label>> i) {
     CanonicalCode cc = new CanonicalCode(cRoot, cPath);
     CanonicalCode cc2 = new CanonicalCode(c2root, c2Path);
-    Optional<Map<Label, String>> ola = codeLabelAliases.get(cc);
+    Map<Label, String> la = codeLabelAliases.getAliases(cc);
     Map<Label, String> la2 = Map.empty();
     Map<Label, Label> m = i.get(cPath).some().x;
     for (Entry<Label, CodeOrPath> e : iter(cNode.labels.entrySet())) {
       Label l = e.k;
       Label l2 = m.get(l).some().x;
-      if (!ola.isNothing()) {
-        Optional<String> oa = ola.some().x.get(l);
-        if (!oa.isNothing())
-          la2 = la2.put(l2, oa.some().x);
-      }
+      Optional<String> oa = la.get(l);
+      if (!oa.isNothing())
+        la2 = la2.put(l2, oa.some().x);
       if (e.v.tag == CodeOrPath.Tag.CODE)
         mapAliases(cRoot, append(e.k, cPath), c2root, append(l2, c2Path),
             e.v.code, i);
     }
-    codeLabelAliases = codeLabelAliases.put(cc2, la2);
+    codeLabelAliases.setAliases(cc2, la2);
   }
 
   @Override
@@ -199,11 +190,8 @@ public class CodeEditor extends FrameLayout implements
       List<Label> invalidatedPath) {
     if (path.equals(invalidatedPath))
       return;
-    Optional<Map<Label, String>> la =
-        codeLabelAliases.get(new CanonicalCode(code, path));
-    if (!la.isNothing())
-      codeLabelAliases =
-          codeLabelAliases.put(new CanonicalCode(c2, path), la.some().x);
+    codeLabelAliases.setAliases(new CanonicalCode(c2, path),
+        codeLabelAliases.getAliases(new CanonicalCode(code, path)));
     for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet()))
       if (e.v.tag == Tag.CODE)
         remapAliases(e.v.code, c2, append(e.k, path), invalidatedPath);
@@ -261,13 +249,7 @@ public class CodeEditor extends FrameLayout implements
     if (!containsKey(c.labels, label))
       throw new RuntimeException("non-existent label");
     CanonicalCode cc = new CanonicalCode(code, path);
-    Optional<Map<Label, String>> labelAliases = codeLabelAliases.get(cc);
-    if (labelAliases.isNothing()) {
-      labelAliases = some(Map.<Label, String> empty());
-      codeLabelAliases = codeLabelAliases.put(cc, labelAliases.some().x);
-    }
-    codeLabelAliases =
-        codeLabelAliases.put(cc, labelAliases.some().x.put(label, alias));
+    codeLabelAliases.setAlias(cc, label, alias);
     initCodeEditor(c);
   }
 
@@ -282,7 +264,7 @@ public class CodeEditor extends FrameLayout implements
 
   @Override
   public void onDone() {
-    doneListener.onDone(code, codeLabelAliases);
+    doneListener.onDone(code);
   }
 
 }

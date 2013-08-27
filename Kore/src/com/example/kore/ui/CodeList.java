@@ -22,9 +22,6 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 public class CodeList extends FrameLayout {
-  public static final String ARG_CODES = "codes";
-  public static final String ARG_CODE_LABEL_ALIASES = "code_label_aliases";
-  public static final String ARG_CODE_ALIASES = "code_aliases";
 
   public static interface CodeSelectListener {
     public void onCodeSelected(Code c);
@@ -35,8 +32,7 @@ public class CodeList extends FrameLayout {
   }
 
   public CodeList(Context context, final CodeSelectListener codeSelectListener,
-      List<Code> codes,
-      Map<CanonicalCode, Map<Label, String>> codeLabelAliases,
+      List<Code> codes, CodeLabelAliasMap codeLabelAliases,
       final CodeAliasChangedListener codeAliasChangedListener,
       Map<CanonicalCode, String> codeAliases) {
     super(context);

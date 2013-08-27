@@ -22,8 +22,6 @@ import com.example.kore.utils.Boom;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Map.Entry;
-import com.example.kore.utils.Optional;
-import com.example.kore.utils.OptionalUtils;
 
 public class NodeEditor extends FrameLayout {
   public static interface NodeEditorListener {
@@ -54,13 +52,12 @@ public class NodeEditor extends FrameLayout {
   private final Map<CanonicalCode, String> codeAliases;
   private final List<Code> codes;
   private final List<Label> path;
-  private final Map<CanonicalCode, Map<Label, String>> codeLabelAliases;
+  private final CodeLabelAliasMap codeLabelAliases;
 
   public NodeEditor(Context context, Code code, Code rootCode,
       final NodeEditorListener nodeEditorListener,
       final DoneListener doneListener, Map<CanonicalCode, String> codeAliases,
-      List<Code> codes, List<Label> path,
-      Map<CanonicalCode, Map<Label, String>> codeLabelAliases) {
+      List<Code> codes, List<Label> path, CodeLabelAliasMap codeLabelAliases) {
     super(context);
     notNull(code, rootCode, codeAliases, codes, path);
     this.code = code;
@@ -112,8 +109,8 @@ public class NodeEditor extends FrameLayout {
       throw Boom.boom();
     }
     fields.removeAllViews();
-    Optional<Map<Label, String>> las =
-        codeLabelAliases.get(new CanonicalCode(rootCode, path));
+    Map<Label, String> las =
+        codeLabelAliases.getAliases(new CanonicalCode(rootCode, path));
     for (final Entry<Label, CodeOrPath> e : iter(code.labels.entrySet())) {
       final Label l = e.k;
       LabelSelectedListener lsl = new Field.LabelSelectedListener() {
@@ -155,8 +152,7 @@ public class NodeEditor extends FrameLayout {
 
       fields.addView(new Field(getContext(), csl, lsl, frl, lacl, l, e.v,
           rootCode, l.equals(selectedLabel), codeLabelAliases, codeAliases,
-          codes, path, las.isNothing() ? OptionalUtils.<String> nothing() : las
-              .some().x.get(l)));
+          codes, path, las.get(l)));
     }
   }
 
