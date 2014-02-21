@@ -114,16 +114,11 @@ public class RelationEditor extends FrameLayout implements
       break;
     }
     case PROJECTION: {
-      Code arg;
-      if (r.tag == Relation.Tag.ABSTRACTION)
-        arg = r.abstraction().i;
-      else {
-        Optional<Abstraction> oa = enclosingAbstraction(path, relation);
-        if (oa.isNothing())
-          throw new RuntimeException(
-              "attempt to make projection that isn't contained within an abstraction");
-        arg = oa.some().x.i;
-      }
+      Optional<Abstraction> oa = enclosingAbstraction(path, relation);
+      if (oa.isNothing())
+        throw new RuntimeException(
+            "attempt to make projection that isn't contained within an abstraction");
+      Code arg = oa.some().x.i;
       Optional<Projection> or2 = projection(arg, c);
       r2 = or2.isNothing() ? r : Relation.projection(or2.some().x);
       break;
