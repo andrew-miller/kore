@@ -1,0 +1,25 @@
+diff --git a/vm/Init.cpp b/vm/Init.cpp
+index 9ac98ac..9376fb1 100644
+--- a/vm/Init.cpp
++++ b/vm/Init.cpp
+@@ -954,7 +954,7 @@ static int processOptions(int argc, const char* const argv[],
+         } else if (strncmp(argv[i], "-Xss", 4) == 0) {
+             size_t val = parseMemOption(argv[i]+4, 1);
+             if (val != 0) {
+-                if (val >= kMinStackSize && val <= kMaxStackSize) {
++                if (val >= kMinStackSize) {
+                     gDvm.stackSize = val;
+                     if (val > gDvm.mainThreadStackSize) {
+                         gDvm.mainThreadStackSize = val;
+diff --git a/vm/Thread.cpp b/vm/Thread.cpp
+index e19a795..c0c0e03 100644
+--- a/vm/Thread.cpp
++++ b/vm/Thread.cpp
+@@ -1239,8 +1239,6 @@ bool dvmCreateInterpThread(Object* threadObj, int reqStackSize)
+         stackSize = gDvm.stackSize;
+     else if (reqStackSize < kMinStackSize)
+         stackSize = kMinStackSize;
+-    else if (reqStackSize > kMaxStackSize)
+-        stackSize = kMaxStackSize;
+     else
+         stackSize = reqStackSize;

@@ -6,3 +6,9 @@ One way to do this is run these commands in adb shell as root:
 or permanently, by setting in /system/build.prop:
 dalvik.vm.extra-opts=-Xss256k
 
+But that's still not really enough stack. It's better to modify the dalvik vm to get rid of the stack size limit. There's a patch for this:
+Kore/crap/dalvik-unlimit-stack-size.patch
+
+I've done most of the development with a 10MB stack, and have not run across any stack related problems so far. Here is the /system/build.prop line for 10MB:
+dalvik.vm.extra-opts=-Xss10M
+
