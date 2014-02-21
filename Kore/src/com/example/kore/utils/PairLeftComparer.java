@@ -10,7 +10,6 @@ public class PairLeftComparer<L, R> implements Comparer<Pair<L, R>>,
     this.comparer = comparer;
   }
 
-  @Override
   public Comparison compare(Pair<L, R> a, Pair<L, R> b) {
     return comparer.compare(a.x, b.x);
   }

@@ -3,6 +3,17 @@ package com.example.kore.ui;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.Null.notNull;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MenuItem.OnMenuItemClickListener;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.PopupMenu;
+
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
@@ -17,18 +28,7 @@ import com.example.kore.utils.Map;
 import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
 
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.PopupMenu;
-
-public class Field extends FrameLayout {
+public class CodeField extends FrameLayout {
   public static interface CodeSelectedListener {
     public void codeSelected();
   }
@@ -61,13 +61,14 @@ public class Field extends FrameLayout {
   private final List<Label> path;
   private final Optional<String> labelAlias;
 
-  public Field(Context context, CodeSelectedListener codeSelectedListener,
+  public CodeField(Context context, CodeSelectedListener codeSelectedListener,
       LabelSelectedListener labelSelectedListener,
       FieldReplacedListener fieldReplacedListener,
       LabelAliasChangedListener labelAliasChangedListener, Label label,
       CodeOrPath codeOrPath, Code rootCode, boolean selected,
-      CodeLabelAliasMap codeLabelAliases, Map<CanonicalCode, String> codeAliases,
-      List<Code> codes, List<Label> path, Optional<String> labelAlias) {
+      CodeLabelAliasMap codeLabelAliases,
+      Map<CanonicalCode, String> codeAliases, List<Code> codes,
+      List<Label> path, Optional<String> labelAlias) {
     super(context);
     notNull(codeSelectedListener, labelSelectedListener, fieldReplacedListener,
         labelAliasChangedListener, label, codeOrPath, rootCode, codeAliases,
@@ -85,7 +86,8 @@ public class Field extends FrameLayout {
     this.path = path;
     this.labelAlias = labelAlias;
     this.a = context;
-    View v = LayoutInflater.from(context).inflate(R.layout.field, this, true);
+    View v =
+        LayoutInflater.from(context).inflate(R.layout.code_field, this, true);
     labelButton = (Button) v.findViewById(R.id.button_label);
     initLabelButton();
     codeButton = (Button) v.findViewById(R.id.button_code);
@@ -100,17 +102,14 @@ public class Field extends FrameLayout {
     if (selected)
       labelButton.setText("---");
     labelButton.setOnClickListener(new OnClickListener() {
-      @Override
       public void onClick(View v) {
         labelSelectedListener.labelSelected();
       }
     });
     labelButton.setOnLongClickListener(new OnLongClickListener() {
-      @Override
       public boolean onLongClick(final View v) {
         UIUtils.replaceWithTextEntry((ViewGroup) v.getParent(), v, a,
             label.label, new F<String, Void>() {
-              @Override
               public Void f(String s) {
                 labelAliasChangedListener.labelAliasChanged(s);
                 return null;
@@ -123,22 +122,29 @@ public class Field extends FrameLayout {
 
   private void initCodeButton() {
     codeButton.setOnClickListener(new View.OnClickListener() {
-      @Override
       public void onClick(View v) {
         codeSelectedListener.codeSelected();
       }
     });
     codeButton.setOnLongClickListener(new OnLongClickListener() {
-      @Override
       public boolean onLongClick(View v) {
         PopupMenu pm = new PopupMenu(a, v);
         Menu m = pm.getMenu();
         addRootCodeToMenu(m, CodeOrPath.newCode(rootCode), "", "",
             ListUtils.<Label> nil());
         m.add("---");
-        for (Code c : iter(codes))
-          addOtherCodeToMenu(c, m, CodeOrPath.newCode(c), "", "",
-              ListUtils.<Label> nil());
+        for (final Code c : iter(codes))
+          UIUtils.addCodeToMenu(c, m, CodeOrPath.newCode(c), "", "",
+              ListUtils.<Label> nil(), codeLabelAliases, codeAliases,
+              new F<Void, Void>() {
+                public Void f(Void x) {
+                  fieldReplacedListener.fieldReplaced(CodeOrPath
+                      .newCode(CodeUtils.rebase(
+                          append(label, CodeField.this.path),
+                          CodeUtils.reRoot(c, path))));
+                  return null;
+                }
+              });
 
         pm.show();
         return true;
@@ -154,10 +160,9 @@ public class Field extends FrameLayout {
                     codeAliases, 1));
         if (cp.tag == Tag.CODE) {
           i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
-            @Override
             public boolean onMenuItemClick(MenuItem i) {
               if (CodeUtils.validCode(CodeUtils.replaceCodeAt(rootCode,
-                  append(label, Field.this.path), CodeOrPath.newPath(path))))
+                  append(label, CodeField.this.path), CodeOrPath.newPath(path))))
                 fieldReplacedListener.fieldReplaced(CodeOrPath.newPath(path));
               return true;
             }
@@ -168,35 +173,6 @@ public class Field extends FrameLayout {
             Optional<String> ls2 = las.get(e.k);
             addRootCodeToMenu(m, e.v, ls2.isNothing() ? e.k.label
                 : ls2.some().x, space + "  ", append(e.k, path));
-          }
-        }
-      }
-
-      private void addOtherCodeToMenu(final Code root, Menu m, CodeOrPath cp,
-          String ls, String space, final List<Label> path) {
-        MenuItem i =
-            m.add(space
-                + ls.substring(0, Math.min(10, ls.length()))
-                + " "
-                + CodeUtils
-                    .renderCode(root, path, codeLabelAliases, codeAliases, 1));
-        i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
-          @Override
-          public boolean onMenuItemClick(MenuItem i) {
-            fieldReplacedListener.fieldReplaced(CodeOrPath.newCode(CodeUtils
-                .rebase(append(label, Field.this.path),
-                    CodeUtils.reRoot(root, path))));
-            return true;
-          }
-        });
-        Map<Label, String> las =
-            codeLabelAliases.getAliases(new CanonicalCode(root, path));
-        if (cp.tag == CodeOrPath.Tag.CODE) {
-          for (Entry<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
-            Optional<String> ls2 = las.get(e.k);
-            addOtherCodeToMenu(root, m, e.v,
-                ls2.isNothing() ? e.k.label : ls2.some().x, space + "  ",
-                append(e.k, path));
           }
         }
       }

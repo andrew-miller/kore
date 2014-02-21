@@ -1,5 +1,8 @@
 package com.example.kore.utils;
 
+import static com.example.kore.utils.OptionalUtils.nothing;
+import static com.example.kore.utils.OptionalUtils.some;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -43,17 +46,14 @@ public class ListUtils {
 
   public static <T> Iterable<T> iter(final List<T> l) {
     return new Iterable<T>() {
-      @Override
       public Iterator<T> iterator() {
         return new Iterator<T>() {
           List<T> l_ = l;
 
-          @Override
           public boolean hasNext() {
             return !l_.isEmpty();
           }
 
-          @Override
           public T next() {
             if (l_.isEmpty())
               throw new RuntimeException("empty");
@@ -62,7 +62,6 @@ public class ListUtils {
             return x;
           }
 
-          @Override
           public void remove() {
             throw new UnsupportedOperationException();
           }
@@ -142,5 +141,85 @@ public class ListUtils {
       l = cons(i.next(), l);
     }
     return l;
+  }
+
+  public static <T> Optional<T> nth(List<T> l, Integer n) {
+    for (; n != 0; n--) {
+      if (l.isEmpty())
+        return nothing();
+      l = l.cons().tail;
+    }
+    if (l.isEmpty())
+      return nothing();
+    return some(l.cons().x);
+  }
+
+  public static <T> List<T> replace(List<T> l, int i, T x) {
+    if (i == 0) {
+      if (l.isEmpty())
+        return singleton(x);
+      return cons(x, l.cons().tail);
+    }
+    return cons(l.cons().x, replace(l.cons().tail, i - 1, x));
+  }
+
+  public static <T> Integer length(List<T> l) {
+    Integer n = 0;
+    while (!l.isEmpty()) {
+      n++;
+      l = l.cons().tail;
+    }
+    return n;
+  }
+
+  public static <T> Iterable<T> cycle(final List<T> l) {
+    return new Iterable<T>() {
+      public Iterator<T> iterator() {
+        return new Iterator<T>() {
+          List<T> l2 = l;
+
+          public boolean hasNext() {
+            return true;
+          }
+
+          public T next() {
+            T x = l2.cons().x;
+            l2 = l2.cons().tail;
+            if (l2.isEmpty())
+              l2 = l;
+            return x;
+          }
+
+          public void remove() {
+            throw new UnsupportedOperationException();
+          }
+        };
+      }
+    };
+  }
+
+  public static <A, B> List<Pair<A, B>> zip(Iterator<A> a, Iterator<B> b) {
+    if (!a.hasNext())
+      return nil();
+    if (!b.hasNext())
+      return nil();
+    return cons(Pair.pair(a.next(), b.next()), zip(a, b));
+  }
+
+  public static <T> List<T> insert(List<T> l, Integer i, T x) {
+    if (i == 0)
+      return cons(x, l);
+    return cons(l.cons().x, insert(l.cons().tail, i - 1, x));
+  }
+
+  public static <T> List<T> remove(List<T> l, Integer i) {
+    if (i == 0)
+      return l.cons().tail;
+    return cons(l.cons().x, remove(l.cons().tail, i - 1));
+  }
+
+  public static <T> List<T> move(List<T> l, Integer src, Integer dest) {
+    return insert(remove(l, src), dest > src ? dest - 1 : dest, nth(l, src)
+        .some().x);
   }
 }

@@ -2,6 +2,12 @@ package com.example.kore.ui;
 
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.Null.notNull;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
@@ -13,13 +19,6 @@ import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
-
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 
 public class CodeList extends FrameLayout {
 
@@ -52,7 +51,6 @@ public class CodeList extends FrameLayout {
               : codeName.some().x;
       b.setText(strCode);
       b.setOnClickListener(new OnClickListener() {
-        @Override
         public void onClick(View v) {
           codeSelectListener.onCodeSelected(code);
         }
@@ -60,11 +58,9 @@ public class CodeList extends FrameLayout {
       fl.addView(b);
 
       b.setOnLongClickListener(new OnLongClickListener() {
-        @Override
         public boolean onLongClick(final View v) {
           UIUtils.replaceWithTextEntry(fl, v, getContext(), strCode,
               new F<String, Void>() {
-                @Override
                 public Void f(String s) {
                   codeAliasChangedListener.codeAliasChanged(code,
                       ListUtils.<Label> nil(), s);

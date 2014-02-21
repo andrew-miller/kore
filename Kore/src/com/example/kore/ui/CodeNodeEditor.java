@@ -14,17 +14,17 @@ import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
-import com.example.kore.ui.Field.CodeSelectedListener;
-import com.example.kore.ui.Field.FieldReplacedListener;
-import com.example.kore.ui.Field.LabelAliasChangedListener;
-import com.example.kore.ui.Field.LabelSelectedListener;
+import com.example.kore.ui.CodeField.CodeSelectedListener;
+import com.example.kore.ui.CodeField.FieldReplacedListener;
+import com.example.kore.ui.CodeField.LabelAliasChangedListener;
+import com.example.kore.ui.CodeField.LabelSelectedListener;
 import com.example.kore.utils.Boom;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Map.Entry;
 
-public class NodeEditor extends FrameLayout {
-  public static interface NodeEditorListener {
+public class CodeNodeEditor extends FrameLayout {
+  public static interface Listener {
     void newField();
 
     void switchCodeOp();
@@ -36,15 +36,13 @@ public class NodeEditor extends FrameLayout {
     void fieldReplaced(CodeOrPath cp, Label l);
 
     void labelAliasChanged(Label label, String alias);
-  }
 
-  public static interface DoneListener {
-    public void onDone();
+    void onDone();
   }
 
   private final Code code;
   private final Code rootCode;
-  private final NodeEditorListener nodeEditorListener;
+  private final Listener listener;
   private final Button deleteButton;
   private Label selectedLabel;
   private final LinearLayout fields;
@@ -54,45 +52,41 @@ public class NodeEditor extends FrameLayout {
   private final List<Label> path;
   private final CodeLabelAliasMap codeLabelAliases;
 
-  public NodeEditor(Context context, Code code, Code rootCode,
-      final NodeEditorListener nodeEditorListener,
-      final DoneListener doneListener, Map<CanonicalCode, String> codeAliases,
+  public CodeNodeEditor(Context context, Code code, Code rootCode,
+      final Listener listener, Map<CanonicalCode, String> codeAliases,
       List<Code> codes, List<Label> path, CodeLabelAliasMap codeLabelAliases) {
     super(context);
     notNull(code, rootCode, codeAliases, codes, path);
     this.code = code;
     this.rootCode = rootCode;
-    this.nodeEditorListener = nodeEditorListener;
+    this.listener = listener;
     this.codeAliases = codeAliases;
     this.codes = codes;
     this.path = path;
     this.codeLabelAliases = codeLabelAliases;
     View v =
-        LayoutInflater.from(context).inflate(R.layout.node_editor, this, true);
+        LayoutInflater.from(context).inflate(R.layout.code_node_editor, this,
+            true);
     fields = (LinearLayout) v.findViewById(R.id.layout_fields);
     deleteButton = (Button) v.findViewById(R.id.button_delete_field);
     switchCodeOpButton = (Button) v.findViewById(R.id.button_switch_code_op);
     switchCodeOpButton.setOnClickListener(new OnClickListener() {
-      @Override
       public void onClick(View v) {
-        nodeEditorListener.switchCodeOp();
+        listener.switchCodeOp();
       }
     });
-    ((Button) v.findViewById(R.id.button_new_field))
-        .setOnClickListener(new View.OnClickListener() {
-          @Override
+    v.findViewById(R.id.button_new_field).setOnClickListener(
+        new View.OnClickListener() {
           public void onClick(View v) {
-            nodeEditorListener.newField();
+            listener.newField();
           }
         });
 
-    ((Button) v.findViewById(R.id.button_done))
-        .setOnClickListener(new OnClickListener() {
-          @Override
-          public void onClick(View v) {
-            doneListener.onDone();
-          }
-        });
+    v.findViewById(R.id.button_done).setOnClickListener(new OnClickListener() {
+      public void onClick(View v) {
+        listener.onDone();
+      }
+    });
 
     render();
   }
@@ -113,44 +107,40 @@ public class NodeEditor extends FrameLayout {
         codeLabelAliases.getAliases(new CanonicalCode(rootCode, path));
     for (final Entry<Label, CodeOrPath> e : iter(code.labels.entrySet())) {
       final Label l = e.k;
-      LabelSelectedListener lsl = new Field.LabelSelectedListener() {
-        @Override
+      LabelSelectedListener lsl = new CodeField.LabelSelectedListener() {
         public void labelSelected() {
           notNull(l);
           deleteButton.setVisibility(View.VISIBLE);
           selectedLabel = l;
           deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
             public void onClick(View v) {
-              nodeEditorListener.deleteField(l);
+              listener.deleteField(l);
             }
           });
           render();
         }
       };
 
-      CodeSelectedListener csl = new Field.CodeSelectedListener() {
-        @Override
+      CodeSelectedListener csl = new CodeField.CodeSelectedListener() {
         public void codeSelected() {
-          nodeEditorListener.codeSelected(l);
+          listener.codeSelected(l);
         }
       };
 
-      FieldReplacedListener frl = new Field.FieldReplacedListener() {
-        @Override
+      FieldReplacedListener frl = new CodeField.FieldReplacedListener() {
         public void fieldReplaced(CodeOrPath cp) {
-          nodeEditorListener.fieldReplaced(cp, l);
+          listener.fieldReplaced(cp, l);
         }
       };
 
-      LabelAliasChangedListener lacl = new Field.LabelAliasChangedListener() {
-        @Override
-        public void labelAliasChanged(String alias) {
-          nodeEditorListener.labelAliasChanged(l, alias);
-        }
-      };
+      LabelAliasChangedListener lacl =
+          new CodeField.LabelAliasChangedListener() {
+            public void labelAliasChanged(String alias) {
+              listener.labelAliasChanged(l, alias);
+            }
+          };
 
-      fields.addView(new Field(getContext(), csl, lsl, frl, lacl, l, e.v,
+      fields.addView(new CodeField(getContext(), csl, lsl, frl, lacl, l, e.v,
           rootCode, l.equals(selectedLabel), codeLabelAliases, codeAliases,
           codes, path, las.get(l)));
     }

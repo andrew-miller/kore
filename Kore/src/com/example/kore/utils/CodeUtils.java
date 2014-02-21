@@ -13,8 +13,8 @@ import static com.example.kore.utils.Pair.pair;
 
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.SortedMap;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.jgrapht.alg.StrongConnectivityInspector;
@@ -37,15 +37,15 @@ public final class CodeUtils {
       .<Label, CodeOrPath> empty());
 
   public static String renderCode(Code c, List<Label> p,
-      CodeLabelAliasMap codeLabelAliases, Map<CanonicalCode, String> codeAliases,
-      int depth) {
+      CodeLabelAliasMap codeLabelAliases,
+      Map<CanonicalCode, String> codeAliases, int depth) {
     return renderCode(p, c, codeOrLabelAt(p, c), codeLabelAliases, codeAliases,
         depth);
   }
 
   private static String renderCode(List<Label> path, Code root, CodeOrPath cp,
-      CodeLabelAliasMap codeLabelAliases, Map<CanonicalCode, String> codeAliases,
-      int depth) {
+      CodeLabelAliasMap codeLabelAliases,
+      Map<CanonicalCode, String> codeAliases, int depth) {
     if (depth < 0)
       throw new RuntimeException("negative depth");
     if (depth == 0)
@@ -89,12 +89,12 @@ public final class CodeUtils {
   }
 
   /**
-   * @return a pair <tt>(c', i)</tt> where c' is isomorphic to <tt>c</tt>. All
-   *         labels of the nodes within the strongly connected components
-   *         containing any node on <tt>path</tt> are randomized. <tt>i</tt> is
-   *         the isomorphism itself.
+   * @return a pair <tt>(c', i)</tt> where <tt>c'</tt> is isomorphic to
+   *         <tt>c</tt>. All labels of the nodes within the strongly connected
+   *         components containing any node on <tt>path</tt> are randomized.
+   *         <tt>i</tt> is the isomorphism itself.
    */
-  public static Pair<Code, Map<List<Label>, Map<Label, Label>>> dissassociate(
+  public static Pair<Code, Map<List<Label>, Map<Label, Label>>> disassociate(
       Code c, List<Label> path) {
     Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
         codeToGraph(c);
@@ -171,8 +171,9 @@ public final class CodeUtils {
     return new Code(c.tag, m);
   }
 
-  public static Optional<Code> codeAt(List<Label> path, Code c) {
-    for (Label l : iter(path)) {
+  /** Code at the end of the simple path <tt>p</tt> from <tt>c</tt> */
+  public static Optional<Code> codeAt(List<Label> p, Code c) {
+    for (Label l : iter(p)) {
       Optional<CodeOrPath> ocp = c.labels.get(l);
       if (ocp.isNothing())
         return nothing();
@@ -226,9 +227,12 @@ public final class CodeUtils {
   }
 
   /**
-   * @return a graph representing <tt>c</tt> where each edge is a pair
-   *         <tt>(parent, label)</tt>, where parent is the <tt>parent</tt> of
-   *         <tt>c</tt> in its spanning tree
+   * @return a pair <tt>(g,r)</tt> where <tt>g</tt> is a graph representing
+   *         <tt>c</tt> where each edge is a pair <tt>(parent, label)</tt> and
+   *         <tt>r</tt> corresponds to <tt>c</tt>. For each <tt>Code</tt>
+   *         <tt>co</tt> in <tt>c</tt>, for each <tt>Label</tt> <tt>l</tt> in
+   *         <tt>co</tt>, there is an edge <tt>(p,l)</tt> where <tt>p</tt> is
+   *         the vertex corresponding to <tt>co</tt>. Note: Each edge is unique.
    */
   public static
       Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>>
@@ -356,7 +360,6 @@ public final class CodeUtils {
     m.set(m.get().put(v, path));
     SortedMap<Label, Pair<Identity<Tag>, Label>> sm =
         new TreeMap<Label, Pair<Identity<Tag>, Label>>(new Comparator<Label>() {
-          @Override
           public int compare(Label a, Label b) {
             return a.label.compareTo(b.label);
           };
@@ -435,5 +438,59 @@ public final class CodeUtils {
       }
     }
     return true;
+  }
+
+  public static boolean equal(Code c, Code c2) {
+    // TODO get real equality check.
+    // e.g, {'a <>} should be equal to {'a {'a <>}}
+    return (canonicalCode(c, ListUtils.<Label> nil()).equals(canonicalCode(c2,
+        ListUtils.<Label> nil())));
+  }
+
+  public static Optional<Code> getCode(Code root, Code c, Label l) {
+    Optional<CodeOrPath> cp = c.labels.get(l);
+    if (cp.isNothing())
+      return nothing();
+    switch (cp.some().x.tag) {
+    case CODE:
+      return some(cp.some().x.code);
+    case PATH:
+      return codeAt(cp.some().x.path, root);
+    default:
+      throw boom();
+    }
+  }
+
+  public static Optional<Code> followPath(List<Label> path, Code rootCode) {
+    Code c = rootCode;
+    while (!path.isEmpty()) {
+      Optional<Code> oc = getCode(rootCode, c, path.cons().x);
+      if (oc.isNothing())
+        return nothing();
+      c = oc.some().x;
+      path = path.cons().tail;
+    }
+    return some(c);
+  }
+
+  /** map cyclic path to simple path */
+  public static List<Label> directPath(List<Label> path, Code code) {
+    return directPath(path, code, code, ListUtils.<Label> nil());
+  }
+
+  private static List<Label> directPath(List<Label> p, Code root, Code c,
+      List<Label> a) {
+    if (p.isEmpty())
+      return a;
+    CodeOrPath cp = c.labels.get(p.cons().x).some().x;
+    switch (cp.tag) {
+    case CODE:
+      return directPath(p.cons().tail, root, cp.code, append(p.cons().x, a));
+    case PATH:
+      return directPath(p.cons().tail, root, getCode(root, c, p.cons().x)
+          .some().x, ListUtils.<Label> nil());
+    default:
+      throw boom();
+    }
   }
 }

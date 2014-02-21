@@ -22,24 +22,24 @@ B:
 map could enforce canonicality so there would be no ambiguity like there is in A
 
 disadvantages:
-- implementations might display the fields/variants to the user ordered by hash, which would encourage users to pointlessly create and publish new versions of their types just to switch the ordering, making version control unnessesarily difficult.
-- someone could hash a strongly connected component, but he could also hash something that points to a strongly connected component; this would encourage users to unnessesarily bundle code, allowing them to create something like "modules", which the whole point of this system is to prevent. the only reason codes can be bundled is to support mutual recursion.
-unit = ['tag 'product, 'labels: <>];
+- (same for A and C) implementations might display the fields/variants to the user ordered by their label hash, which would encourage users to pointlessly create and publish new versions of their types just to switch the ordering, making version control unnessesarily difficult.
+- (same for A) someone could hash a strongly connected component, but he could also hash something that points to a strongly connected component; this would encourage users to unnessesarily bundle code, allowing them to create something like "modules", which the whole point of this system is to prevent. the only reason codes can be bundled is to support mutual recursion.
+unit = {'tag 'product, 'labels: <>};
 
-c1 = ['tag 'union,
+c1 = {'tag 'union,
       'labels
         <a -> 'hash unit | h
         ,b -> 'hash unit | h
         >
-     ];
+     };
 i.e: <code> c1 <is> ['a {}, 'b, {}];
 
-c2 = ['tag 'union,
+c2 = {'tag 'union,
       'labels
         <a -> 'hash c1 | h
         ,b -> 'hash unit | h
         >
-     ];
+     };
 i.e: <code> c2 <is> ['a c1, 'b {}];
 
 c1h1 = {'hash: c1 | h, path: <>};

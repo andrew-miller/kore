@@ -1,9 +1,12 @@
 package com.example.kore.ui;
 
-import com.example.kore.utils.F;
-
+import static com.example.kore.utils.ListUtils.append;
+import static com.example.kore.utils.ListUtils.iter;
 import android.content.Context;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
@@ -12,6 +15,17 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+
+import com.example.kore.codes.CanonicalCode;
+import com.example.kore.codes.Code;
+import com.example.kore.codes.CodeOrPath;
+import com.example.kore.codes.Label;
+import com.example.kore.utils.CodeUtils;
+import com.example.kore.utils.F;
+import com.example.kore.utils.List;
+import com.example.kore.utils.Map;
+import com.example.kore.utils.Map.Entry;
+import com.example.kore.utils.Optional;
 
 public class UIUtils {
 
@@ -23,7 +37,6 @@ public class UIUtils {
     t.setImeOptions(EditorInfo.IME_ACTION_DONE);
     t.setInputType(EditorInfo.TYPE_CLASS_TEXT);
     t.setOnEditorActionListener(new OnEditorActionListener() {
-      @Override
       public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if (actionId == EditorInfo.IME_ACTION_DONE) {
           onDone.f(t.getText().toString());
@@ -33,7 +46,6 @@ public class UIUtils {
       }
     });
     t.setOnFocusChangeListener(new OnFocusChangeListener() {
-      @Override
       public void onFocusChange(View _, boolean hasFocus) {
         if (!hasFocus) {
           ((InputMethodManager) a
@@ -51,4 +63,32 @@ public class UIUtils {
     ((InputMethodManager) a.getSystemService(Context.INPUT_METHOD_SERVICE))
         .showSoftInput(t, 0);
   }
+
+  public static void addCodeToMenu(final Code root, Menu m, CodeOrPath cp,
+      String ls, String space, final List<Label> path,
+      CodeLabelAliasMap codeLabelAliases,
+      Map<CanonicalCode, String> codeAliases, final F<Void, Void> f) {
+    MenuItem i =
+        m.add(space
+            + ls.substring(0, Math.min(10, ls.length()))
+            + " "
+            + CodeUtils
+                .renderCode(root, path, codeLabelAliases, codeAliases, 1));
+    i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+      public boolean onMenuItemClick(MenuItem i) {
+        f.f(null);
+        return true;
+      }
+    });
+    Map<Label, String> las =
+        codeLabelAliases.getAliases(new CanonicalCode(root, path));
+    if (cp.tag == CodeOrPath.Tag.CODE) {
+      for (Entry<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
+        Optional<String> ls2 = las.get(e.k);
+        addCodeToMenu(root, m, e.v, ls2.isNothing() ? e.k.label : ls2.some().x,
+            space + "  ", append(e.k, path), codeLabelAliases, codeAliases, f);
+      }
+    }
+  }
+
 }

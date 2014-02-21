@@ -14,35 +14,58 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int button_code=0x7f060007;
-        public static final int button_delete_field=0x7f060009;
-        public static final int button_done=0x7f06000b;
-        public static final int button_label=0x7f060006;
+        public static final int button_change_codomain=0x7f060016;
+        public static final int button_change_domain=0x7f060015;
+        public static final int button_change_relation_type=0x7f060017;
+        public static final int button_code=0x7f060009;
+        public static final int button_delete_field=0x7f06000c;
+        public static final int button_done=0x7f06000e;
+        public static final int button_label=0x7f060008;
         public static final int button_new_code=0x7f060003;
-        public static final int button_new_field=0x7f060008;
-        public static final int button_switch_code_op=0x7f06000a;
-        public static final int container_code_editor=0x7f060001;
-        public static final int container_path=0x7f060000;
-        public static final int container_recent_codes=0x7f060004;
-        public static final int layout_code_list=0x7f060005;
-        public static final int layout_fields=0x7f06000c;
-        public static final int layout_path=0x7f06000d;
+        public static final int button_new_field=0x7f06000b;
+        public static final int button_new_relation=0x7f060004;
+        public static final int button_pattern=0x7f060012;
+        public static final int button_relation=0x7f060014;
+        public static final int button_switch_code_op=0x7f06000d;
+        public static final int container_code_editor=0x7f060000;
+        public static final int container_node_editor=0x7f060011;
+        public static final int container_path=0x7f060007;
+        public static final int container_recent_codes=0x7f060005;
+        public static final int container_recent_relations=0x7f060006;
+        public static final int container_relation_editor=0x7f060001;
+        public static final int layout_code_list=0x7f06000a;
+        public static final int layout_fields=0x7f06000f;
+        public static final int layout_path=0x7f060010;
+        public static final int ll=0x7f060013;
         public static final int main_layout=0x7f060002;
     }
     public static final class layout {
-        public static final int activity_code_editor=0x7f030000;
-        public static final int activity_main=0x7f030001;
-        public static final int code_list=0x7f030002;
-        public static final int field=0x7f030003;
-        public static final int node_editor=0x7f030004;
+        public static final int activity_main=0x7f030000;
+        public static final int code_editor=0x7f030001;
+        public static final int code_field=0x7f030002;
+        public static final int code_list=0x7f030003;
+        public static final int code_node_editor=0x7f030004;
         public static final int path=0x7f030005;
+        public static final int pattern_editor=0x7f030006;
+        public static final int pattern_field=0x7f030007;
+        public static final int pattern_node_editor=0x7f030008;
+        public static final int relation_editor=0x7f030009;
+        public static final int relation_field=0x7f03000a;
+        public static final int relation_node_editor=0x7f03000b;
     }
     public static final class string {
         public static final int app_name=0x7f040000;
+        public static final int button_change_codomain=0x7f040006;
+        public static final int button_change_domain=0x7f040007;
         public static final int button_delete_field=0x7f040002;
         public static final int button_done=0x7f040003;
+        public static final int button_extend_composition_first=0x7f040009;
+        public static final int button_extend_composition_last=0x7f040008;
+        public static final int button_extend_union_first=0x7f04000a;
+        public static final int button_extend_union_last=0x7f04000b;
         public static final int button_new_code=0x7f040004;
         public static final int button_new_field=0x7f040001;
+        public static final int button_new_relation=0x7f040005;
     }
     public static final class style {
         /** 

@@ -30,9 +30,8 @@ import com.example.kore.utils.Optional;
 import com.example.kore.utils.Pair;
 import com.example.kore.utils.Random;
 
-public class CodeEditor extends FrameLayout implements
-    NodeEditor.NodeEditorListener, Path.SubpathSelectedListener,
-    NodeEditor.DoneListener {
+public class CodeEditor extends FrameLayout implements CodeNodeEditor.Listener,
+    CodePath.SubpathSelectedListener {
 
   private static final String STATE_CODE = "code";
   private static final String STATE_PATH = "path";
@@ -40,7 +39,7 @@ public class CodeEditor extends FrameLayout implements
   private static final String STATE_PATH_SHADOW = "path_shadow";
   private static final String STATE_CODES = "codes";
 
-  private NodeEditor codeEditor;
+  private CodeNodeEditor nodeEditor;
   private Code code = CodeUtils.unit;
   private List<Label> path = nil();
   private final CodeLabelAliasMap codeLabelAliases;
@@ -52,10 +51,11 @@ public class CodeEditor extends FrameLayout implements
   private final DoneListener doneListener;
 
   public interface DoneListener {
-    public void onDone(Code code);
+    public void onDone(Code c);
   }
 
-  public CodeEditor(Context context, Code code, CodeLabelAliasMap codeLabelAliases,
+  public CodeEditor(Context context, Code code,
+      CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, List<Code> codes,
       DoneListener doneListener) {
     super(context);
@@ -66,17 +66,15 @@ public class CodeEditor extends FrameLayout implements
     this.codeAliases = codeAliases;
     this.codes = codes;
     this.doneListener = doneListener;
-    View v =
-        LayoutInflater.from(context).inflate(R.layout.activity_code_editor,
-            this, true);
+    LayoutInflater.from(context).inflate(R.layout.code_editor, this, true);
     pathContainer = (ViewGroup) findViewById(R.id.container_path);
 
-    initCodeEditor(CodeUtils.codeAt(path, code).some().x);
-    setPath(code, pathShadow);
+    initNodeEditor(CodeUtils.codeAt(path, code).some().x);
+    setPath(pathShadow);
   }
 
-  public CodeEditor(Context context, Bundle b, CodeLabelAliasMap codeLabelAliases,
-      DoneListener doneListener) {
+  public CodeEditor(Context context, Bundle b,
+      CodeLabelAliasMap codeLabelAliases, DoneListener doneListener) {
     super(context);
     notNull(doneListener, b);
     this.context = context;
@@ -88,12 +86,11 @@ public class CodeEditor extends FrameLayout implements
     codes = (List<Code>) b.get(STATE_CODES);
     this.doneListener = doneListener;
     View v =
-        LayoutInflater.from(context).inflate(R.layout.activity_code_editor,
-            this, true);
+        LayoutInflater.from(context).inflate(R.layout.code_editor, this, true);
     pathContainer = (ViewGroup) findViewById(R.id.container_path);
 
-    initCodeEditor(CodeUtils.codeAt(path, code).some().x);
-    setPath(code, pathShadow);
+    initNodeEditor(CodeUtils.codeAt(path, code).some().x);
+    setPath(pathShadow);
   }
 
   public Bundle getState() {
@@ -106,9 +103,9 @@ public class CodeEditor extends FrameLayout implements
     return b;
   }
 
-  private void setPath(Code code, List<Label> path) {
+  private void setPath(List<Label> path) {
     pathContainer.removeAllViews();
-    pathContainer.addView(new Path(context, this, code, path));
+    pathContainer.addView(new CodePath(context, this, code, path));
   }
 
   private void onCodeEdited(Code c, List<Label> invalidatedPath) {
@@ -116,14 +113,14 @@ public class CodeEditor extends FrameLayout implements
     remapAliases(code, code2, ListUtils.<Label> nil(), invalidatedPath);
     pathShadow = CodeUtils.longestValidSubPath(pathShadow, code2);
     Pair<Code, Map<List<Label>, Map<Label, Label>>> p =
-        CodeUtils.dissassociate(code2, path);
+        CodeUtils.disassociate(code2, path);
     mapAliases(code2, ListUtils.<Label> nil(), p.x, ListUtils.<Label> nil(),
         code2, p.y);
     code = p.x;
     path = CodeUtils.mapPath(path, p.y);
     pathShadow = CodeUtils.mapPath(pathShadow, p.y);
-    setPath(code, pathShadow);
-    initCodeEditor(CodeUtils.codeAt(path, code).some().x);
+    setPath(pathShadow);
+    initNodeEditor(CodeUtils.codeAt(path, code).some().x);
   }
 
   private void mapAliases(Code cRoot, List<Label> cPath, Code c2root,
@@ -146,7 +143,6 @@ public class CodeEditor extends FrameLayout implements
     codeLabelAliases.setAliases(cc2, la2);
   }
 
-  @Override
   public void newField() {
     Code c = CodeUtils.codeAt(path, code).some().x;
     Map<Label, CodeOrPath> m = c.labels;
@@ -161,7 +157,6 @@ public class CodeEditor extends FrameLayout implements
     onCodeEdited(c, null);
   }
 
-  @Override
   public void deleteField(Label l) {
     Code c = CodeUtils.codeAt(path, code).some().x;
     Code c2 = new Code(c.tag, c.labels.delete(l));
@@ -170,7 +165,6 @@ public class CodeEditor extends FrameLayout implements
       onCodeEdited(c2, append(l, path));
   }
 
-  @Override
   public void switchCodeOp() {
     Code c = CodeUtils.codeAt(path, code).some().x;
     switch (c.tag) {
@@ -197,41 +191,38 @@ public class CodeEditor extends FrameLayout implements
         remapAliases(e.v.code, c2, append(e.k, path), invalidatedPath);
   }
 
-  @Override
   public void codeSelected(Label l) {
     notNull(l);
     Code c = CodeUtils.codeAt(path, code).some().x;
-    CodeOrPath cr = c.labels.get(l).some().x;
+    CodeOrPath cp = c.labels.get(l).some().x;
     Code c2;
-    if (cr.tag != CodeOrPath.Tag.CODE) {
-      path = cr.path;
+    if (cp.tag != CodeOrPath.Tag.CODE) {
+      path = cp.path;
       c2 = CodeUtils.codeAt(path, code).some().x;
     } else {
       path = append(l, path);
-      c2 = cr.code;
+      c2 = cp.code;
     }
     if (!isSubList(path, pathShadow)) {
       pathShadow = path;
-      setPath(code, pathShadow);
+      setPath(pathShadow);
     }
-    initCodeEditor(c2);
+    initNodeEditor(c2);
   }
 
-  @Override
-  public void onCodeInPathSelected(List<Label> p) {
+  public void pathSelected(List<Label> p) {
     notNull(p);
     Optional<Code> oc = CodeUtils.codeAt(p, code);
     if (oc.isNothing())
       throw new RuntimeException("invalid path");
     if (!isSubList(p, pathShadow)) {
       pathShadow = p;
-      setPath(code, pathShadow);
+      setPath(pathShadow);
     }
     path = p;
-    initCodeEditor(oc.some().x);
+    initNodeEditor(oc.some().x);
   }
 
-  @Override
   public void fieldReplaced(CodeOrPath cp, Label l) {
     Code c = CodeUtils.codeAt(path, code).some().x;
     notNull(cp, l);
@@ -242,7 +233,6 @@ public class CodeEditor extends FrameLayout implements
     onCodeEdited(c, append(l, path));
   }
 
-  @Override
   public void labelAliasChanged(Label label, String alias) {
     notNull(label, alias);
     Code c = CodeUtils.codeAt(path, code).some().x;
@@ -250,19 +240,18 @@ public class CodeEditor extends FrameLayout implements
       throw new RuntimeException("non-existent label");
     CanonicalCode cc = new CanonicalCode(code, path);
     codeLabelAliases.setAlias(cc, label, alias);
-    initCodeEditor(c);
+    initNodeEditor(c);
   }
 
-  private void initCodeEditor(Code c) {
-    codeEditor =
-        new NodeEditor(context, c, code, this, this, codeAliases, codes, path,
+  private void initNodeEditor(Code c) {
+    nodeEditor =
+        new CodeNodeEditor(context, c, code, this, codeAliases, codes, path,
             codeLabelAliases);
     ViewGroup cont = (ViewGroup) findViewById(R.id.container_code_editor);
     cont.removeAllViews();
-    cont.addView(codeEditor);
+    cont.addView(nodeEditor);
   }
 
-  @Override
   public void onDone() {
     doneListener.onDone(code);
   }

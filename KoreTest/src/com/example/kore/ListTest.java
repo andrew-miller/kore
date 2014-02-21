@@ -1,15 +1,15 @@
 package com.example.kore;
 
 import static com.example.kore.utils.ListUtils.cons;
+import static com.example.kore.utils.ListUtils.move;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.ListUtils.sort;
+import junit.framework.TestCase;
 
 import com.example.kore.utils.CharacterComparer;
 import com.example.kore.utils.IntegerComparer;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-
-import junit.framework.TestCase;
 
 public class ListTest extends TestCase {
   public static void testIsEmptyIsEmpty() {
@@ -137,5 +137,16 @@ public class ListTest extends TestCase {
     tsc(lc('z', 'z', 'x'), lc('x', 'z', 'z'));
     tsc(lc('z', 'z', 'y'), lc('y', 'z', 'z'));
     tsc(lc('z', 'z', 'z'), lc('z', 'z', 'z'));
+  }
+
+  public static void testMove() {
+    assertEquals(lc('a'), move(lc('a'), 0, 0));
+    assertEquals(lc('a', 'b'), move(lc('a', 'b'), 0, 0));
+    assertEquals(lc('a', 'b', 'c'), move(lc('a', 'b', 'c'), 0, 0));
+    assertEquals(lc('a'), move(lc('a'), 0, 1));
+    assertEquals(lc('a', 'b'), move(lc('a', 'b'), 1, 2));
+    assertEquals(lc('b', 'a'), move(lc('a', 'b'), 0, 2));
+    assertEquals(lc('b', 'a'), move(lc('a', 'b'), 1, 0));
+    assertEquals(lc('b', 'c', 'a'), move(lc('a', 'b', 'c'), 0, 3));
   }
 }

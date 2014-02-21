@@ -11,7 +11,6 @@ public class ReverseComparer<T> implements Comparer<T>, Serializable {
     this.c = c;
   }
 
-  @Override
   public Comparison compare(T a, T b) {
     switch (c.compare(a, b)) {
     case EQ:

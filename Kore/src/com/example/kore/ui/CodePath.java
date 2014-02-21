@@ -17,20 +17,18 @@ import com.example.kore.codes.Label;
 import com.example.kore.utils.Boom;
 import com.example.kore.utils.List;
 
-public class Path extends FrameLayout {
-  private final ViewGroup pathVG;
-
+public class CodePath extends FrameLayout {
   public static interface SubpathSelectedListener {
-    public void onCodeInPathSelected(List<Label> subpath);
+    public void pathSelected(List<Label> subpath);
   }
 
-  public Path(Context context,
+  public CodePath(Context context,
       final SubpathSelectedListener subpathSelectedListener, Code code,
       List<Label> path) {
     super(context);
     notNull(subpathSelectedListener, code, path);
     View v = LayoutInflater.from(context).inflate(R.layout.path, this, true);
-    pathVG = (ViewGroup) v.findViewById(R.id.layout_path);
+    ViewGroup pathVG = (ViewGroup) v.findViewById(R.id.layout_path);
 
     List<Label> subpath = nil();
     while (true) {
@@ -49,9 +47,8 @@ public class Path extends FrameLayout {
       b.setHeight(LayoutParams.MATCH_PARENT);
       final List<Label> subpathS = subpath;
       b.setOnClickListener(new OnClickListener() {
-        @Override
         public void onClick(View v) {
-          subpathSelectedListener.onCodeInPathSelected(subpathS);
+          subpathSelectedListener.pathSelected(subpathS);
         }
       });
       pathVG.addView(b);

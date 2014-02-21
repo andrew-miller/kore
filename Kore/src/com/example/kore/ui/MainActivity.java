@@ -5,24 +5,24 @@ import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
 
 import java.util.HashSet;
-import com.example.kore.R;
-import com.example.kore.codes.CanonicalCode;
-import com.example.kore.codes.Code;
-import com.example.kore.codes.Label;
-import com.example.kore.ui.CodeEditor.DoneListener;
-import com.example.kore.ui.CodeList.CodeAliasChangedListener;
-import com.example.kore.ui.CodeList.CodeSelectListener;
-import com.example.kore.utils.CodeUtils;
-import com.example.kore.utils.List;
-import com.example.kore.utils.Map;
-import com.example.kore.utils.Optional;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
+
+import com.example.kore.R;
+import com.example.kore.codes.CanonicalCode;
+import com.example.kore.codes.Code;
+import com.example.kore.codes.Label;
+import com.example.kore.codes.Relation;
+import com.example.kore.ui.CodeList.CodeAliasChangedListener;
+import com.example.kore.ui.CodeList.CodeSelectListener;
+import com.example.kore.utils.CodeUtils;
+import com.example.kore.utils.List;
+import com.example.kore.utils.Map;
+import com.example.kore.utils.Optional;
 
 public class MainActivity extends FragmentActivity {
 
@@ -38,12 +38,15 @@ public class MainActivity extends FragmentActivity {
   private Map<CanonicalCode, String> codeAliases = Map.empty();
   private View mainLayout;
   private ViewGroup codeEditorContainer;
+  private ViewGroup relationEditorContainer;
   private CodeEditor codeEditor;
+  private RelationEditor relationEditor;
   // if not null, a code editor is open
-  private DoneListener codeEditorDoneListener;
+  private CodeEditor.DoneListener codeEditorDoneListener;
+  // if not null, a relation editor is open
+  private RelationEditor.DoneListener relationEditorDoneListener;
 
   CodeLabelAliasMap codeLabelAliasMap = new CodeLabelAliasMap() {
-    @Override
     public void setAlias(CanonicalCode c, Label l, String alias) {
       Optional<Map<Label, String>> o = codeLabelAliases.get(c);
       if (o.isNothing())
@@ -53,7 +56,6 @@ public class MainActivity extends FragmentActivity {
         codeLabelAliases = codeLabelAliases.put(c, o.some().x.put(l, alias));
     }
 
-    @Override
     public void deleteAlias(CanonicalCode c, Label l) {
       Optional<Map<Label, String>> o = codeLabelAliases.get(c);
       if (o.isNothing())
@@ -63,7 +65,6 @@ public class MainActivity extends FragmentActivity {
         codeLabelAliases = codeLabelAliases.put(c, o.some().x.delete(l));
     }
 
-    @Override
     public Map<Label, String> getAliases(CanonicalCode c) {
       Optional<Map<Label, String>> o = codeLabelAliases.get(c);
       if (o.isNothing())
@@ -71,7 +72,6 @@ public class MainActivity extends FragmentActivity {
       return o.some().x;
     }
 
-    @Override
     public void setAliases(CanonicalCode c, Map<Label, String> aliases) {
       codeLabelAliases = codeLabelAliases.put(c, aliases);
     }
@@ -84,12 +84,20 @@ public class MainActivity extends FragmentActivity {
     setContentView(R.layout.activity_main);
     mainLayout = findViewById(R.id.main_layout);
     codeEditorContainer = (ViewGroup) findViewById(R.id.container_code_editor);
+    relationEditorContainer =
+        (ViewGroup) findViewById(R.id.container_relation_editor);
 
-    ((Button) findViewById(R.id.button_new_code))
-        .setOnClickListener(new OnClickListener() {
-          @Override
+    findViewById(R.id.button_new_code).setOnClickListener(
+        new OnClickListener() {
           public void onClick(View v) {
             startCodeEditor(CodeUtils.unit);
+          }
+        });
+
+    findViewById(R.id.button_new_relation).setOnClickListener(
+        new OnClickListener() {
+          public void onClick(View v) {
+            startRelationEditor(RelationUtils.unit_unit);
           }
         });
 
@@ -130,14 +138,12 @@ public class MainActivity extends FragmentActivity {
 
   private void initRecentCodes() {
     CodeSelectListener csl = new CodeList.CodeSelectListener() {
-      @Override
       public void onCodeSelected(Code c) {
         notNull(c);
         startCodeEditor(c);
       }
     };
     CodeAliasChangedListener cacl = new CodeList.CodeAliasChangedListener() {
-      @Override
       public void codeAliasChanged(Code code, List<Label> path, String alias) {
         notNull(code, alias);
         if (codeEditorDoneListener != null)
@@ -164,6 +170,8 @@ public class MainActivity extends FragmentActivity {
      */
     if (codeEditorDoneListener != null)
       return;
+    if (relationEditorDoneListener != null)
+      return;
 
     newCodeEditorDoneListener();
     codeEditor =
@@ -174,23 +182,54 @@ public class MainActivity extends FragmentActivity {
     codeEditorContainer.setVisibility(View.VISIBLE);
   }
 
+  private void startRelationEditor(Relation r) {
+    // same workaround in startCodeEditor
+    if (relationEditorDoneListener != null)
+      return;
+    if (codeEditorDoneListener != null)
+      return;
+
+    newRelationEditorDoneListener();
+    relationEditor =
+        new RelationEditor(this, r, relationEditorDoneListener, recentCodes,
+            codeLabelAliasMap, codeAliases);
+    mainLayout.setVisibility(View.GONE);
+    relationEditorContainer.addView(relationEditor);
+    relationEditorContainer.setVisibility(View.VISIBLE);
+  }
+
   private void newCodeEditorDoneListener() {
     codeEditorDoneListener = new CodeEditor.DoneListener() {
-      @Override
-      public void onDone(Code code) {
+      public void onDone(Code c) {
         if (this != codeEditorDoneListener)
           throw new RuntimeException(
               "got \"done editing\" event from non-current code editor");
-        notNull(code, codeLabelAliases);
+        notNull(c);
         codeEditor = null;
         codeEditorContainer.removeAllViews();
         codeEditorContainer.setVisibility(View.GONE);
         mainLayout.setVisibility(View.VISIBLE);
-        if (!codes.contains(code))
-          recentCodes = cons(code, recentCodes);
-        codes.add(code);
+        if (!codes.contains(c))
+          recentCodes = cons(c, recentCodes);
+        codes.add(c);
         initRecentCodes();
         codeEditorDoneListener = null;
+      }
+    };
+  }
+
+  private void newRelationEditorDoneListener() {
+    relationEditorDoneListener = new RelationEditor.DoneListener() {
+      public void onDone(Relation r) {
+        if (this != relationEditorDoneListener)
+          throw new RuntimeException(
+              "got \"done editing\" event from non-current relation editor");
+        notNull(r);
+        relationEditor = null;
+        relationEditorContainer.removeAllViews();
+        relationEditorContainer.setVisibility(View.GONE);
+        mainLayout.setVisibility(View.VISIBLE);
+        relationEditorDoneListener = null;
       }
     };
   }
