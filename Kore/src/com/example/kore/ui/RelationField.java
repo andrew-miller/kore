@@ -33,6 +33,7 @@ public class RelationField extends FrameLayout {
   private final Context context;
   private final Code rootCode;
   private final List<Label> path;
+  private final Optional<Code> argCode;
 
   public interface Listener {
     void selected();
@@ -46,9 +47,15 @@ public class RelationField extends FrameLayout {
     void move(Integer src, Integer dest);
   }
 
+  /**
+   * (rootCode,path) designates the codomain of the relation containing this
+   * field<br />
+   * argCode is the domain of the enclosing abstraction if this field is a
+   * projection
+   */
   public RelationField(Context context, Optional<Label> l, Relation r,
       Optional<String> labelAlias, CodeLabelAliasMap codeLabelAliases,
-      Code rootCode, List<Label> path, Listener listener) {
+      Code rootCode, List<Label> path, Optional<Code> argCode, Listener listener) {
     super(context);
     notNull(context, listener, l, r, labelAlias, codeLabelAliases, path,
         rootCode);
@@ -60,6 +67,7 @@ public class RelationField extends FrameLayout {
     this.codeLabelAliases = codeLabelAliases;
     this.path = path;
     this.rootCode = rootCode;
+    this.argCode = argCode;
     View v =
         LayoutInflater.from(context).inflate(R.layout.relation_field, this,
             true);
@@ -98,7 +106,8 @@ public class RelationField extends FrameLayout {
     switch (relation.tag) {
     case PROJECTION:
       ll.removeViewAt(1);
-      ll.addView(new ProjectionEditor(getContext(), relation.projection()));
+      ll.addView(new ProjectionEditor(getContext(), relation.projection(),
+          argCode.some().x, codeLabelAliases));
       break;
     case COMPOSITION:
       ll.removeViewAt(1);

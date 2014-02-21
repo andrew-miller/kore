@@ -2,6 +2,7 @@ package com.example.kore.ui;
 
 import static com.example.kore.ui.RelationUtils.codomain;
 import static com.example.kore.ui.RelationUtils.domain;
+import static com.example.kore.ui.RelationUtils.enclosingAbstraction;
 import static com.example.kore.ui.RelationUtils.inAbstraction;
 import static com.example.kore.ui.RelationUtils.unit_unit;
 import static com.example.kore.utils.Boom.boom;
@@ -226,7 +227,8 @@ public class RelationNodeEditor extends FrameLayout {
           throw new RuntimeException("TODO handle path");
         fields.addView(new RelationField(getContext(), some(e.k), e.v.x(), m
             .get(e.k), codeLabelAliases, relation.product().o, ListUtils
-            .<Label> nil(), new RelationField.Listener() {
+            .<Label> nil(), some(enclosingAbstraction(path, rootRelation)
+            .some().x.i), new RelationField.Listener() {
           public void selected() {
             listener.relationSelected(Either3.<Label, Integer, Unit> x(e.k));
           }
@@ -265,6 +267,7 @@ public class RelationNodeEditor extends FrameLayout {
             new RelationField(getContext(), OptionalUtils.<Label> nothing(),
                 r.x(), OptionalUtils.<String> nothing(), codeLabelAliases,
                 relation.union().o, ListUtils.<Label> nil(),
+                some(enclosingAbstraction(path, rootRelation).some().x.i),
                 new RelationField.Listener() {
                   public void selected() {
                     listener.relationSelected(Either3
@@ -318,7 +321,9 @@ public class RelationNodeEditor extends FrameLayout {
     case PROJECTION:
       changeRelationTypeButton.setText(".");
       ProjectionEditor pe =
-          new ProjectionEditor(getContext(), relation.projection());
+          new ProjectionEditor(getContext(), relation.projection(),
+              enclosingAbstraction(path, rootRelation).some().x.i,
+              codeLabelAliases);
       setDragListener(pe);
       fields.addView(pe);
       break;
@@ -371,7 +376,7 @@ public class RelationNodeEditor extends FrameLayout {
                       new CanonicalCode(relation.label().o, ListUtils
                           .<Label> nil())).get(l), codeLabelAliases,
               relation.label().o, ListUtils.<Label> nil(),
-              new RelationField.Listener() {
+              OptionalUtils.<Code> nothing(), new RelationField.Listener() {
                 public void selected() {
                   listener.relationSelected(Either3
                       .<Label, Integer, Unit> z(Unit.unit()));
