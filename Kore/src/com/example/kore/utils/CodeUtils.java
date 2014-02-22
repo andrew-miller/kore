@@ -6,7 +6,6 @@ import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.MapUtils.containsKey;
 import static com.example.kore.utils.MapUtils.values;
-import static com.example.kore.utils.Null.notNull;
 import static com.example.kore.utils.OptionalUtils.nothing;
 import static com.example.kore.utils.OptionalUtils.some;
 import static com.example.kore.utils.Pair.pair;
@@ -187,10 +186,8 @@ public final class CodeUtils {
 
   private static CodeOrPath codeOrPathAt(List<Label> path, Code c) {
     CodeOrPath cp = CodeOrPath.newCode(c);
-    for (Label l : iter(path)) {
+    for (Label l : iter(path))
       cp = cp.code.labels.get(l).some().x;
-    }
-    notNull(cp);
     return cp;
   }
 
