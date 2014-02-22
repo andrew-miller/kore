@@ -39,7 +39,7 @@ public final class CodeUtils {
   public static String renderCode(Code c, List<Label> p,
       CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, int depth) {
-    return renderCode(p, c, codeOrLabelAt(p, c), codeLabelAliases, codeAliases,
+    return renderCode(p, c, codeOrPathAt(p, c), codeLabelAliases, codeAliases,
         depth);
   }
 
@@ -185,7 +185,7 @@ public final class CodeUtils {
     return some(c);
   }
 
-  private static CodeOrPath codeOrLabelAt(List<Label> path, Code c) {
+  private static CodeOrPath codeOrPathAt(List<Label> path, Code c) {
     CodeOrPath cp = CodeOrPath.newCode(c);
     for (Label l : iter(path)) {
       cp = cp.code.labels.get(l).some().x;
