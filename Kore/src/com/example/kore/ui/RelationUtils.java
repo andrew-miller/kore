@@ -4,6 +4,7 @@ import static com.example.kore.ui.PatternUtils.emptyPattern;
 import static com.example.kore.ui.PatternUtils.renderPattern;
 import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.CodeUtils.codeToGraph;
+import static com.example.kore.utils.CodeUtils.directPath;
 import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.reRoot;
 import static com.example.kore.utils.CodeUtils.unit;
@@ -59,7 +60,13 @@ public class RelationUtils {
                   Map.<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> empty(),
                   unit))), unit, unit));
 
-  public static String renderRelation(
+  /**
+   * @param argCode
+   *          required if there <tt>rx</tt> is a projection or <tt>rx</tt>
+   *          contains a projection without an abstraction on the path from it
+   *          to that projection
+   */
+  public static String renderRelation(Optional<Code> argCode,
       Either<Relation, List<Either3<Label, Integer, Unit>>> rx,
       CodeLabelAliasMap codeLabelAliases) {
     if (rx.isY())
@@ -69,19 +76,21 @@ public class RelationUtils {
     case ABSTRACTION:
       return "("
           + renderPattern(r.abstraction().pattern, r.abstraction().i,
-              ListUtils.<Label> nil(), codeLabelAliases) + " -> "
-          + renderRelation(r.abstraction().r, codeLabelAliases) + ")";
+              ListUtils.<Label> nil(), codeLabelAliases)
+          + " -> "
+          + renderRelation(some(r.abstraction().i), r.abstraction().r,
+              codeLabelAliases) + ")";
     case COMPOSITION: {
       List<Either<Relation, List<Either3<Label, Integer, Unit>>>> l =
           r.composition().l;
       if (l.isEmpty())
         return "<>";
-      String s = "<" + renderRelation(l.cons().x, codeLabelAliases);
+      String s = "<" + renderRelation(argCode, l.cons().x, codeLabelAliases);
       if (l.cons().tail.isEmpty())
         return s + ">";
       for (Either<Relation, List<Either3<Label, Integer, Unit>>> x : iter(l
           .cons().tail))
-        s += "|" + renderRelation(x, codeLabelAliases);
+        s += "|" + renderRelation(argCode, x, codeLabelAliases);
       return s + ">";
     }
     case LABEL: {
@@ -90,7 +99,7 @@ public class RelationUtils {
               new CanonicalCode(r.label().o, ListUtils.<Label> nil())).get(
               r.label().label);
       return "'" + (alias.isNothing() ? r.label().label : alias.some().x) + " "
-          + renderRelation(r.label().r, codeLabelAliases);
+          + renderRelation(argCode, r.label().r, codeLabelAliases);
     }
     case PRODUCT: {
       Map<Label, String> las =
@@ -103,7 +112,7 @@ public class RelationUtils {
       Optional<String> la = las.get(es.cons().x.k);
       String s =
           "{'" + (la.isNothing() ? es.cons().x.k : la.some().x) + " "
-              + renderRelation(es.cons().x.v, codeLabelAliases);
+              + renderRelation(argCode, es.cons().x.v, codeLabelAliases);
       if (es.cons().tail.isEmpty())
         return s + "}";
       for (Entry<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(es
@@ -111,15 +120,21 @@ public class RelationUtils {
         la = las.get(e.k);
         s +=
             "," + (la.isNothing() ? e.k : la.some().x) + " "
-                + renderRelation(e.v, codeLabelAliases);
+                + renderRelation(argCode, e.v, codeLabelAliases);
       }
       return s + "}";
     }
     case PROJECTION: {
-      List<Label> l = r.projection().path;
       String s = "$";
-      for (Label x : iter(l))
-        s += "." + x.label;
+      List<Label> p = nil();
+      for (Label l : iter(r.projection().path)) {
+        Optional<String> a =
+            codeLabelAliases.getAliases(
+                new CanonicalCode(argCode.some().x, directPath(p,
+                    argCode.some().x))).get(l);
+        s += "." + (a.isNothing() ? l.label : a.some().x);
+        p = append(l, p);
+      }
       return s;
     }
     case UNION:
@@ -127,20 +142,53 @@ public class RelationUtils {
           r.union().l;
       if (l.isEmpty())
         return "[]";
-      String s = "[" + renderRelation(l.cons().x, codeLabelAliases);
+      String s = "[" + renderRelation(argCode, l.cons().x, codeLabelAliases);
       if (l.cons().tail.isEmpty())
         return s + "]";
+      int i = 1;
       for (Either<Relation, List<Either3<Label, Integer, Unit>>> x : iter(l
           .cons().tail))
-        s += "," + renderRelation(x, codeLabelAliases);
+        s += "," + renderRelation(argCode, x, codeLabelAliases);
       return s + "]";
     default:
       throw boom();
     }
   }
 
+  /** Relation at the end of the edge <tt>e</tt> in the tree */
   public static Optional<Relation> subRelation(Relation r,
       Either3<Label, Integer, Unit> e) {
+    Optional<Either<Relation, List<Either3<Label, Integer, Unit>>>> oe =
+        subRelationOrPath(r, e);
+    if (oe.isNothing())
+      return nothing();
+    if (oe.some().x.isY())
+      return nothing();
+    return some(oe.some().x.x());
+  }
+
+  /** Relation at the end of the simple path <tt>p</tt> from <tt>r</tt> */
+  public static Optional<Relation> relationAt(
+      List<Either3<Label, Integer, Unit>> p, Relation r) {
+    for (Either3<Label, Integer, Unit> e : iter(p)) {
+      Optional<Relation> or = subRelation(r, e);
+      if (or.isNothing())
+        return nothing();
+      r = or.some().x;
+    }
+    return some(r);
+  }
+
+  public static Either<Relation, List<Either3<Label, Integer, Unit>>>
+      relationOrPathAt(List<Either3<Label, Integer, Unit>> p, Relation r) {
+    Either<Relation, List<Either3<Label, Integer, Unit>>> rp = Either.x(r);
+    for (Either3<Label, Integer, Unit> e : iter(p))
+      rp = subRelationOrPath(rp.x(), e).some().x;
+    return rp;
+  }
+
+  public static Optional<Either<Relation, List<Either3<Label, Integer, Unit>>>>
+      subRelationOrPath(Relation r, Either3<Label, Integer, Unit> e) {
     switch (r.tag) {
     case ABSTRACTION:
       if (e.tag != Tag.Z)
@@ -155,7 +203,7 @@ public class RelationUtils {
         return nothing();
       return f(r.product().m.get(e.x()));
     case PROJECTION:
-      throw new RuntimeException("path goes through projection");
+      return nothing();
     case LABEL:
       if (e.tag != Tag.Z)
         return nothing();
@@ -169,24 +217,12 @@ public class RelationUtils {
     }
   }
 
-  private static Optional<Relation> f(
-      Optional<Either<Relation, List<Either3<Label, Integer, Unit>>>> r) {
+  private static
+      Optional<Either<Relation, List<Either3<Label, Integer, Unit>>>> f(
+          Optional<Either<Relation, List<Either3<Label, Integer, Unit>>>> r) {
     if (r.isNothing())
       return nothing();
-    if (r.some().x.isY())
-      throw new RuntimeException("TODO handle link");
-    return some(r.some().x.x());
-  }
-
-  public static Optional<Relation> relationAt(
-      List<Either3<Label, Integer, Unit>> path, Relation r) {
-    for (Either3<Label, Integer, Unit> e : iter(path)) {
-      Optional<Relation> or = subRelation(r, e);
-      if (or.isNothing())
-        return nothing();
-      r = or.some().x;
-    }
-    return some(r);
+    return some(r.some().x);
   }
 
   public static Relation replaceRelationAt(Relation r,
@@ -426,7 +462,7 @@ public class RelationUtils {
     return adaptComposition(r2, path);
   }
 
-  // FIXME adjusts indexes in paths that go through the composition
+  // FIXME adjust indexes in paths that go through the composition
   public static Relation adaptComposition(Relation root,
       List<Either3<Label, Integer, Unit>> path) {
     Composition c = relationAt(path, root).some().x.composition();

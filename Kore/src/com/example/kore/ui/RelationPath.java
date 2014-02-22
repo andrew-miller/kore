@@ -1,5 +1,6 @@
 package com.example.kore.ui;
 
+import static com.example.kore.ui.RelationUtils.subRelation;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
@@ -70,7 +71,7 @@ public class RelationPath extends FrameLayout {
       Either3<Label, Integer, Unit> e = path.cons().x;
       path = path.cons().tail;
       subpath = append(e, subpath);
-      relation = RelationUtils.subRelation(relation, e).some().x;
+      relation = subRelation(relation, e).some().x;
       Button b2 = new Button(context);
       switch (e.tag) {
       case X:

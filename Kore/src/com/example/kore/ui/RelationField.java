@@ -1,5 +1,6 @@
 package com.example.kore.ui;
 
+import static com.example.kore.ui.RelationUtils.renderRelation;
 import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.Null.notNull;
 import android.content.Context;
@@ -51,7 +52,8 @@ public class RelationField extends FrameLayout {
    * (rootCode,path) designates the codomain of the relation containing this
    * field<br />
    * argCode is the domain of the enclosing abstraction if this field is a
-   * projection
+   * projection or this field contains a projection without an abstraction on
+   * the path from it to that projection
    */
   public RelationField(Context context, Optional<Label> l, Relation r,
       Optional<String> labelAlias, CodeLabelAliasMap codeLabelAliases,
@@ -112,7 +114,7 @@ public class RelationField extends FrameLayout {
     case COMPOSITION:
       ll.removeViewAt(1);
       ll.addView(new CompositionEditor(getContext(), relation.composition(),
-          codeLabelAliases, new CompositionEditor.Listener() {
+          codeLabelAliases, argCode, new CompositionEditor.Listener() {
             public void select(Integer i) {
               listener.selected(i);
             }
@@ -130,7 +132,7 @@ public class RelationField extends FrameLayout {
     case ABSTRACTION:
     case PRODUCT:
     case UNION:
-      relationButton.setText(RelationUtils.renderRelation(
+      relationButton.setText(renderRelation(argCode,
           Either.<Relation, List<Either3<Label, Integer, Unit>>> x(relation),
           codeLabelAliases));
       break;

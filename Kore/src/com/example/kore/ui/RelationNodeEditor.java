@@ -32,6 +32,7 @@ import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Pattern;
 import com.example.kore.codes.Relation;
+import com.example.kore.codes.Relation.Abstraction;
 import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.Either;
@@ -41,6 +42,7 @@ import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Map.Entry;
+import com.example.kore.utils.Optional;
 import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Unit;
 
@@ -215,6 +217,9 @@ public class RelationNodeEditor extends FrameLayout {
   }
 
   private void render() {
+    Optional<Abstraction> oea = enclosingAbstraction(path, rootRelation);
+    Optional<Code> argCode =
+        oea.isNothing() ? OptionalUtils.<Code> nothing() : some(oea.some().x.i);
     switch (relation.tag) {
     case PRODUCT:
       changeRelationTypeButton.setText("{}");
@@ -227,8 +232,7 @@ public class RelationNodeEditor extends FrameLayout {
           throw new RuntimeException("TODO handle path");
         fields.addView(new RelationField(getContext(), some(e.k), e.v.x(), m
             .get(e.k), codeLabelAliases, relation.product().o, ListUtils
-            .<Label> nil(), some(enclosingAbstraction(path, rootRelation)
-            .some().x.i), new RelationField.Listener() {
+            .<Label> nil(), argCode, new RelationField.Listener() {
           public void selected() {
             listener.relationSelected(Either3.<Label, Integer, Unit> x(e.k));
           }
@@ -266,8 +270,7 @@ public class RelationNodeEditor extends FrameLayout {
         RelationField rf =
             new RelationField(getContext(), OptionalUtils.<Label> nothing(),
                 r.x(), OptionalUtils.<String> nothing(), codeLabelAliases,
-                relation.union().o, ListUtils.<Label> nil(),
-                some(enclosingAbstraction(path, rootRelation).some().x.i),
+                relation.union().o, ListUtils.<Label> nil(), argCode,
                 new RelationField.Listener() {
                   public void selected() {
                     listener.relationSelected(Either3
@@ -322,15 +325,14 @@ public class RelationNodeEditor extends FrameLayout {
       changeRelationTypeButton.setText(".");
       ProjectionEditor pe =
           new ProjectionEditor(getContext(), relation.projection(),
-              enclosingAbstraction(path, rootRelation).some().x.i,
-              codeLabelAliases);
+              argCode.some().x, codeLabelAliases);
       setDragListener(pe);
       fields.addView(pe);
       break;
     case COMPOSITION:
       changeRelationTypeButton.setText("|");
       fields.addView(new CompositionEditor(getContext(),
-          relation.composition(), codeLabelAliases,
+          relation.composition(), codeLabelAliases, argCode,
           new CompositionEditor.Listener() {
             public void select(Integer i) {
               listener.relationSelected(Either3.<Label, Integer, Unit> y(i));
@@ -375,8 +377,8 @@ public class RelationNodeEditor extends FrameLayout {
                   .getAliases(
                       new CanonicalCode(relation.label().o, ListUtils
                           .<Label> nil())).get(l), codeLabelAliases,
-              relation.label().o, ListUtils.<Label> nil(),
-              OptionalUtils.<Code> nothing(), new RelationField.Listener() {
+              relation.label().o, ListUtils.<Label> nil(), argCode,
+              new RelationField.Listener() {
                 public void selected() {
                   listener.relationSelected(Either3
                       .<Label, Integer, Unit> z(Unit.unit()));

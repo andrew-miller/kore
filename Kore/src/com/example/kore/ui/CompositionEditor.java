@@ -10,12 +10,14 @@ import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
+import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Composition;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.List;
+import com.example.kore.utils.Optional;
 import com.example.kore.utils.Unit;
 
 public class CompositionEditor extends FrameLayout {
@@ -33,7 +35,8 @@ public class CompositionEditor extends FrameLayout {
   }
 
   public CompositionEditor(Context context, Composition c,
-      CodeLabelAliasMap codeLabelAliases, final Listener listener) {
+      CodeLabelAliasMap codeLabelAliases, Optional<Code> argCode,
+      final Listener listener) {
     super(context);
     notNull(c, listener);
     LinearLayout ll = new LinearLayout(context);
@@ -66,7 +69,7 @@ public class CompositionEditor extends FrameLayout {
       });
       b.setWidth(0);
       b.setHeight(LayoutParams.MATCH_PARENT);
-      b.setText(RelationUtils.renderRelation(r, codeLabelAliases));
+      b.setText(RelationUtils.renderRelation(argCode, r, codeLabelAliases));
       b.setOnClickListener(new OnClickListener() {
         public void onClick(View v) {
           listener.select(i_);

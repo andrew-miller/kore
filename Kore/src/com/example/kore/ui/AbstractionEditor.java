@@ -3,6 +3,7 @@ package com.example.kore.ui;
 import static com.example.kore.ui.PatternUtils.renderPattern;
 import static com.example.kore.ui.RelationUtils.renderRelation;
 import static com.example.kore.utils.Null.notNull;
+import static com.example.kore.utils.OptionalUtils.some;
 import android.content.Context;
 import android.view.View;
 import android.widget.Button;
@@ -51,7 +52,7 @@ public class AbstractionEditor extends FrameLayout {
         });
     ll.addView(b);
     b = new Button(context);
-    b.setText(renderRelation(a.r, codeLabelAliases));
+    b.setText(renderRelation(some(a.i), a.r, codeLabelAliases));
     b.setOnClickListener(new OnClickListener() {
       public void onClick(View _) {
         listener.relationSelected();
