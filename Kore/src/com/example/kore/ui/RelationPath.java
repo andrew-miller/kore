@@ -22,7 +22,7 @@ import com.example.kore.utils.Unit;
 public class RelationPath extends FrameLayout {
 
   interface Listener {
-    void pathSelected(List<Either3<Label, Integer, Unit>> p);
+    void selectPath(List<Either3<Label, Integer, Unit>> p);
   }
 
   public RelationPath(Context context, final Listener listener,
@@ -62,7 +62,7 @@ public class RelationPath extends FrameLayout {
       final List<Either3<Label, Integer, Unit>> subpathS = subpath;
       b.setOnClickListener(new OnClickListener() {
         public void onClick(View v) {
-          listener.pathSelected(subpathS);
+          listener.selectPath(subpathS);
         }
       });
       pathVG.addView(b);

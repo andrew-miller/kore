@@ -138,7 +138,7 @@ public class RelationEditor extends FrameLayout implements
     doneListener.onDone(relation);
   }
 
-  public void relationSelected(Either3<Label, Integer, Unit> e) {
+  public void selectRelation(Either3<Label, Integer, Unit> e) {
     notNull(e);
     Relation r = subRelation(relationAt(path, relation).some().x, e).some().x;
     path = append(e, path);
@@ -146,7 +146,7 @@ public class RelationEditor extends FrameLayout implements
     initNodeEditor(r);
   }
 
-  public void relationSelected(Either3<Label, Integer, Unit> e1,
+  public void selectRelation(Either3<Label, Integer, Unit> e1,
       Either3<Label, Integer, Unit> e2) {
     notNull(e1, e2);
     List<Either3<Label, Integer, Unit>> p = append(e2, append(e1, path));
@@ -156,7 +156,7 @@ public class RelationEditor extends FrameLayout implements
     initNodeEditor(r);
   }
 
-  public void pathSelected(List<Either3<Label, Integer, Unit>> p) {
+  public void selectPath(List<Either3<Label, Integer, Unit>> p) {
     notNull(p);
     Optional<Relation> or = relationAt(p, relation);
     if (or.isNothing())

@@ -37,9 +37,9 @@ public class RelationField extends FrameLayout {
   private final Optional<Code> argCode;
 
   public interface Listener {
-    void selected();
+    void select();
 
-    void selected(Integer i);
+    void select(Integer i);
 
     void replaceLabel(Label l);
 
@@ -109,14 +109,19 @@ public class RelationField extends FrameLayout {
     case PROJECTION:
       ll.removeViewAt(1);
       ll.addView(new ProjectionEditor(getContext(), relation.projection(),
-          argCode.some().x, codeLabelAliases));
+          argCode.some().x, codeLabelAliases, new F<Void, Void>() {
+            public Void f(Void x) {
+              listener.select();
+              return null;
+            }
+          }));
       break;
     case COMPOSITION:
       ll.removeViewAt(1);
       ll.addView(new CompositionEditor(getContext(), relation.composition(),
           codeLabelAliases, argCode, new CompositionEditor.Listener() {
             public void select(Integer i) {
-              listener.selected(i);
+              listener.select(i);
             }
 
             public void insert(Integer i) {
@@ -141,7 +146,7 @@ public class RelationField extends FrameLayout {
     }
     relationButton.setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
-        listener.selected();
+        listener.select();
       }
     });
   }

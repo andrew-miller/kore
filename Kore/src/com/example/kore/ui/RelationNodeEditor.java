@@ -50,11 +50,11 @@ public class RelationNodeEditor extends FrameLayout {
   interface Listener {
     void changeRelationType(Relation.Tag t);
 
-    void relationSelected(Either3<Label, Integer, Unit> e);
+    void selectRelation(Either3<Label, Integer, Unit> e);
 
     void onDone();
 
-    void relationSelected(Either3<Label, Integer, Unit> e1,
+    void selectRelation(Either3<Label, Integer, Unit> e1,
         Either3<Label, Integer, Unit> e2);
 
     void changeCodomain(Code c);
@@ -233,12 +233,12 @@ public class RelationNodeEditor extends FrameLayout {
         fields.addView(new RelationField(getContext(), some(e.k), e.v.x(), m
             .get(e.k), codeLabelAliases, relation.product().o, ListUtils
             .<Label> nil(), argCode, new RelationField.Listener() {
-          public void selected() {
-            listener.relationSelected(Either3.<Label, Integer, Unit> x(e.k));
+          public void select() {
+            listener.selectRelation(Either3.<Label, Integer, Unit> x(e.k));
           }
 
-          public void selected(Integer i) {
-            listener.relationSelected(Either3.<Label, Integer, Unit> x(e.k),
+          public void select(Integer i) {
+            listener.selectRelation(Either3.<Label, Integer, Unit> x(e.k),
                 Either3.<Label, Integer, Unit> y(i));
           }
 
@@ -272,13 +272,13 @@ public class RelationNodeEditor extends FrameLayout {
                 r.x(), OptionalUtils.<String> nothing(), codeLabelAliases,
                 relation.union().o, ListUtils.<Label> nil(), argCode,
                 new RelationField.Listener() {
-                  public void selected() {
-                    listener.relationSelected(Either3
+                  public void select() {
+                    listener.selectRelation(Either3
                         .<Label, Integer, Unit> y(i_));
                   }
 
-                  public void selected(Integer i) {
-                    listener.relationSelected(
+                  public void select(Integer i) {
+                    listener.selectRelation(
                         Either3.<Label, Integer, Unit> y(i_),
                         Either3.<Label, Integer, Unit> y(i));
                   }
@@ -325,7 +325,11 @@ public class RelationNodeEditor extends FrameLayout {
       changeRelationTypeButton.setText(".");
       ProjectionEditor pe =
           new ProjectionEditor(getContext(), relation.projection(),
-              argCode.some().x, codeLabelAliases);
+              argCode.some().x, codeLabelAliases, new F<Void, Void>() {
+                public Void f(Void x) {
+                  return null;
+                }
+              });
       setDragListener(pe);
       fields.addView(pe);
       break;
@@ -335,7 +339,7 @@ public class RelationNodeEditor extends FrameLayout {
           relation.composition(), codeLabelAliases, argCode,
           new CompositionEditor.Listener() {
             public void select(Integer i) {
-              listener.relationSelected(Either3.<Label, Integer, Unit> y(i));
+              listener.selectRelation(Either3.<Label, Integer, Unit> y(i));
             }
 
             public void insert(Integer i) {
@@ -353,7 +357,7 @@ public class RelationNodeEditor extends FrameLayout {
           new AbstractionEditor(getContext(), relation.abstraction(),
               codeLabelAliases, new AbstractionEditor.Listener() {
                 public void relationSelected() {
-                  listener.relationSelected(Either3
+                  listener.selectRelation(Either3
                       .<Label, Integer, Unit> z(Unit.unit()));
                 }
 
@@ -379,12 +383,12 @@ public class RelationNodeEditor extends FrameLayout {
                           .<Label> nil())).get(l), codeLabelAliases,
               relation.label().o, ListUtils.<Label> nil(), argCode,
               new RelationField.Listener() {
-                public void selected() {
-                  listener.relationSelected(Either3
+                public void select() {
+                  listener.selectRelation(Either3
                       .<Label, Integer, Unit> z(Unit.unit()));
                 }
 
-                public void selected(Integer i) {
+                public void select(Integer i) {
                   throw new RuntimeException("wat");
                 }
 

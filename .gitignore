@@ -1,2 +1,6 @@
 Kore/bin
 KoreTest/bin
+Kore/gen/
+Kore/.classpath
+KoreTest/gen/
+KoreTest/.classpath
