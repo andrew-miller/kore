@@ -44,8 +44,8 @@ public class AbstractionEditor extends FrameLayout {
         ll.addView(v);
       }
     });
-    ChoosePatternMenu.make(b, context, a.i, ListUtils.<Label> nil(),
-        codeLabelAliases, new ChoosePatternMenu.Listener() {
+    PatternMenu.make(b, context, a.i, ListUtils.<Label> nil(),
+        codeLabelAliases, new PatternMenu.Listener() {
           public void select(Pattern p) {
             listener.patternChanged(p);
           }

@@ -51,9 +51,9 @@ public final class PatternField {
         listener.selected();
       }
     });
-    ChoosePatternMenu.make(patternButton, context, rootCode,
+    PatternMenu.make(patternButton, context, rootCode,
         directPath(append(label, path), rootCode), codeLabelAliases,
-        new ChoosePatternMenu.Listener() {
+        new PatternMenu.Listener() {
           public void select(Pattern p) {
             listener.replace(p);
           }
@@ -62,7 +62,7 @@ public final class PatternField {
     if (code.tag == Tag.UNION)
       labelButton.setOnLongClickListener(new OnLongClickListener() {
         public boolean onLongClick(View v) {
-          LabelSelectMenu.make(context, v, code, codeLabelAliases, cc,
+          LabelMenu.make(context, v, code, codeLabelAliases, cc,
               new F<Label, Void>() {
                 public Void f(Label l) {
                   listener.replace(l);

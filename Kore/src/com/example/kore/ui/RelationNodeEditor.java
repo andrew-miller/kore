@@ -70,6 +70,10 @@ public class RelationNodeEditor extends FrameLayout {
     void changeLabel(Label l);
 
     void move(Integer src, Integer dest);
+
+    void replaceRelation(List<Label> proj);
+
+    void replaceRelation(Either3<Label, Integer, Unit> e, List<Label> proj);
   }
 
   private final Relation relation;
@@ -256,6 +260,11 @@ public class RelationNodeEditor extends FrameLayout {
             throw new RuntimeException(
                 "TODO handle composition move in relationField");
           }
+
+          public void replaceRelation(List<Label> proj) {
+            listener.replaceRelation(Either3.<Label, Integer, Unit> x(e.k),
+                proj);
+          }
         }));
       }
       break;
@@ -264,7 +273,7 @@ public class RelationNodeEditor extends FrameLayout {
       int i = 0;
       for (Either<Relation, List<Either3<Label, Integer, Unit>>> r : iter(relation
           .union().l)) {
-        final int i_ = i;
+        final Integer i_ = i;
         if (r.isY())
           throw new RuntimeException("TODO handle path");
         RelationField rf =
@@ -296,6 +305,11 @@ public class RelationNodeEditor extends FrameLayout {
                     throw new RuntimeException(
                         "TODO handle composition move in relationField");
                   }
+
+                  public void replaceRelation(List<Label> proj) {
+                    listener.replaceRelation(
+                        Either3.<Label, Integer, Unit> y(i_), proj);
+                  }
                 });
         rf.setOnLongClickListener(new OnLongClickListener() {
           public boolean onLongClick(View v) {
@@ -325,9 +339,13 @@ public class RelationNodeEditor extends FrameLayout {
       changeRelationTypeButton.setText(".");
       ProjectionEditor pe =
           new ProjectionEditor(getContext(), relation.projection(),
-              argCode.some().x, codeLabelAliases, new F<Void, Void>() {
-                public Void f(Void x) {
-                  return null;
+              argCode.some().x, codeLabelAliases,
+              new ProjectionEditor.Listener() {
+                public void select() {
+                }
+
+                public void replace(List<Label> proj) {
+                  listener.replaceRelation(proj);
                 }
               });
       setDragListener(pe);
@@ -357,8 +375,8 @@ public class RelationNodeEditor extends FrameLayout {
           new AbstractionEditor(getContext(), relation.abstraction(),
               codeLabelAliases, new AbstractionEditor.Listener() {
                 public void relationSelected() {
-                  listener.selectRelation(Either3
-                      .<Label, Integer, Unit> z(Unit.unit()));
+                  listener.selectRelation(Either3.<Label, Integer, Unit> z(Unit
+                      .unit()));
                 }
 
                 public void patternChanged(Pattern p) {
@@ -384,8 +402,8 @@ public class RelationNodeEditor extends FrameLayout {
               relation.label().o, ListUtils.<Label> nil(), argCode,
               new RelationField.Listener() {
                 public void select() {
-                  listener.selectRelation(Either3
-                      .<Label, Integer, Unit> z(Unit.unit()));
+                  listener.selectRelation(Either3.<Label, Integer, Unit> z(Unit
+                      .unit()));
                 }
 
                 public void select(Integer i) {
@@ -404,6 +422,12 @@ public class RelationNodeEditor extends FrameLayout {
                 public void move(Integer src, Integer dest) {
                   throw new RuntimeException(
                       "TODO handle composition move in relationField");
+                }
+
+                public void replaceRelation(List<Label> proj) {
+                  listener.replaceRelation(
+                      Either3.<Label, Integer, Unit> z(Unit.unit()), proj);
+
                 }
               });
       setDragListener(rf);

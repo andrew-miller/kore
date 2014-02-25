@@ -16,7 +16,7 @@ import com.example.kore.utils.F;
 import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
 
-public class LabelSelectMenu {
+public class LabelMenu {
   public static void make(Context context, View v, Code code,
       CodeLabelAliasMap codeLabelAliases, CanonicalCode cc,
       final F<Label, Void> f) {

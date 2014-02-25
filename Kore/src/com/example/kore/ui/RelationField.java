@@ -46,6 +46,8 @@ public class RelationField extends FrameLayout {
     void insert(Integer i);
 
     void move(Integer src, Integer dest);
+
+    void replaceRelation(List<Label> proj);
   }
 
   /**
@@ -92,7 +94,7 @@ public class RelationField extends FrameLayout {
         : labelAlias.some().x);
     labelButton.setOnLongClickListener(new OnLongClickListener() {
       public boolean onLongClick(View v) {
-        LabelSelectMenu.make(context, v, rootCode, codeLabelAliases,
+        LabelMenu.make(context, v, rootCode, codeLabelAliases,
             new CanonicalCode(rootCode, path), new F<Label, Void>() {
               public Void f(Label l) {
                 listener.replaceLabel(l);
@@ -109,10 +111,13 @@ public class RelationField extends FrameLayout {
     case PROJECTION:
       ll.removeViewAt(1);
       ll.addView(new ProjectionEditor(getContext(), relation.projection(),
-          argCode.some().x, codeLabelAliases, new F<Void, Void>() {
-            public Void f(Void x) {
+          argCode.some().x, codeLabelAliases, new ProjectionEditor.Listener() {
+            public void select() {
               listener.select();
-              return null;
+            }
+
+            public void replace(List<Label> proj) {
+              listener.replaceRelation(proj);
             }
           }));
       break;

@@ -382,4 +382,22 @@ public class RelationEditor extends FrameLayout implements
             unit, nc)), r.label().o)));
     initNodeEditor(relationAt(path, relation).some().x);
   }
+
+  public void replaceRelation(List<Label> proj) {
+    Relation r = relationAt(path, relation).some().x;
+    relation =
+        replaceRelationAt(relation, path,
+            Relation.projection(new Projection(proj, codomain(r))));
+    initNodeEditor(relationAt(path, relation).some().x);
+  }
+
+  public void replaceRelation(Either3<Label, Integer, Unit> e,
+      List<Label> proj) {
+    List<Either3<Label, Integer, Unit>> p = append(e, path);
+    Relation r = relationAt(p, relation).some().x;
+    relation =
+        replaceRelationAt(relation, p,
+            Relation.projection(new Projection(proj, codomain(r))));
+    initNodeEditor(relationAt(path, relation).some().x);
+  }
 }

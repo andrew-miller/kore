@@ -23,7 +23,7 @@ import com.example.kore.utils.Map;
 import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
 
-public class ChoosePatternMenu {
+public class PatternMenu {
   public interface Listener {
     void select(Pattern p);
   }

@@ -1,6 +1,7 @@
 package com.example.kore.ui;
 
 import static com.example.kore.utils.CodeUtils.directPath;
+import static com.example.kore.utils.CodeUtils.followPath;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
@@ -22,19 +23,40 @@ import com.example.kore.utils.Optional;
 
 public class ProjectionEditor extends FrameLayout {
 
-  public ProjectionEditor(Context context, Projection p, Code code,
-      CodeLabelAliasMap codeLabelAliases, final F<Void, Void> select) {
+  interface Listener {
+    void select();
+
+    void replace(List<Label> proj);
+  }
+
+  public ProjectionEditor(final Context context, final Projection p,
+      final Code code, final CodeLabelAliasMap codeLabelAliases,
+      final Listener listener) {
     super(context);
     notNull(p);
-    LinearLayout ll = new LinearLayout(getContext());
+    LinearLayout ll = new LinearLayout(context);
     ll.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
         LayoutParams.WRAP_CONTENT));
+    Button b = new Button(context);
+    b.setText("~");
+    b.setOnClickListener(new OnClickListener() {
+      public void onClick(View v) {
+        ProjectionMenu.make(context, v, codeLabelAliases, code,
+            followPath(p.path, code).some().x, new F<List<Label>, Void>() {
+              public Void f(List<Label> proj) {
+                listener.replace(proj);
+                return null;
+              }
+            });
+      }
+    });
+    ll.addView(b);
     List<Label> path = nil();
     for (Label l : iter(p.path)) {
-      Button b = new Button(getContext());
+      b = new Button(context);
       b.setOnClickListener(new OnClickListener() {
         public void onClick(View _) {
-          select.f(null);
+          listener.select();
         }
       });
       b.setWidth(0);
@@ -48,7 +70,7 @@ public class ProjectionEditor extends FrameLayout {
       ll.addView(b);
       path = append(l, path);
     }
-    HorizontalScrollView sv = new HorizontalScrollView(getContext());
+    HorizontalScrollView sv = new HorizontalScrollView(context);
     sv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
         LayoutParams.WRAP_CONTENT));
     sv.addView(ll);
