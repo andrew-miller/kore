@@ -375,7 +375,7 @@ public class RelationUtils {
         }
         if (l.isEmpty())
           return nothing();
-        return some(Relation.union(new Union(l, c, d)));
+        return some(Relation.union(new Union(l, d, c)));
       case PRODUCT:
         Optional<Relation> oe = element(c);
         return some(Relation.abstraction(new Abstraction(emptyPattern, x(oe
