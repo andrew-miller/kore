@@ -81,6 +81,7 @@ public class MainActivity extends FragmentActivity {
   protected void onCreate(Bundle b) {
     super.onCreate(b);
 
+    this.getActionBar().hide();
     setContentView(R.layout.activity_main);
     mainLayout = findViewById(R.id.main_layout);
     codeEditorContainer = (ViewGroup) findViewById(R.id.container_code_editor);

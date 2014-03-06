@@ -4,53 +4,46 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <HorizontalScrollView
+        android:id="@+id/horizontalScrollView1"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content" >
 
-        <Button
-            android:id="@+id/button_change_domain"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent" >
 
-        <Button
-            android:id="@+id/button_change_codomain"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
+            <Button
+                android:id="@+id/button_new_field"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/button_new_field" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+            <Button
+                android:id="@+id/button_delete_field"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/button_delete_field"
+                android:visibility="invisible" />
 
-        <Button
-            android:id="@+id/button_new_field"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="left"
-            android:text="@string/button_new_field" />
+            <Button
+                android:id="@+id/button_done"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/button_done" />
 
-        <Button
-            android:id="@+id/button_delete_field"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:text="@string/button_delete_field"
-            android:visibility="invisible" />
+            <Button
+                android:id="@+id/button_change_domain"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-        <Button
-            android:id="@+id/button_change_relation_type"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/button_change_codomain"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
 
-        <Button
-            android:id="@+id/button_done"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/button_done" />
-        
-    </LinearLayout>
-    
+    </HorizontalScrollView>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
@@ -63,6 +56,5 @@
 
         </LinearLayout>
 
-    </ScrollView>
-
+	</ScrollView>
 </LinearLayout>

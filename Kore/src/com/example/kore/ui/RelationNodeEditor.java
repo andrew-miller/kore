@@ -1,23 +1,15 @@
 package com.example.kore.ui;
 
-import static com.example.kore.ui.RelationUtils.codomain;
-import static com.example.kore.ui.RelationUtils.domain;
 import static com.example.kore.ui.RelationUtils.enclosingAbstraction;
-import static com.example.kore.ui.RelationUtils.inAbstraction;
 import static com.example.kore.ui.RelationUtils.unit_unit;
 import static com.example.kore.utils.Boom.boom;
-import static com.example.kore.utils.CodeUtils.equal;
-import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.Null.notNull;
 import static com.example.kore.utils.OptionalUtils.some;
 import android.content.Context;
-import android.util.Pair;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -33,7 +25,6 @@ import com.example.kore.codes.Label;
 import com.example.kore.codes.Pattern;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Abstraction;
-import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
@@ -80,7 +71,6 @@ public class RelationNodeEditor extends FrameLayout {
   private final Relation rootRelation;
   private final Listener listener;
   private final List<Either3<Label, Integer, Unit>> path;
-  private final Button changeRelationTypeButton;
   private final LinearLayout fields;
   private CodeLabelAliasMap codeLabelAliases;
 
@@ -105,44 +95,12 @@ public class RelationNodeEditor extends FrameLayout {
         LayoutInflater.from(context).inflate(R.layout.relation_node_editor,
             this, true);
     fields = (LinearLayout) v.findViewById(R.id.layout_fields);
-    changeRelationTypeButton =
-        (Button) v.findViewById(R.id.button_change_relation_type);
     v.findViewById(R.id.button_done).setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
         listener.onDone();
       }
     });
-    changeRelationTypeButton.setOnClickListener(new OnClickListener() {
-      public void onClick(View v) {
-        PopupMenu pm = new PopupMenu(context, v);
-        final Menu m = pm.getMenu();
-        F<Pair<String, Tag>, Void> add =
-            new F<Pair<String, Relation.Tag>, Void>() {
-              public Void f(final Pair<String, Tag> p) {
-                m.add(p.first).setOnMenuItemClickListener(
-                    new OnMenuItemClickListener() {
-                      public boolean onMenuItemClick(MenuItem _) {
-                        listener.changeRelationType(p.second);
-                        return true;
-                      }
-                    });
-                return null;
-              }
-            };
-        add.f(Pair.create("[]", Tag.UNION));
-        if (equal(domain(relation), unit)) {
-          if (codomain(relation).tag == Code.Tag.PRODUCT)
-            add.f(Pair.create("{}", Tag.PRODUCT));
-          if (codomain(relation).tag == Code.Tag.UNION)
-            add.f(Pair.create("'", Tag.LABEL));
-        }
-        add.f(Pair.create("->", Tag.ABSTRACTION));
-        add.f(Pair.create("|", Tag.COMPOSITION));
-        if (inAbstraction(path, rootRelation))
-          add.f(Pair.create(".", Tag.PROJECTION));
-        pm.show();
-      }
-    });
+
     Button newFieldButton = (Button) v.findViewById(R.id.button_new_field);
     newFieldButton.setOnTouchListener(new OnTouchListener() {
       public boolean onTouch(View v, MotionEvent e) {
@@ -226,7 +184,6 @@ public class RelationNodeEditor extends FrameLayout {
         oea.isNothing() ? OptionalUtils.<Code> nothing() : some(oea.some().x.i);
     switch (relation.tag) {
     case PRODUCT:
-      changeRelationTypeButton.setText("{}");
       Map<Label, String> m =
           codeLabelAliases.getAliases(new CanonicalCode(relation.product().o,
               ListUtils.<Label> nil()));
@@ -269,7 +226,6 @@ public class RelationNodeEditor extends FrameLayout {
       }
       break;
     case UNION:
-      changeRelationTypeButton.setText("[]");
       int i = 0;
       for (Either<Relation, List<Either3<Label, Integer, Unit>>> r : iter(relation
           .union().l)) {
@@ -336,7 +292,6 @@ public class RelationNodeEditor extends FrameLayout {
       }
       break;
     case PROJECTION:
-      changeRelationTypeButton.setText(".");
       ProjectionEditor pe =
           new ProjectionEditor(getContext(), relation.projection(),
               argCode.some().x, codeLabelAliases,
@@ -352,7 +307,6 @@ public class RelationNodeEditor extends FrameLayout {
       fields.addView(pe);
       break;
     case COMPOSITION:
-      changeRelationTypeButton.setText("|");
       fields.addView(new CompositionEditor(getContext(),
           relation.composition(), codeLabelAliases, argCode,
           new CompositionEditor.Listener() {
@@ -370,7 +324,6 @@ public class RelationNodeEditor extends FrameLayout {
           }));
       break;
     case ABSTRACTION:
-      changeRelationTypeButton.setText("->");
       AbstractionEditor ae =
           new AbstractionEditor(getContext(), relation.abstraction(),
               codeLabelAliases, new AbstractionEditor.Listener() {
@@ -387,7 +340,6 @@ public class RelationNodeEditor extends FrameLayout {
       fields.addView(ae);
       break;
     case LABEL:
-      changeRelationTypeButton.setText("'");
       Either<Relation, List<Either3<Label, Integer, Unit>>> r =
           relation.label().r;
       final Label l = relation.label().label;
