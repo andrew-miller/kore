@@ -6,31 +6,26 @@ import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.CodeUtils.codeToGraph;
 import static com.example.kore.utils.CodeUtils.directPath;
 import static com.example.kore.utils.CodeUtils.equal;
-import static com.example.kore.utils.CodeUtils.reRoot;
+import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.cons;
-import static com.example.kore.utils.ListUtils.cycle;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.length;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.ListUtils.nth;
 import static com.example.kore.utils.ListUtils.replace;
-import static com.example.kore.utils.ListUtils.reverse;
 import static com.example.kore.utils.OptionalUtils.nothing;
 import static com.example.kore.utils.OptionalUtils.some;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.jgrapht.graph.DirectedMultigraph;
 
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
-import com.example.kore.codes.Pattern;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Abstraction;
 import com.example.kore.codes.Relation.Composition;
@@ -340,111 +335,6 @@ public class RelationUtils {
             : a);
   }
 
-  /**
-   * A relation from <tt>d</tt> to <tt>c</tt> if there's one that's not
-   * <tt>[]</tt>
-   */
-  public static Optional<Relation> element(Code d, Code c) {
-    if (d.equals(unit))
-      return element(c);
-    switch (d.tag) {
-    case PRODUCT:
-      return nothing();
-    case UNION:
-      switch (c.tag) {
-      case UNION:
-        List<Either<Relation, List<Either3<Label, Integer, Unit>>>> l = nil();
-        found: {
-          for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet()))
-            if (!element(reRoot(c, cons(e.k, ListUtils.<Label> nil())))
-                .isNothing())
-              break found;
-          return nothing();
-        }
-        Iterator<Entry<Label, CodeOrPath>> i =
-            cycle(reverse(c.labels.entrySet())).iterator();
-        for (Entry<Label, CodeOrPath> e : iter(d.labels.entrySet())) {
-          Optional<Relation> or;
-          do
-            or = element(reRoot(c, cons(i.next().k, ListUtils.<Label> nil())));
-          while (or.isNothing());
-          l =
-              cons(x(Relation.abstraction(new Abstraction(new Pattern(Map
-                  .<Label, Pattern> empty().put(e.k, emptyPattern)), x(or
-                  .some().x), d, c))), l);
-        }
-        if (l.isEmpty())
-          return nothing();
-        return some(Relation.union(new Union(l, d, c)));
-      case PRODUCT:
-        Optional<Relation> oe = element(c);
-        return some(Relation.abstraction(new Abstraction(emptyPattern, x(oe
-            .some().x), d, c)));
-      }
-    default:
-      throw boom();
-    }
-  }
-
-  /**
-   * A relation from <tt>{}</tt> to <tt>c</tt> if there's one that's not
-   * <tt>[]</tt>
-   */
-  public static Optional<Relation> element(Code c) {
-    Pair<DirectedMultigraph<Identity<Code.Tag>, Pair<Identity<Code.Tag>, Label>>, Identity<Code.Tag>> p =
-        codeToGraph(c);
-    HashSet<Identity<Code.Tag>> s = new HashSet<Identity<Code.Tag>>();
-    s.add(p.y);
-    return element(p.y, p.x, s, c);
-  }
-
-  private static
-      Optional<Relation>
-      element(
-          Identity<Code.Tag> v,
-          DirectedMultigraph<Identity<Code.Tag>, Pair<Identity<Code.Tag>, Label>> g,
-          HashSet<Identity<Code.Tag>> vs, Code c) {
-    switch (v.t) {
-    case UNION:
-      for (Pair<Identity<Code.Tag>, Label> e : g.edgesOf(v))
-        if (e.x == v) {
-          CodeOrPath cp = c.labels.get(e.y).some().x;
-          if (cp.tag == CodeOrPath.Tag.CODE) {
-            Identity<Code.Tag> v2 = g.getEdgeTarget(e);
-            if (vs.contains(v2))
-              return nothing();
-            vs.add(v2);
-            Optional<Relation> r = element(v2, g, vs, cp.code);
-            vs.remove(v);
-            if (!r.isNothing())
-              return some(Relation.label(new Label_(e.y, x(r.some().x), c)));
-          }
-        }
-      return nothing();
-    case PRODUCT:
-      Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> m =
-          Map.empty();
-      for (Pair<Identity<Code.Tag>, Label> e : g.edgesOf(v))
-        if (e.x == v) {
-          CodeOrPath cp = c.labels.get(e.y).some().x;
-          if (cp.tag == CodeOrPath.Tag.PATH)
-            return nothing();
-          Identity<Code.Tag> v2 = g.getEdgeTarget(e);
-          if (vs.contains(v2))
-            return nothing();
-          vs.add(v2);
-          Optional<Relation> r = element(v2, g, vs, cp.code);
-          vs.remove(v);
-          if (r.isNothing())
-            return nothing();
-          m = m.put(e.y, x(r.some().x));
-        }
-      return some(Relation.product(new Product(m, c)));
-    default:
-      throw boom();
-    }
-  }
-
   public static Relation removeFromComposition(Set<Integer> is, Relation root,
       List<Either3<Label, Integer, Unit>> path) {
     Relation r = relationAt(path, root).some().x;
@@ -477,9 +367,9 @@ public class RelationUtils {
     Code last =
         codomain(elast.isY() ? relationAt(elast.y(), root).some().x : elast.x());
     if (!equal(first, c.i))
-      c = new Composition(cons(x(elementOrDummy(c.i, first)), c.l), c.i, c.o);
+      c = new Composition(cons(x(dummy(c.i, first)), c.l), c.i, c.o);
     if (!equal(last, c.o))
-      c = new Composition(append(x(elementOrDummy(last, c.o)), c.l), c.i, c.o);
+      c = new Composition(append(x(dummy(last, c.o)), c.l), c.i, c.o);
 
     return Relation
         .composition(new Composition(adaptComposition_(
@@ -499,23 +389,17 @@ public class RelationUtils {
     Relation r2 = er2.isY() ? relationAt(er2.y(), root).some().x : er2.x();
     if (equal(codomain(r1), domain(r2)))
       return cons(er1, adaptComposition_(root, l.cons().tail));
-    Relation t = elementOrDummy(codomain(r1), domain(r2));
-    return cons(er1, cons(x(t), adaptComposition_(root, l.cons().tail)));
+    return cons(
+        er1,
+        cons(x(dummy(codomain(r1), domain(r2))),
+            adaptComposition_(root, l.cons().tail)));
   }
 
   /** Empty relation from <tt>i</tt> to <tt>o</tt> */
-  public static Relation dummyRelation(Code i, Code o) {
-    return Relation.abstraction(new Abstraction(emptyPattern, x(Relation
-        .union(new Union(nil, i, o))), i, o));
+  public static Relation dummy(Code i, Code o) {
+    return Relation.union(new Union(ListUtils
+        .<Either<Relation, List<Either3<Label, Integer, Unit>>>> nil(), i, o));
   }
-
-  public static Relation elementOrDummy(Code c1, Code c2) {
-    Optional<Relation> ot = element(c1, c2);
-    return ot.isNothing() ? dummyRelation(c1, c2) : ot.some().x;
-  }
-
-  private static List<Either<Relation, List<Either3<Label, Integer, Unit>>>> nil =
-      ListUtils.<Either<Relation, List<Either3<Label, Integer, Unit>>>> nil();
 
   private static Either<Relation, List<Either3<Label, Integer, Unit>>> x(
       Relation r) {
@@ -538,7 +422,7 @@ public class RelationUtils {
     if (vs.contains(v))
       return nothing();
     vs.add(v);
-    if (equal(reRoot(i, path), o))
+    if (equal(reroot(i, path), o))
       return some(new Projection(path, o));
     for (Pair<Identity<Code.Tag>, Label> e : g.edgesOf(v)) {
       Identity<Code.Tag> t = g.getEdgeTarget(e);

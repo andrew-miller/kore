@@ -309,7 +309,11 @@ public final class CodeUtils {
     return buildCodeFromSpanningTree(g, m.get(), r, spanningTreeEdges);
   }
 
-  public static Code reRoot(Code c, List<Label> path) {
+  /**
+   * a <tt>Code</tt> representing the same graph as <tt>c</tt>, but rooted at
+   * <tt>path</tt>
+   */
+  public static Code reroot(Code c, List<Label> path) {
     Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
         codeToGraph(c);
     DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g = p.x;
@@ -388,6 +392,7 @@ public final class CodeUtils {
     }
   }
 
+  /** append <tt>p</tt> to all paths */
   public static Code rebase(List<Label> p, Code c) {
     Map<Label, CodeOrPath> m = Map.empty();
     for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {

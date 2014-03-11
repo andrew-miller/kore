@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -52,7 +53,7 @@ public class RelationPath extends FrameLayout {
     List<Either3<Label, Integer, Unit>> path_ = path;
     List<Either3<Label, Integer, Unit>> subpath = nil();
     while (true) {
-      Button b = new Button(context);
+      final Button b = new Button(context);
       switch (relation.tag) {
       case PRODUCT:
         b.setText("{}");
@@ -110,6 +111,13 @@ public class RelationPath extends FrameLayout {
             pm.show();
           } else
             listener.selectPath(subpathS);
+        }
+      });
+      b.setOnTouchListener(new OnTouchListener() {
+        public boolean onTouch(View _, MotionEvent e) {
+          if (e.getAction() == MotionEvent.ACTION_CANCEL)
+            b.startDrag(null, new DragShadowBuilder(), new SelectRelation(), 0);
+          return false;
         }
       });
       pathVG.addView(b);

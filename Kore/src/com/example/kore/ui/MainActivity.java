@@ -3,6 +3,7 @@ package com.example.kore.ui;
 import static com.example.kore.utils.ListUtils.cons;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
+import static com.example.kore.utils.Pair.pair;
 
 import java.util.HashSet;
 
@@ -17,12 +18,14 @@ import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
+import com.example.kore.codes.Relation.Tag;
 import com.example.kore.ui.CodeList.CodeAliasChangedListener;
 import com.example.kore.ui.CodeList.CodeSelectListener;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
+import com.example.kore.utils.Pair;
 
 public class MainActivity extends FragmentActivity {
 
@@ -31,6 +34,18 @@ public class MainActivity extends FragmentActivity {
   private static final String STATE_CODE_LABEL_ALIASES = "code_label_aliases";
   private static final String STATE_CODE_ALIASES = "code_aliases";
   private static final String STATE_CODE_EDITOR = "code_editor";
+
+  private final static RelationColors relationColors = new RelationColors(Map
+      .<Tag, Pair<Integer, Integer>> empty()
+      .put(Tag.ABSTRACTION, pair(0xFFAA00AA, 0xFFFF00FF))
+      .put(Tag.COMPOSITION, pair(0xFF0000AA, 0xFF0000FF))
+      .put(Tag.LABEL, pair(0xFF00AAAA, 0xFF00FFFF))
+      .put(Tag.PRODUCT, pair(0xFF00AAAA, 0xFF00FFFF))
+      .put(Tag.PROJECTION, pair(0xFFAA0000, 0xFFFF0000))
+      .put(Tag.UNION, pair(0xFF00AA00, 0xFF00FF00)));
+
+  private final static RelationViewColors relationViewColors =
+      new RelationViewColors(relationColors, 0xFFCCCCCC);
 
   private HashSet<Code> codes = new HashSet<Code>();
   private List<Code> recentCodes = nil();
@@ -193,7 +208,7 @@ public class MainActivity extends FragmentActivity {
     newRelationEditorDoneListener();
     relationEditor =
         new RelationEditor(this, r, relationEditorDoneListener, recentCodes,
-            codeLabelAliasMap, codeAliases);
+            codeLabelAliasMap, codeAliases, relationViewColors);
     mainLayout.setVisibility(View.GONE);
     relationEditorContainer.addView(relationEditor);
     relationEditorContainer.setVisibility(View.VISIBLE);

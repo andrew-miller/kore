@@ -222,4 +222,8 @@ public class ListUtils {
     return insert(remove(l, src), dest > src ? dest - 1 : dest, nth(l, src)
         .some().x);
   }
+
+  public static <T> List<T> drop(List<T> l, Integer n) {
+    return n == 0 ? l : drop(l.cons().tail, n - 1);
+  }
 }

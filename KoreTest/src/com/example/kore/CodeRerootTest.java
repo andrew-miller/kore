@@ -16,7 +16,7 @@ public class CodeRerootTest extends TestCase {
   private static final List<Label> nilPath = nil();
 
   public static void testUnit() {
-    assertEquals(CodeUtils.unit, CodeUtils.reRoot(CodeUtils.unit, nilPath));
+    assertEquals(CodeUtils.unit, CodeUtils.reroot(CodeUtils.unit, nilPath));
   }
 
   // {'a {}}
@@ -24,8 +24,8 @@ public class CodeRerootTest extends TestCase {
     Map<Label, CodeOrPath> m = Map.empty();
     m = m.put(new Label("a"), CodeOrPath.newCode(CodeUtils.unit));
     Code c = Code.newProduct(m);
-    assertEquals(c, CodeUtils.reRoot(c, nilPath));
-    Code c2 = CodeUtils.reRoot(c, cons(new Label("a"), nilPath));
+    assertEquals(c, CodeUtils.reroot(c, nilPath));
+    Code c2 = CodeUtils.reroot(c, cons(new Label("a"), nilPath));
     assertFalse(c.equals(c2));
     assertEquals(c2, CodeUtils.unit);
   }
@@ -36,11 +36,11 @@ public class CodeRerootTest extends TestCase {
     m = m.put(new Label("a"), CodeOrPath.newCode(CodeUtils.unit));
     m = m.put(new Label("b"), CodeOrPath.newCode(CodeUtils.unit));
     Code c = Code.newProduct(m);
-    assertEquals(c, CodeUtils.reRoot(c, nilPath));
-    Code c2 = CodeUtils.reRoot(c, cons(new Label("a"), nilPath));
+    assertEquals(c, CodeUtils.reroot(c, nilPath));
+    Code c2 = CodeUtils.reroot(c, cons(new Label("a"), nilPath));
     assertFalse(c.equals(c2));
     assertEquals(c2, CodeUtils.unit);
-    Code c3 = CodeUtils.reRoot(c, cons(new Label("b"), nilPath));
+    Code c3 = CodeUtils.reroot(c, cons(new Label("b"), nilPath));
     assertFalse(c.equals(c3));
     assertEquals(c3, CodeUtils.unit);
   }
@@ -50,7 +50,7 @@ public class CodeRerootTest extends TestCase {
     Map<Label, CodeOrPath> m = Map.empty();
     m = m.put(new Label("a"), CodeOrPath.newPath(nilPath));
     Code c = Code.newProduct(m);
-    assertEquals(c, CodeUtils.reRoot(c, nilPath));
+    assertEquals(c, CodeUtils.reroot(c, nilPath));
   }
 
   // {'a {'b <>}}
@@ -68,7 +68,7 @@ public class CodeRerootTest extends TestCase {
     m = Map.empty();
     m = m.put(new Label("b"), CodeOrPath.newCode(c3));
     assertEquals(Code.newProduct(m),
-        CodeUtils.reRoot(c2, cons(new Label("a"), nilPath)));
+        CodeUtils.reroot(c2, cons(new Label("a"), nilPath)));
   }
 
   // {'a {'b <>}, 'b <>}
@@ -80,9 +80,9 @@ public class CodeRerootTest extends TestCase {
     m = m.put(new Label("a"), CodeOrPath.newCode(c));
     m = m.put(new Label("b"), CodeOrPath.newPath(nilPath));
     c = Code.newProduct(m);
-    assertEquals(c, CodeUtils.reRoot(c, nilPath));
-    assertEquals(c, CodeUtils.reRoot(c, cons(new Label("b"), nilPath)));
-    assertEquals(c, CodeUtils.reRoot(c,
+    assertEquals(c, CodeUtils.reroot(c, nilPath));
+    assertEquals(c, CodeUtils.reroot(c, cons(new Label("b"), nilPath)));
+    assertEquals(c, CodeUtils.reroot(c,
         cons(new Label("a"), cons(new Label("b"), nilPath))));
     // {'b: {'a <>, 'b <b>}}
     m = Map.empty();
@@ -93,10 +93,10 @@ public class CodeRerootTest extends TestCase {
     m = Map.empty();
     m = m.put(new Label("b"), CodeOrPath.newCode(c2));
     c2 = Code.newProduct(m);
-    assertEquals(c2, CodeUtils.reRoot(c, cons(new Label("a"), nilPath)));
+    assertEquals(c2, CodeUtils.reroot(c, cons(new Label("a"), nilPath)));
     assertEquals(
         c2,
-        CodeUtils.reRoot(
+        CodeUtils.reroot(
             c,
             cons(new Label("a"),
                 cons(new Label("b"), cons(new Label("a"), nilPath)))));
@@ -119,13 +119,13 @@ public class CodeRerootTest extends TestCase {
   // {'a {'b {'c <>}}}
   public static void testProdLoop3() {
     Code c = makeProdLoop3("a", "b", "c");
-    assertEquals(c, CodeUtils.reRoot(c, nilPath));
+    assertEquals(c, CodeUtils.reroot(c, nilPath));
     // {'b {'c {'a <>}}};
     Code c2 = makeProdLoop3("b", "c", "a");
-    assertEquals(c2, CodeUtils.reRoot(c, cons(new Label("a"), nilPath)));
+    assertEquals(c2, CodeUtils.reroot(c, cons(new Label("a"), nilPath)));
     // {'c {'a {'b <>}}};
     Code c3 = makeProdLoop3("c", "a", "b");
-    assertEquals(c3, CodeUtils.reRoot(c,
+    assertEquals(c3, CodeUtils.reroot(c,
         cons(new Label("a"), cons(new Label("b"), nilPath))));
   }
 
@@ -179,7 +179,7 @@ public class CodeRerootTest extends TestCase {
     Code cc = Code.newProduct(m);
 
     for (Code c : new Code[] { ca, cb, cc }) {
-      Code rc = CodeUtils.reRoot(c, nilPath);
+      Code rc = CodeUtils.reroot(c, nilPath);
       assertTrue(rc.equals(ca) || rc.equals(cb) || rc.equals(cc));
     }
 
@@ -191,8 +191,8 @@ public class CodeRerootTest extends TestCase {
     m = m.put(new Label("a"), CodeOrPath.newCode(rc));
     rc = Code.newProduct(m);
 
-    assertEquals(rc, CodeUtils.reRoot(ca, cons(new Label("a"), nilPath)));
-    assertEquals(rc, CodeUtils.reRoot(ca, cons(new Label("b"), nilPath)));
+    assertEquals(rc, CodeUtils.reroot(ca, cons(new Label("a"), nilPath)));
+    assertEquals(rc, CodeUtils.reroot(ca, cons(new Label("b"), nilPath)));
   }
 
   // {'a {'a <b>, 'b <>}, 'b {'a <a>}}
@@ -248,7 +248,7 @@ public class CodeRerootTest extends TestCase {
     Code cc = Code.newProduct(m);
 
     for (Code c : new Code[] { ca, cb, cc }) {
-      Code rc = CodeUtils.reRoot(c, nilPath);
+      Code rc = CodeUtils.reroot(c, nilPath);
       assertTrue(rc.equals(ca) || rc.equals(cb) || rc.equals(cc));
     }
 
@@ -284,7 +284,7 @@ public class CodeRerootTest extends TestCase {
     cRa2 = Code.newProduct(m);
 
     for (Code c : new Code[] { ca, cb, cc }) {
-      Code rc = CodeUtils.reRoot(c, cons(new Label("a"), nilPath));
+      Code rc = CodeUtils.reroot(c, cons(new Label("a"), nilPath));
       assertTrue(rc.equals(cRa1) || rc.equals(cRa2));
     }
 
@@ -303,7 +303,7 @@ public class CodeRerootTest extends TestCase {
     cRb = Code.newProduct(m);
 
     for (Code c : new Code[] { ca, cb, cc }) {
-      assertEquals(cRb, CodeUtils.reRoot(c, cons(new Label("b"), nilPath)));
+      assertEquals(cRb, CodeUtils.reroot(c, cons(new Label("b"), nilPath)));
     }
   }
 }

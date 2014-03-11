@@ -10,7 +10,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
-import android.view.View.OnLongClickListener;
 import android.widget.PopupMenu;
 
 import com.example.kore.codes.CanonicalCode;
@@ -31,51 +30,46 @@ public class PatternMenu {
   public static void make(final View v, final Context context,
       final Code rootCode, final List<Label> path,
       final CodeLabelAliasMap codeLabelAliases, final Listener listener) {
-    v.setOnLongClickListener(new OnLongClickListener() {
-      public boolean onLongClick(View _) {
-        CanonicalCode cc = new CanonicalCode(rootCode, path);
-        Code code = codeAt(path, rootCode).some().x;
-        PopupMenu pm = new PopupMenu(context, v);
-        Menu m = pm.getMenu();
-        switch (code.tag) {
-        case PRODUCT:
-          m.add("*").setOnMenuItemClickListener(new OnMenuItemClickListener() {
+    CanonicalCode cc = new CanonicalCode(rootCode, path);
+    Code code = codeAt(path, rootCode).some().x;
+    PopupMenu pm = new PopupMenu(context, v);
+    Menu m = pm.getMenu();
+    switch (code.tag) {
+    case PRODUCT:
+      m.add("*").setOnMenuItemClickListener(new OnMenuItemClickListener() {
+        public boolean onMenuItemClick(MenuItem _) {
+          listener.select(emptyPattern);
+          return true;
+        }
+      });
+      Map<Label, Pattern> mp = Map.empty();
+      for (final Entry<Label, CodeOrPath> e : iter(code.labels.entrySet()))
+        mp = mp.put(e.k, emptyPattern);
+      final Pattern p = new Pattern(mp);
+      m.add(renderPattern(p, rootCode, path, codeLabelAliases))
+          .setOnMenuItemClickListener(new OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem _) {
-              listener.select(emptyPattern);
+              listener.select(p);
               return true;
             }
           });
-          Map<Label, Pattern> mp = Map.empty();
-          for (final Entry<Label, CodeOrPath> e : iter(code.labels.entrySet()))
-            mp = mp.put(e.k, emptyPattern);
-          final Pattern p = new Pattern(mp);
-          m.add(renderPattern(p, rootCode, path, codeLabelAliases))
-              .setOnMenuItemClickListener(new OnMenuItemClickListener() {
-                public boolean onMenuItemClick(MenuItem _) {
-                  listener.select(p);
-                  return true;
-                }
-              });
-          break;
-        case UNION:
-          for (final Entry<Label, CodeOrPath> e : iter(code.labels.entrySet())) {
-            Optional<String> a = codeLabelAliases.getAliases(cc).get(e.k);
-            m.add((a.isNothing() ? e.k : a.some().x) + " *")
-                .setOnMenuItemClickListener(new OnMenuItemClickListener() {
-                  public boolean onMenuItemClick(MenuItem _) {
-                    listener.select(new Pattern(Map.<Label, Pattern> empty()
-                        .put(e.k, emptyPattern)));
-                    return true;
-                  }
-                });
-          }
-          break;
-        default:
-          throw boom();
-        }
-        pm.show();
-        return true;
+      break;
+    case UNION:
+      for (final Entry<Label, CodeOrPath> e : iter(code.labels.entrySet())) {
+        Optional<String> a = codeLabelAliases.getAliases(cc).get(e.k);
+        m.add((a.isNothing() ? e.k : a.some().x) + " *")
+            .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+              public boolean onMenuItemClick(MenuItem _) {
+                listener.select(new Pattern(Map.<Label, Pattern> empty().put(
+                    e.k, emptyPattern)));
+                return true;
+              }
+            });
       }
-    });
+      break;
+    default:
+      throw boom();
+    }
+    pm.show();
   }
 }

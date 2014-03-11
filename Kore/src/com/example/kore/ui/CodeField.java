@@ -141,7 +141,7 @@ public class CodeField extends FrameLayout {
                   fieldReplacedListener.fieldReplaced(CodeOrPath
                       .newCode(CodeUtils.rebase(
                           append(label, CodeField.this.path),
-                          CodeUtils.reRoot(c, path))));
+                          CodeUtils.reroot(c, path))));
                   return null;
                 }
               });
