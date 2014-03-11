@@ -87,7 +87,8 @@ public class RelationEditor extends FrameLayout implements
 
   private void setPath(List<Either3<Label, Integer, Unit>> path) {
     pathContainer.removeAllViews();
-    pathContainer.addView(new RelationPath(context, this, relation, path));
+    pathContainer.addView(new RelationPath(context,
+        relationViewColors.relationcolors, this, relation, path));
   }
 
   public void changeRelationType(Relation.Tag t) {

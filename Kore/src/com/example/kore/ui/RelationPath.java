@@ -26,7 +26,6 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Tag;
-import com.example.kore.utils.Boom;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
@@ -41,8 +40,8 @@ public class RelationPath extends FrameLayout {
     void changeRelationType(Tag y);
   }
 
-  public RelationPath(final Context context, final Listener listener,
-      final Relation rootRelation,
+  public RelationPath(final Context context, RelationColors rc,
+      final Listener listener, final Relation rootRelation,
       final List<Either3<Label, Integer, Unit>> path) {
     super(context);
     notNull(listener, rootRelation, path);
@@ -54,28 +53,7 @@ public class RelationPath extends FrameLayout {
     List<Either3<Label, Integer, Unit>> subpath = nil();
     while (true) {
       final Button b = new Button(context);
-      switch (relation.tag) {
-      case PRODUCT:
-        b.setText("{}");
-        break;
-      case UNION:
-        b.setText("[]");
-        break;
-      case ABSTRACTION:
-        b.setText("->");
-        break;
-      case COMPOSITION:
-        b.setText("|");
-        break;
-      case PROJECTION:
-        b.setText(".");
-        break;
-      case LABEL:
-        b.setText("'");
-        break;
-      default:
-        throw Boom.boom();
-      }
+      b.setBackgroundColor(rc.m.get(relation.tag).some().x.x);
       b.setWidth(0);
       b.setHeight(LayoutParams.MATCH_PARENT);
       final List<Either3<Label, Integer, Unit>> subpathS = subpath;
