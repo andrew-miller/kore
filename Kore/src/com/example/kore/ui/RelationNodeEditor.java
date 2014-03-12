@@ -2,10 +2,12 @@ package com.example.kore.ui;
 
 import static com.example.kore.ui.RelationUtils.relationAt;
 import static com.example.kore.ui.RelationUtils.unit_unit;
+import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.ListUtils.drop;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.length;
 import static com.example.kore.utils.Null.notNull;
+import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,7 +21,6 @@ import android.widget.PopupMenu;
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.utils.CodeUtils;
@@ -110,12 +111,11 @@ public class RelationNodeEditor extends FrameLayout {
         PopupMenu pm = new PopupMenu(context, v);
         Menu m = pm.getMenu();
         for (final Code c : iter(codes))
-          UIUtils.addCodeToMenu(c, m, CodeOrPath.newCode(c), "", "",
-              ListUtils.<Label> nil(), codeLabelAliases, codeAliases,
-              new F<Void, Void>() {
-                public Void f(Void x) {
-                  listener.changeDomain(c);
-                  return null;
+          UIUtils.addCodeToMenu(m, c, ListUtils.<Label> nil(),
+              codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
+                public Unit f(List<Label> p) {
+                  listener.changeDomain(reroot(c, p));
+                  return unit();
                 }
               });
         pm.show();
@@ -131,12 +131,11 @@ public class RelationNodeEditor extends FrameLayout {
         PopupMenu pm = new PopupMenu(context, v);
         Menu m = pm.getMenu();
         for (final Code c : iter(codes))
-          UIUtils.addCodeToMenu(c, m, CodeOrPath.newCode(c), "", "",
-              ListUtils.<Label> nil(), codeLabelAliases, codeAliases,
-              new F<Void, Void>() {
-                public Void f(Void _) {
-                  listener.changeCodomain(c);
-                  return null;
+          UIUtils.addCodeToMenu(m, c, ListUtils.<Label> nil(),
+              codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
+                public Unit f(List<Label> p) {
+                  listener.changeCodomain(reroot(c, p));
+                  return unit();
                 }
               });
         pm.show();

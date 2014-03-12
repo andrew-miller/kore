@@ -26,6 +26,7 @@ import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
+import com.example.kore.utils.Unit;
 
 public class UIUtils {
 
@@ -64,10 +65,17 @@ public class UIUtils {
         .showSoftInput(t, 0);
   }
 
-  public static void addCodeToMenu(final Code root, Menu m, CodeOrPath cp,
-      String ls, String space, final List<Label> path,
+  public static void addCodeToMenu(Menu m, final Code root,
+      final List<Label> path, CodeLabelAliasMap codeLabelAliases,
+      Map<CanonicalCode, String> codeAliases, final F<List<Label>, Unit> f) {
+    addCodeToMenu(m, root, path, CodeOrPath.newCode(root), "", "",
+        codeLabelAliases, codeAliases, f);
+  }
+
+  private static void addCodeToMenu(Menu m, final Code root,
+      final List<Label> path, CodeOrPath cp, String ls, String space,
       CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalCode, String> codeAliases, final F<Void, Void> f) {
+      Map<CanonicalCode, String> codeAliases, final F<List<Label>, Unit> f) {
     MenuItem i =
         m.add(space
             + ls.substring(0, Math.min(10, ls.length()))
@@ -75,8 +83,8 @@ public class UIUtils {
             + CodeUtils
                 .renderCode(root, path, codeLabelAliases, codeAliases, 1));
     i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
-      public boolean onMenuItemClick(MenuItem i) {
-        f.f(null);
+      public boolean onMenuItemClick(MenuItem _) {
+        f.f(path);
         return true;
       }
     });
@@ -85,8 +93,9 @@ public class UIUtils {
     if (cp.tag == CodeOrPath.Tag.CODE) {
       for (Entry<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
         Optional<String> ls2 = las.get(e.k);
-        addCodeToMenu(root, m, e.v, ls2.isNothing() ? e.k.label : ls2.some().x,
-            space + "  ", append(e.k, path), codeLabelAliases, codeAliases, f);
+        addCodeToMenu(m, root, append(e.k, path), e.v,
+            ls2.isNothing() ? e.k.label : ls2.some().x, space + "  ",
+            codeLabelAliases, codeAliases, f);
       }
     }
   }
