@@ -71,10 +71,6 @@ public class ListUtils {
     };
   }
 
-  public static <T> List<T> singleton(T x) {
-    return cons(x, ListUtils.<T> nil());
-  }
-
   public static <T> List<T> reverse(List<T> l) {
     List<T> l2 = nil();
     while (!l.isEmpty()) {
@@ -157,7 +153,7 @@ public class ListUtils {
   public static <T> List<T> replace(List<T> l, int i, T x) {
     if (i == 0) {
       if (l.isEmpty())
-        return singleton(x);
+        return fromArray(x);
       return cons(x, l.cons().tail);
     }
     return cons(l.cons().x, replace(l.cons().tail, i - 1, x));

@@ -15,10 +15,10 @@ import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.cons;
+import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.ListUtils.insert;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
-import static com.example.kore.utils.ListUtils.singleton;
 import static com.example.kore.utils.Null.notNull;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -111,7 +111,7 @@ public class RelationEditor extends FrameLayout implements
       Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> m =
           Map.empty();
       for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet()))
-        m = m.put(e.k, x(dummy(unit, reroot(c, singleton(e.k)))));
+        m = m.put(e.k, x(dummy(unit, reroot(c, fromArray(e.k)))));
       r2 = Relation.product(new Product(m, c));
       break;
     case LABEL:
@@ -121,7 +121,7 @@ public class RelationEditor extends FrameLayout implements
         for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
           r2 =
               Relation.label(new Label_(e.k, x(dummy(unit,
-                  reroot(c, singleton(e.k)))), c));
+                  reroot(c, fromArray(e.k)))), c));
           break notEmpty;
         }
         r2 = dummy(d, c);

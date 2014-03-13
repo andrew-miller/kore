@@ -475,22 +475,38 @@ public final class CodeUtils {
     return some(c);
   }
 
-  /** map cyclic path to simple path */
+  /**
+   * map cyclic path over the graph represented by this <tt>Code</tt> (rooted at
+   * this <tt>Code</tt>) to a simple path from this <tt>Code</tt> to another
+   * <tt>Code</tt>
+   * 
+   * @param Code
+   *          a <tt>Code</tt> that <tt>validCode</tt> maps to <tt>true</tt>
+   */
   public static List<Label> directPath(List<Label> path, Code code) {
     return directPath(path, code, code, ListUtils.<Label> nil());
   }
 
   private static List<Label> directPath(List<Label> p, Code root, Code c,
       List<Label> a) {
-    if (p.isEmpty())
-      return a;
+    if (p.isEmpty()) {
+      CodeOrPath cp = codeOrPathAt(a, root);
+      switch (cp.tag) {
+      case CODE:
+        return a;
+      case PATH:
+        return cp.path;
+      default:
+        throw boom();
+      }
+    }
     CodeOrPath cp = c.labels.get(p.cons().x).some().x;
     switch (cp.tag) {
     case CODE:
       return directPath(p.cons().tail, root, cp.code, append(p.cons().x, a));
     case PATH:
-      return directPath(p.cons().tail, root, getCode(root, c, p.cons().x)
-          .some().x, ListUtils.<Label> nil());
+      return directPath(p.cons().tail, root, codeAt(cp.path, root).some().x,
+          cp.path);
     default:
       throw boom();
     }

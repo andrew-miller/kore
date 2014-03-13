@@ -6,8 +6,8 @@ import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
+import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.ListUtils.length;
-import static com.example.kore.utils.ListUtils.singleton;
 import static com.example.kore.utils.OptionalUtils.some;
 import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
@@ -98,7 +98,7 @@ public final class RelationView {
                   listener.replaceRelation(
                       path,
                       Relation.label(new Label_(l, x(dummy(unit,
-                          reroot(r.label().o, singleton(l)))), r.label().o)));
+                          reroot(r.label().o, fromArray(l)))), r.label().o)));
                   return unit();
                 }
               });
