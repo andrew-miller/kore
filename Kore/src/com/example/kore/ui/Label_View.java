@@ -19,17 +19,21 @@ import com.example.kore.utils.Unit;
 public class Label_View {
   public static View make(final Context context,
       F<Either3<Label, Integer, Unit>, View> make, Integer color,
-      Integer aliasTextColor, final Label_ label, Optional<String> labelAlias,
+      Integer aliasTextColor, final Label_ label,
       final CodeLabelAliasMap codeLabelAliases, final F<Label, Unit> replace) {
     LinearLayout ll = new LinearLayout(context);
     ll.setBackgroundColor(color);
 
     final View v;
-    if (labelAlias.isNothing())
+    Optional<String> ola =
+        codeLabelAliases.getAliases(
+            new CanonicalCode(label.o, ListUtils.<Label> nil())).get(
+            label.label);
+    if (ola.isNothing())
       v = LabelView.make(context, label.label, aliasTextColor);
     else {
       Button b = new Button(context);
-      b.setText(labelAlias.some().x);
+      b.setText(ola.some().x);
       v = b;
     }
     v.setOnClickListener(new OnClickListener() {

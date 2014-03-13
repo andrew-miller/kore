@@ -93,8 +93,7 @@ public final class RelationView {
     case LABEL:
       rv =
           Label_View.make(context, make, cp.x, rvc.aliasTextColor, r.label(),
-              OptionalUtils.<String> nothing()/* FIXME */, codeLabelAliases,
-              new F<Label, Unit>() {
+              codeLabelAliases, new F<Label, Unit>() {
                 public Unit f(Label l) {
                   listener.replaceRelation(
                       path,
@@ -118,8 +117,8 @@ public final class RelationView {
       break;
     case PRODUCT:
       rv =
-          ProductView
-              .make(context, make, cp.x, rvc.aliasTextColor, r.product());
+          ProductView.make(context, make, cp.x, rvc.aliasTextColor,
+              r.product(), codeLabelAliases);
       break;
     case PROJECTION:
       rv =

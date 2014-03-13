@@ -12,13 +12,16 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
+import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Pattern;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
+import com.example.kore.utils.Map;
 import com.example.kore.utils.Map.Entry;
+import com.example.kore.utils.Optional;
 import com.example.kore.utils.Unit;
 
 public class PatternView {
@@ -53,9 +56,18 @@ public class PatternView {
     };
     LinearLayout ll = new LinearLayout(context);
     ll.setOrientation(LinearLayout.VERTICAL);
+    Map<Label, String> las =
+        codeLabelAliases.getAliases(new CanonicalCode(rootCode, codePath));
     for (Entry<Label, Pattern> e : iter(pattern.fields.entrySet())) {
       LinearLayout ll2 = new LinearLayout(context);
-      ll2.addView(LabelView.make(context, e.k, aliasTextColor));
+      Optional<String> ola = las.get(e.k);
+      if (ola.isNothing())
+        ll2.addView(LabelView.make(context, e.k, aliasTextColor));
+      else {
+        Button b = new Button(context);
+        b.setText(ola.some().x);
+        ll2.addView(b);
+      }
       ll2.addView(make(context, aliasTextColor, rootPattern,
           append(e.k, patternPath), rootCode,
           directPath(append(e.k, codePath), rootCode), codeLabelAliases,
