@@ -304,7 +304,7 @@ public final class Relation implements Serializable {
     }
   }
 
-  public final static class Label_ {
+  public final static class Label_ implements Serializable {
     public final Label label;
     public final Code o;
     public final Either<Relation, List<Either3<Label, Integer, Unit>>> r;
