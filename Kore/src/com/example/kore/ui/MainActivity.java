@@ -250,7 +250,7 @@ public class MainActivity extends FragmentActivity {
     newRelationEditorDoneListener();
     relationEditor =
         new RelationEditor(this, r, relationEditorDoneListener, recentCodes,
-            codeLabelAliasMap, codeAliases, relationViewColors);
+            codeLabelAliasMap, codeAliases, recentRelations, relationViewColors);
     mainLayout.setVisibility(View.GONE);
     relationEditorContainer.addView(relationEditor);
     relationEditorContainer.setVisibility(View.VISIBLE);

@@ -1,5 +1,13 @@
 package com.example.kore.ui;
 
+import static com.example.kore.ui.RelationUtils.codomain;
+import static com.example.kore.ui.RelationUtils.domain;
+import static com.example.kore.ui.RelationUtils.edges;
+import static com.example.kore.ui.RelationUtils.relationAt;
+import static com.example.kore.ui.RelationUtils.renderPathElement;
+import static com.example.kore.ui.RelationUtils.renderRelation;
+import static com.example.kore.utils.CodeUtils.equal;
+import static com.example.kore.utils.CodeUtils.renderCode;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import android.content.Context;
@@ -17,15 +25,20 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.example.kore.codes.CanonicalCode;
+import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
-import com.example.kore.utils.CodeUtils;
+import com.example.kore.codes.Relation;
+import com.example.kore.utils.Either;
+import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
+import com.example.kore.utils.OptionalUtils;
+import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
 public class UIUtils {
@@ -77,11 +90,8 @@ public class UIUtils {
       CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, final F<List<Label>, Unit> f) {
     MenuItem i =
-        m.add(space
-            + ls.substring(0, Math.min(10, ls.length()))
-            + " "
-            + CodeUtils
-                .renderCode(root, path, codeLabelAliases, codeAliases, 1));
+        m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
+            + renderCode(root, path, codeLabelAliases, codeAliases, 1));
     i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
       public boolean onMenuItemClick(MenuItem _) {
         f.f(path);
@@ -100,4 +110,47 @@ public class UIUtils {
     }
   }
 
+  /**
+   * filter out relations that don't have the domain/codomain <tt>d</tt>/
+   * <tt>c</tt>
+   */
+  public static void addRelationToMenu(Menu m, final Relation root,
+      final List<Either3<Label, Integer, Unit>> path,
+      CodeLabelAliasMap codeLabelAliases,
+      Map<CanonicalRelation, String> relationAliases, Code d, Code c,
+      final F<List<Either3<Label, Integer, Unit>>, Unit> f) {
+    addRelationToMenu(m, root, path,
+        Either.<Relation, List<Either3<Label, Integer, Unit>>> x(root), "", "",
+        codeLabelAliases, relationAliases, d, c, f);
+  }
+
+  private static void addRelationToMenu(Menu m, final Relation root,
+      final List<Either3<Label, Integer, Unit>> path,
+      Either<Relation, List<Either3<Label, Integer, Unit>>> cp, String ls,
+      String space, CodeLabelAliasMap codeLabelAliases,
+      Map<CanonicalRelation, String> relationAliases, Code d, Code c,
+      final F<List<Either3<Label, Integer, Unit>>, Unit> f) {
+    MenuItem i =
+        m.add(
+            space
+                + ls.substring(0, Math.min(10, ls.length()))
+                + " "
+                + renderRelation(OptionalUtils.<Code> nothing(), cp,
+                    codeLabelAliases)).setOnMenuItemClickListener(
+            new OnMenuItemClickListener() {
+              public boolean onMenuItemClick(MenuItem _) {
+                f.f(path);
+                return true;
+              }
+            });
+    Relation r = cp.isY() ? relationAt(path, root).some().x : cp.x();
+    i.setEnabled(equal(domain(r), d) & equal(codomain(r), c));
+    if (!cp.isY())
+      for (Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(edges(cp
+          .x()))) {
+        addRelationToMenu(m, root, append(e.x, path), e.y,
+            renderPathElement(e.x), space + "  ", codeLabelAliases,
+            relationAliases, d, c, f);
+      }
+  }
 }

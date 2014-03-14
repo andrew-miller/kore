@@ -7,8 +7,10 @@ import static com.example.kore.ui.RelationUtils.subRelation;
 import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
+import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
+import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,6 +24,7 @@ import android.widget.FrameLayout;
 import android.widget.PopupMenu;
 
 import com.example.kore.R;
+import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
@@ -29,6 +32,8 @@ import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
+import com.example.kore.utils.ListUtils;
+import com.example.kore.utils.Map;
 import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
@@ -38,10 +43,14 @@ public class RelationPath extends FrameLayout {
     void selectPath(List<Either3<Label, Integer, Unit>> p);
 
     void changeRelationType(Tag y);
+
+    void replaceRelation(Relation r);
   }
 
   public RelationPath(final Context context, RelationColors rc,
       final Listener listener, final Relation rootRelation,
+      final List<Relation> relations, final CodeLabelAliasMap codeLabelAliases,
+      final Map<CanonicalRelation, String> relationAliases,
       final List<Either3<Label, Integer, Unit>> path) {
     super(context);
     notNull(listener, rootRelation, path);
@@ -86,6 +95,19 @@ public class RelationPath extends FrameLayout {
             add.f(Pair.pair("|", Tag.COMPOSITION));
             if (inAbstraction(path, rootRelation))
               add.f(Pair.pair(".", Tag.PROJECTION));
+            m.add("---");
+            Code d = domain(relation_);
+            Code c = codomain(relation_);
+            for (final Relation r : iter(relations))
+              UIUtils.addRelationToMenu(m, r,
+                  ListUtils.<Either3<Label, Integer, Unit>> nil(),
+                  codeLabelAliases, relationAliases, d, c,
+                  new F<List<Either3<Label, Integer, Unit>>, Unit>() {
+                    public Unit f(List<Either3<Label, Integer, Unit>> p) {
+                      listener.replaceRelation(r);
+                      return unit();
+                    }
+                  });
             pm.show();
           } else
             listener.selectPath(subpathS);

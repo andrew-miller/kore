@@ -10,6 +10,7 @@ import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.cons;
+import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.length;
 import static com.example.kore.utils.ListUtils.nil;
@@ -17,6 +18,7 @@ import static com.example.kore.utils.ListUtils.nth;
 import static com.example.kore.utils.ListUtils.replace;
 import static com.example.kore.utils.OptionalUtils.nothing;
 import static com.example.kore.utils.OptionalUtils.some;
+import static com.example.kore.utils.Unit.unit;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -438,5 +440,60 @@ public class RelationUtils {
     if (path.isEmpty())
       return r;
     throw new RuntimeException("TODO: SHEEEEEEEEIT");
+  }
+
+  public static
+      List<Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>>>
+      edges(Relation r) {
+    switch (r.tag) {
+    case ABSTRACTION:
+      return fromArray(Pair.pair(Either3.<Label, Integer, Unit> z(unit()),
+          r.abstraction().r));
+    case COMPOSITION: {
+      List<Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>>> l =
+          nil();
+      int i = 0;
+      for (Either<Relation, List<Either3<Label, Integer, Unit>>> e : iter(r
+          .composition().l))
+        l = append(Pair.pair(Either3.<Label, Integer, Unit> y(i++), e), l);
+      return l;
+    }
+    case LABEL:
+      return fromArray(Pair.pair(Either3.<Label, Integer, Unit> z(unit()),
+          r.label().r));
+    case PRODUCT: {
+      List<Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>>> l =
+          nil();
+      for (Entry<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(r
+          .product().m.entrySet()))
+        l = append(Pair.pair(Either3.<Label, Integer, Unit> x(e.k), e.v), l);
+      return l;
+    }
+    case PROJECTION:
+      return nil();
+    case UNION:
+      List<Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>>> l =
+          nil();
+      int i = 0;
+      for (Either<Relation, List<Either3<Label, Integer, Unit>>> e : iter(r
+          .union().l))
+        l = append(Pair.pair(Either3.<Label, Integer, Unit> y(i++), e), l);
+      return l;
+    default:
+      throw boom();
+    }
+  }
+
+  public static String renderPathElement(Either3<Label, Integer, Unit> e) {
+    switch (e.tag) {
+    case X:
+      return "" + e.x();
+    case Y:
+      return "" + e.y();
+    case Z:
+      return "-";
+    default:
+      throw boom();
+    }
   }
 }

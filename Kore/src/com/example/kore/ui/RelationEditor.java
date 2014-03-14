@@ -60,6 +60,7 @@ public class RelationEditor extends FrameLayout implements
   private final CodeLabelAliasMap codeLabelAliases;
   private final Map<CanonicalCode, String> codeAliases;
   private final RelationViewColors relationViewColors;
+  private final List<Relation> relations;
 
   public interface DoneListener {
     public void onDone(Relation r);
@@ -68,7 +69,7 @@ public class RelationEditor extends FrameLayout implements
   public RelationEditor(Context context, Relation relation,
       DoneListener doneListener, final List<Code> codes,
       final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalCode, String> codeAliases,
+      final Map<CanonicalCode, String> codeAliases, List<Relation> relations,
       RelationViewColors relationViewColors) {
     super(context);
     notNull(relation, doneListener, relationViewColors);
@@ -79,6 +80,7 @@ public class RelationEditor extends FrameLayout implements
     this.codeLabelAliases = codeLabelAliases;
     this.codeAliases = codeAliases;
     this.relationViewColors = relationViewColors;
+    this.relations = relations;
     LayoutInflater.from(context).inflate(R.layout.relation_editor, this, true);
     pathContainer = (ViewGroup) findViewById(R.id.container_path);
     initNodeEditor();
@@ -88,7 +90,8 @@ public class RelationEditor extends FrameLayout implements
   private void setPath(List<Either3<Label, Integer, Unit>> path) {
     pathContainer.removeAllViews();
     pathContainer.addView(new RelationPath(context,
-        relationViewColors.relationcolors, this, relation, path));
+        relationViewColors.relationcolors, this, relation, relations,
+        codeLabelAliases, null, path));
   }
 
   public void changeRelationType(Relation.Tag t) {
@@ -356,6 +359,12 @@ public class RelationEditor extends FrameLayout implements
 
   public void selectRelation(List<Either3<Label, Integer, Unit>> p) {
     selectPath(append(path, p));
+  }
+
+  public void replaceRelation(Relation r2) {
+    Relation r = relationAt(path, relation).some().x;
+    relation = replaceRelationAt(relation, path, r2);
+    initNodeEditor();
   }
 
 }
