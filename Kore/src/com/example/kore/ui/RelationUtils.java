@@ -432,4 +432,11 @@ public class RelationUtils {
     }
     return nothing();
   }
+
+  public static Relation canonicalRelation(Relation r,
+      List<Either3<Label, Integer, Unit>> path) {
+    if (path.isEmpty())
+      return r;
+    throw new RuntimeException("TODO: SHEEEEEEEEIT");
+  }
 }

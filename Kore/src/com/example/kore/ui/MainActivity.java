@@ -15,24 +15,32 @@ import android.view.ViewGroup;
 
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
+import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Tag;
 import com.example.kore.ui.CodeList.CodeAliasChangedListener;
 import com.example.kore.ui.CodeList.CodeSelectListener;
+import com.example.kore.ui.RelationList.RelationAliasChangedListener;
+import com.example.kore.ui.RelationList.RelationSelectListener;
 import com.example.kore.utils.CodeUtils;
+import com.example.kore.utils.Either3;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.Pair;
+import com.example.kore.utils.Unit;
 
 public class MainActivity extends FragmentActivity {
 
   private static final String STATE_CODES = "codes";
   private static final String STATE_RECENT_CODES = "recent_codes";
+  private static final String STATE_RELATIONS = "relations";
+  private static final String STATE_RECENT_RELATIONS = "recent_relations";
   private static final String STATE_CODE_LABEL_ALIASES = "code_label_aliases";
   private static final String STATE_CODE_ALIASES = "code_aliases";
+  private static final String STATE_RELATION_ALIASES = "relation_aliases";
   private static final String STATE_CODE_EDITOR = "code_editor";
 
   private final static RelationColors relationColors = new RelationColors(Map
@@ -49,8 +57,11 @@ public class MainActivity extends FragmentActivity {
 
   private HashSet<Code> codes = new HashSet<Code>();
   private List<Code> recentCodes = nil();
+  private HashSet<Relation> relations = new HashSet<Relation>();
+  private List<Relation> recentRelations = nil();
   private Map<CanonicalCode, Map<Label, String>> codeLabelAliases = Map.empty();
   private Map<CanonicalCode, String> codeAliases = Map.empty();
+  private Map<CanonicalRelation, String> relationAliases = Map.empty();
   private View mainLayout;
   private ViewGroup codeEditorContainer;
   private ViewGroup relationEditorContainer;
@@ -121,14 +132,19 @@ public class MainActivity extends FragmentActivity {
     if (b != null) {
       codes = (HashSet<Code>) b.get(STATE_CODES);
       recentCodes = (List<Code>) b.get(STATE_RECENT_CODES);
+      relations = (HashSet<Relation>) b.get(STATE_RELATIONS);
+      recentRelations = (List<Relation>) b.get(STATE_RECENT_RELATIONS);
       codeLabelAliases =
           (Map<CanonicalCode, Map<Label, String>>) b
               .get(STATE_CODE_LABEL_ALIASES);
       codeAliases = (Map<CanonicalCode, String>) b.get(STATE_CODE_ALIASES);
+      relationAliases =
+          (Map<CanonicalRelation, String>) b.get(STATE_RELATION_ALIASES);
       codeEditorState = b.getBundle(STATE_CODE_EDITOR);
     }
 
     initRecentCodes();
+    initRecentRelations();
 
     if (codeEditorState != null) {
       newCodeEditorDoneListener();
@@ -146,8 +162,11 @@ public class MainActivity extends FragmentActivity {
     super.onSaveInstanceState(b);
     b.putSerializable(STATE_CODES, codes);
     b.putSerializable(STATE_RECENT_CODES, recentCodes);
+    b.putSerializable(STATE_RELATIONS, relations);
+    b.putSerializable(STATE_RECENT_RELATIONS, recentRelations);
     b.putSerializable(STATE_CODE_LABEL_ALIASES, codeLabelAliases);
     b.putSerializable(STATE_CODE_ALIASES, codeAliases);
+    b.putSerializable(STATE_RELATION_ALIASES, relationAliases);
     if (codeEditor != null)
       b.putBundle(STATE_CODE_EDITOR, codeEditor.getState());
   }
@@ -177,6 +196,35 @@ public class MainActivity extends FragmentActivity {
     v.addView(cl);
   }
 
+  private void initRecentRelations() {
+    RelationSelectListener rsl = new RelationList.RelationSelectListener() {
+      public void onRelationSelected(Relation r) {
+        notNull(r);
+        startRelationEditor(r);
+      }
+    };
+    RelationAliasChangedListener racl =
+        new RelationList.RelationAliasChangedListener() {
+          public void relationAliasChanged(Relation relation,
+              List<Either3<Label, Integer, Unit>> path, String alias) {
+            notNull(relation, alias);
+            if (relationEditorDoneListener != null)
+              throw new RuntimeException(
+                  "relation list tried to change alias while relation editor was open");
+            relationAliases =
+                relationAliases.put(new CanonicalRelation(relation, path),
+                    alias);
+            initRecentRelations();
+          }
+        };
+    RelationList rl =
+        new RelationList(this, rsl, recentRelations, codeLabelAliasMap, racl,
+            relationAliases);
+    ViewGroup v = (ViewGroup) findViewById(R.id.container_recent_relations);
+    v.removeAllViews();
+    v.addView(rl);
+  }
+
   private void startCodeEditor(Code c) {
     /*
      * Workaround android behavior (can't tell if bug or feature): Without this,
@@ -184,11 +232,8 @@ public class MainActivity extends FragmentActivity {
      * by pressing on two codes in the recent code list at the same time, or by
      * quickly pressing the "new code" button multiple times.
      */
-    if (codeEditorDoneListener != null)
+    if (codeEditorDoneListener != null | relationEditorDoneListener != null)
       return;
-    if (relationEditorDoneListener != null)
-      return;
-
     newCodeEditorDoneListener();
     codeEditor =
         new CodeEditor(this, c, codeLabelAliasMap, codeAliases, recentCodes,
@@ -200,11 +245,8 @@ public class MainActivity extends FragmentActivity {
 
   private void startRelationEditor(Relation r) {
     // same workaround in startCodeEditor
-    if (relationEditorDoneListener != null)
+    if (relationEditorDoneListener != null | codeEditorDoneListener != null)
       return;
-    if (codeEditorDoneListener != null)
-      return;
-
     newRelationEditorDoneListener();
     relationEditor =
         new RelationEditor(this, r, relationEditorDoneListener, recentCodes,
@@ -245,6 +287,10 @@ public class MainActivity extends FragmentActivity {
         relationEditorContainer.removeAllViews();
         relationEditorContainer.setVisibility(View.GONE);
         mainLayout.setVisibility(View.VISIBLE);
+        if (!relations.contains(r))
+          recentRelations = cons(r, recentRelations);
+        relations.add(r);
+        initRecentRelations();
         relationEditorDoneListener = null;
       }
     };
