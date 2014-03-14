@@ -10,8 +10,28 @@ import static com.example.kore.utils.Pair.pair;
 
 import java.io.Serializable;
 
+// FIXME: stop using toString - use something that can
+//        safely nest data structures such as serialization
+//
+// e.g if you have some value type that has these strings,
+// these two maps will have the same string representation:
+// k1: a
+// v1: x, b -> y}
+// empty.put(k1,v2).toString(): {a -> x, b -> y} 
+// k2: a
+// v2: x
+// k3: b
+// v3: y
+// empty().put(k2,v2).put(k3,v3).toString(): {a -> x, b -> y}
+//
 /**
  * Map implemented using a prefix tree. Immutable, thread-safe, null-free.
+ * 
+ * The tree is made using the string representation of values of <code>K</code>
+ * using <tt>toString()</tt>.
+ * 
+ * Every value of <tt>Map</tt> has a unique representation obtained by
+ * <tt>toString()</tt>.
  * 
  * default serialization
  */
