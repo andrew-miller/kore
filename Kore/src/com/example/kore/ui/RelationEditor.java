@@ -361,6 +361,10 @@ public class RelationEditor extends FrameLayout implements
     selectPath(append(path, p));
   }
 
+  // XXX this is confusing as fuck because it's not obvious that
+  // replaceRelation(Relation) is reacting to PathEditor, whereas
+  // replaceRelation(List<...>, Relation) isn't. get rid of this multiple
+  // interface shit
   public void replaceRelation(Relation r2) {
     Relation r = relationAt(path, relation).some().x;
     if (!equal(domain(r), domain(r2)) | !equal(codomain(r), codomain(r2)))
