@@ -363,8 +363,15 @@ public class RelationEditor extends FrameLayout implements
 
   public void replaceRelation(Relation r2) {
     Relation r = relationAt(path, relation).some().x;
+    if (!equal(domain(r), domain(r2)) | !equal(codomain(r), codomain(r2)))
+      r2 =
+          adaptComposition(
+              replaceRelationAt(relation, path,
+                  Relation.composition(new Composition(fromArray(x(r2)),
+                      domain(r), codomain(r)))), path);
     relation = replaceRelationAt(relation, path, r2);
     initNodeEditor();
+    setPath(path);
   }
 
 }

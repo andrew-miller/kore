@@ -96,12 +96,10 @@ public class RelationPath extends FrameLayout {
             if (inAbstraction(path, rootRelation))
               add.f(Pair.pair(".", Tag.PROJECTION));
             m.add("---");
-            Code d = domain(relation_);
-            Code c = codomain(relation_);
             for (final Relation r : iter(relations))
               UIUtils.addRelationToMenu(m, r,
                   ListUtils.<Either3<Label, Integer, Unit>> nil(),
-                  codeLabelAliases, relationAliases, d, c,
+                  codeLabelAliases, relationAliases,
                   new F<List<Either3<Label, Integer, Unit>>, Unit>() {
                     public Unit f(List<Either3<Label, Integer, Unit>> p) {
                       listener.replaceRelation(r);
