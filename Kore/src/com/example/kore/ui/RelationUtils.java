@@ -496,4 +496,15 @@ public class RelationUtils {
       throw boom();
     }
   }
+
+  public static Optional<Relation> getRelation(Relation root, Relation r,
+      Either3<Label, Integer, Unit> e) {
+    Optional<Either<Relation, List<Either3<Label, Integer, Unit>>>> osp =
+        subRelationOrPath(r, e);
+    if (osp.isNothing())
+      return nothing();
+    if (osp.some().x.isY())
+      return relationAt(osp.some().x.y(), root);
+    return some(osp.some().x.x());
+  }
 }
