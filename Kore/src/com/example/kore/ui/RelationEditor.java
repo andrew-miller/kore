@@ -145,7 +145,7 @@ public class RelationEditor extends FrameLayout implements
     default:
       throw boom();
     }
-    relation = replaceRelationAt(relation, path, r2);
+    relation = replaceRelationAt(relation, path, x(r2));
     setPath(path);
     initNodeEditor();
   }
@@ -193,7 +193,7 @@ public class RelationEditor extends FrameLayout implements
     default:
       throw boom();
     }
-    relation = replaceRelationAt(relation, path, Relation.composition(comp));
+    relation = replaceRelationAt(relation, path, x(Relation.composition(comp)));
     initNodeEditor();
     setPath(path);
   }
@@ -218,7 +218,7 @@ public class RelationEditor extends FrameLayout implements
     default:
       throw boom();
     }
-    relation = replaceRelationAt(relation, path, Relation.composition(comp));
+    relation = replaceRelationAt(relation, path, x(Relation.composition(comp)));
     initNodeEditor();
     setPath(path);
   }
@@ -234,16 +234,17 @@ public class RelationEditor extends FrameLayout implements
           replaceRelationAt(
               relation,
               path,
-              adaptComposition(
-                  replaceRelationAt(relation, path, Relation
+              x(adaptComposition(
+                  replaceRelationAt(relation, path, x(Relation
                       .composition(new Composition(ListUtils.move(c.l, src,
-                          dest), c.i, c.o))), path));
+                          dest), c.i, c.o)))), path)));
       break;
     case UNION:
       Union u = r.union();
       relation =
-          replaceRelationAt(relation, path, Relation.union(new Relation.Union(
-              ListUtils.move(u.l, src, dest), u.i, u.o)));
+          replaceRelationAt(relation, path,
+              x(Relation.union(new Relation.Union(ListUtils
+                  .move(u.l, src, dest), u.i, u.o))));
       break;
     default:
       throw boom();
@@ -281,9 +282,9 @@ public class RelationEditor extends FrameLayout implements
         replaceRelationAt(
             relation,
             path,
-            adaptComposition(
-                replaceRelationAt(relation, path, Relation.composition(comp)),
-                path));
+            x(adaptComposition(
+                replaceRelationAt(relation, path, x(Relation.composition(comp))),
+                path)));
     initNodeEditor();
     setPath(this.path);
   }
@@ -335,8 +336,7 @@ public class RelationEditor extends FrameLayout implements
       default:
         throw new RuntimeException("invalid index");
       }
-    relation =
-        RelationUtils.replaceRelationAt(relation, path, Relation.union(union));
+    relation = replaceRelationAt(relation, path, x(Relation.union(union)));
     initNodeEditor();
     setPath(this.path);
   }
@@ -353,7 +353,7 @@ public class RelationEditor extends FrameLayout implements
       replaceRelation(List<Either3<Label, Integer, Unit>> p, Relation r2) {
     p = append(path, p);
     Relation r = relationAt(p, relation).some().x;
-    relation = replaceRelationAt(relation, p, r2);
+    relation = replaceRelationAt(relation, p, x(r2));
     initNodeEditor();
   }
 
@@ -362,18 +362,20 @@ public class RelationEditor extends FrameLayout implements
   }
 
   // XXX this is confusing as fuck because it's not obvious that
-  // replaceRelation(Relation) is reacting to PathEditor, whereas
+  // this replaceRelation is reacting to PathEditor, whereas
   // replaceRelation(List<...>, Relation) isn't. get rid of this multiple
   // interface shit
-  public void replaceRelation(Relation r2) {
+  public void replaceRelation(
+      Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
     Relation r = relationAt(path, relation).some().x;
+    Relation r2 = er.isY() ? relationAt(er.y(), relation).some().x : er.x();
     if (!equal(domain(r), domain(r2)) | !equal(codomain(r), codomain(r2)))
-      r2 =
-          adaptComposition(
+      er =
+          x(adaptComposition(
               replaceRelationAt(relation, path,
-                  Relation.composition(new Composition(fromArray(x(r2)),
-                      domain(r), codomain(r)))), path);
-    relation = replaceRelationAt(relation, path, r2);
+                  x(Relation.composition(new Composition(fromArray(er),
+                      domain(r), codomain(r))))), path));
+    relation = replaceRelationAt(relation, path, er);
     initNodeEditor();
     setPath(path);
   }

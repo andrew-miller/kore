@@ -29,6 +29,7 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Tag;
+import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
@@ -44,7 +45,8 @@ public class RelationPath extends FrameLayout {
 
     void changeRelationType(Tag y);
 
-    void replaceRelation(Relation r);
+    void replaceRelation(
+        Either<Relation, List<Either3<Label, Integer, Unit>>> er);
   }
 
   public RelationPath(final Context context, RelationColors rc,
@@ -102,10 +104,24 @@ public class RelationPath extends FrameLayout {
                   codeLabelAliases, relationAliases,
                   new F<List<Either3<Label, Integer, Unit>>, Unit>() {
                     public Unit f(List<Either3<Label, Integer, Unit>> p) {
-                      listener.replaceRelation(r);
+                      listener.replaceRelation(Either
+                          .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
                       return unit();
                     }
                   });
+            if (!path.isEmpty()) {
+              m.add("---");
+              UIUtils.addRelationToMenu(m, rootRelation,
+                  ListUtils.<Either3<Label, Integer, Unit>> nil(),
+                  codeLabelAliases, relationAliases,
+                  new F<List<Either3<Label, Integer, Unit>>, Unit>() {
+                    public Unit f(List<Either3<Label, Integer, Unit>> p) {
+                      listener.replaceRelation(Either
+                          .<Relation, List<Either3<Label, Integer, Unit>>> y(p));
+                      return unit();
+                    }
+                  });
+            }
             pm.show();
           } else
             listener.selectPath(subpathS);

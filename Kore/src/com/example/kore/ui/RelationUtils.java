@@ -223,9 +223,16 @@ public class RelationUtils {
   }
 
   public static Relation replaceRelationAt(Relation r,
-      List<Either3<Label, Integer, Unit>> p, Relation newRelation) {
+      List<Either3<Label, Integer, Unit>> p,
+      Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+    return replaceRelationAt_(r, p, er).x();
+  }
+
+  private static Either<Relation, List<Either3<Label, Integer, Unit>>>
+      replaceRelationAt_(Relation r, List<Either3<Label, Integer, Unit>> p,
+          Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
     if (p.isEmpty())
-      return newRelation;
+      return er;
     Either3<Label, Integer, Unit> e = p.cons().x;
     List<Either3<Label, Integer, Unit>> p2 = p.cons().tail;
     switch (r.tag) {
@@ -233,40 +240,34 @@ public class RelationUtils {
       if (e.tag != Tag.Z)
         throw new RuntimeException("invalid path");
       Abstraction a = r.abstraction();
-      return Relation.abstraction(new Relation.Abstraction(a.pattern, Either
-          .<Relation, List<Either3<Label, Integer, Unit>>> x(replaceRelationAt(
-              a.r.x(), p2, newRelation)), a.i, a.o));
+      return x(Relation.abstraction(new Relation.Abstraction(a.pattern,
+          replaceRelationAt_(a.r.x(), p2, er), a.i, a.o)));
     case COMPOSITION:
       if (e.tag != Tag.Y)
         throw new RuntimeException("invalid path");
       Composition c = r.composition();
-      return Relation.composition(new Relation.Composition(replace(
+      return x(Relation.composition(new Relation.Composition(replace(
           r.composition().l, e.y(),
-          x(replaceRelationAt(nth(c.l, e.y()).some().x.x(), p2, newRelation))),
-          c.i, c.o));
+          replaceRelationAt_(nth(c.l, e.y()).some().x.x(), p2, er)), c.i, c.o)));
     case PRODUCT:
       if (e.tag != Tag.X)
         throw new RuntimeException("invalid path");
       Product prod = r.product();
-      return Relation.product(new Relation.Product(
-          prod.m.put(
-              e.x(),
-              x(replaceRelationAt(prod.m.get(e.x()).some().x.x(), p2,
-                  newRelation))), prod.o));
+      return x(Relation.product(new Relation.Product(prod.m.put(e.x(),
+          replaceRelationAt_(prod.m.get(e.x()).some().x.x(), p2, er)), prod.o)));
     case PROJECTION:
       throw new RuntimeException("path goes through projection");
     case LABEL:
       if (e.tag != Tag.Z)
         throw new RuntimeException("invalid path");
-      return Relation.label(new Label_(r.label().label, x(replaceRelationAt(
-          r.label().r.x(), p2, newRelation)), r.label().o));
+      return x(Relation.label(new Label_(r.label().label, replaceRelationAt_(
+          r.label().r.x(), p2, er), r.label().o)));
     case UNION:
       if (e.tag != Tag.Y)
         throw new RuntimeException("invalid path");
       Union u = r.union();
-      return Relation.union(new Relation.Union(replace(u.l, e.y(),
-          x(replaceRelationAt(nth(u.l, e.y()).some().x.x(), p2, newRelation))),
-          u.i, u.o));
+      return x(Relation.union(new Relation.Union(replace(u.l, e.y(),
+          replaceRelationAt_(nth(u.l, e.y()).some().x.x(), p2, er)), u.i, u.o)));
     default:
       throw boom();
     }
@@ -350,7 +351,7 @@ public class RelationUtils {
     }
     Relation r2 =
         replaceRelationAt(root, path,
-            Relation.composition(new Composition(l, c.i, c.o)));
+            x(Relation.composition(new Composition(l, c.i, c.o))));
     return adaptComposition(r2, path);
   }
 
@@ -373,10 +374,9 @@ public class RelationUtils {
     if (!equal(last, c.o))
       c = new Composition(append(x(dummy(last, c.o)), c.l), c.i, c.o);
 
-    return Relation
-        .composition(new Composition(adaptComposition_(
-            replaceRelationAt(root, path, Relation.composition(c)), c.l), c.i,
-            c.o));
+    return Relation.composition(new Composition(adaptComposition_(
+        replaceRelationAt(root, path, x(Relation.composition(c))), c.l), c.i,
+        c.o));
   }
 
   private static List<Either<Relation, List<Either3<Label, Integer, Unit>>>>
