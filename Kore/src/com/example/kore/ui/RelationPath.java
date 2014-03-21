@@ -3,7 +3,7 @@ package com.example.kore.ui;
 import static com.example.kore.ui.RelationUtils.codomain;
 import static com.example.kore.ui.RelationUtils.domain;
 import static com.example.kore.ui.RelationUtils.inAbstraction;
-import static com.example.kore.ui.RelationUtils.subRelation;
+import static com.example.kore.ui.RelationUtils.subRelationOrPath;
 import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
@@ -140,7 +140,12 @@ public class RelationPath extends FrameLayout {
       Either3<Label, Integer, Unit> e = path_.cons().x;
       path_ = path_.cons().tail;
       subpath = append(e, subpath);
-      relation = subRelation(relation, e).some().x;
+      Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
+          subRelationOrPath(relation, e).some().x;
+      if (rp.isY()) {
+        break;
+      }
+      relation = rp.x();
       Button b2 = new Button(context);
       switch (e.tag) {
       case X:
