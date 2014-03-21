@@ -1,11 +1,13 @@
 package com.example.kore.ui;
 
 import static com.example.kore.ui.RelationUtils.edges;
+import static com.example.kore.ui.RelationUtils.enclosingAbstraction;
 import static com.example.kore.ui.RelationUtils.renderPathElement;
 import static com.example.kore.ui.RelationUtils.renderRelation;
 import static com.example.kore.utils.CodeUtils.renderCode;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
+import static com.example.kore.utils.OptionalUtils.some;
 import android.content.Context;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -26,6 +28,7 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
+import com.example.kore.codes.Relation.Abstraction;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
@@ -122,24 +125,25 @@ public class UIUtils {
 
   private static void addRelationToMenu(Menu m, final Relation root,
       final List<Either3<Label, Integer, Unit>> path,
-      Either<Relation, List<Either3<Label, Integer, Unit>>> cp, String ls,
+      Either<Relation, List<Either3<Label, Integer, Unit>>> rp, String ls,
       String space, CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalRelation, String> relationAliases,
       final F<List<Either3<Label, Integer, Unit>>, Unit> f) {
+    Optional<Abstraction> ea = enclosingAbstraction(path, root);
     m.add(
         space
             + ls.substring(0, Math.min(10, ls.length()))
             + " "
-            + renderRelation(OptionalUtils.<Code> nothing(), cp,
-                codeLabelAliases)).setOnMenuItemClickListener(
-        new OnMenuItemClickListener() {
+            + renderRelation(ea.isNothing() ? OptionalUtils.<Code> nothing()
+                : some(ea.some().x.i), rp, codeLabelAliases))
+        .setOnMenuItemClickListener(new OnMenuItemClickListener() {
           public boolean onMenuItemClick(MenuItem _) {
             f.f(path);
             return true;
           }
         });
-    if (!cp.isY())
-      for (Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(edges(cp
+    if (!rp.isY())
+      for (Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(edges(rp
           .x()))) {
         addRelationToMenu(m, root, append(e.x, path), e.y,
             renderPathElement(e.x), space + "  ", codeLabelAliases,
