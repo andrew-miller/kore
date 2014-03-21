@@ -355,6 +355,7 @@ public class RelationEditor extends FrameLayout implements
     Relation r = relationAt(p, relation).some().x;
     relation = replaceRelationAt(relation, p, x(r2));
     initNodeEditor();
+    setPath(path);
   }
 
   public void selectRelation(List<Either3<Label, Integer, Unit>> p) {
