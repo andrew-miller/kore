@@ -129,7 +129,9 @@ public class UIUtils {
       String space, CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalRelation, String> relationAliases,
       final F<List<Either3<Label, Integer, Unit>>, Unit> f) {
-    Optional<Abstraction> ea = enclosingAbstraction(path, root);
+    Optional<Abstraction> ea =
+        rp.isY() ? OptionalUtils.<Abstraction> nothing()
+            : enclosingAbstraction(path, root);
     m.add(
         space
             + ls.substring(0, Math.min(10, ls.length()))
