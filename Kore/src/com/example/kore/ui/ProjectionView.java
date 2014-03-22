@@ -1,6 +1,6 @@
 package com.example.kore.ui;
 
-import static com.example.kore.utils.CodeUtils.followPath;
+import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
@@ -34,8 +34,7 @@ public class ProjectionView {
         v.setOnClickListener(new OnClickListener() {
           public void onClick(View _) {
             ProjectionMenu.make(context, v, codeLabelAliases, argCode,
-                followPath(projection.path, argCode).some().x,
-                new F<List<Label>, Void>() {
+                reroot(argCode, projection.path), new F<List<Label>, Void>() {
                   public Void f(List<Label> p) {
                     replace.f(p);
                     return null;
