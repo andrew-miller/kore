@@ -51,8 +51,6 @@ public class RelationNodeEditor extends FrameLayout {
     void extendUnion(List<Either3<Label, Integer, Unit>> path, Integer i,
         Relation r);
 
-    void move(Integer src, Integer dest);
-
     void replaceRelation(List<Either3<Label, Integer, Unit>> path, Relation r);
 
   }

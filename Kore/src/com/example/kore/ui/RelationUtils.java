@@ -222,17 +222,20 @@ public class RelationUtils {
     return some(r.some().x);
   }
 
-  public static Relation replaceRelationAt(Relation r,
+  public static Relation replaceRelationOrPathAt(Relation r,
       List<Either3<Label, Integer, Unit>> p,
       Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
-    return replaceRelationAt_(r, p, er).x();
+    return replaceRelationOrPathAt(x(r), p, er).x();
   }
 
   private static Either<Relation, List<Either3<Label, Integer, Unit>>>
-      replaceRelationAt_(Relation r, List<Either3<Label, Integer, Unit>> p,
-          Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+      replaceRelationOrPathAt(
+          Either<Relation, List<Either3<Label, Integer, Unit>>> er,
+          List<Either3<Label, Integer, Unit>> p,
+          Either<Relation, List<Either3<Label, Integer, Unit>>> er2) {
     if (p.isEmpty())
-      return er;
+      return er2;
+    Relation r = er.x();
     Either3<Label, Integer, Unit> e = p.cons().x;
     List<Either3<Label, Integer, Unit>> p2 = p.cons().tail;
     switch (r.tag) {
@@ -241,33 +244,39 @@ public class RelationUtils {
         throw new RuntimeException("invalid path");
       Abstraction a = r.abstraction();
       return x(Relation.abstraction(new Relation.Abstraction(a.pattern,
-          replaceRelationAt_(a.r.x(), p2, er), a.i, a.o)));
+          replaceRelationOrPathAt(a.r, p2, er2), a.i, a.o)));
     case COMPOSITION:
       if (e.tag != Tag.Y)
         throw new RuntimeException("invalid path");
       Composition c = r.composition();
-      return x(Relation.composition(new Relation.Composition(replace(
-          r.composition().l, e.y(),
-          replaceRelationAt_(nth(c.l, e.y()).some().x.x(), p2, er)), c.i, c.o)));
+      return x(Relation
+          .composition(new Relation.Composition(
+              replace(r.composition().l, e.y(),
+                  replaceRelationOrPathAt(nth(c.l, e.y()).some().x, p2, er2)),
+              c.i, c.o)));
     case PRODUCT:
       if (e.tag != Tag.X)
         throw new RuntimeException("invalid path");
       Product prod = r.product();
-      return x(Relation.product(new Relation.Product(prod.m.put(e.x(),
-          replaceRelationAt_(prod.m.get(e.x()).some().x.x(), p2, er)), prod.o)));
+      return x(Relation
+          .product(new Relation.Product(prod.m.put(e.x(),
+              replaceRelationOrPathAt(prod.m.get(e.x()).some().x, p2, er2)),
+              prod.o)));
     case PROJECTION:
       throw new RuntimeException("path goes through projection");
     case LABEL:
       if (e.tag != Tag.Z)
         throw new RuntimeException("invalid path");
-      return x(Relation.label(new Label_(r.label().label, replaceRelationAt_(
-          r.label().r.x(), p2, er), r.label().o)));
+      return x(Relation.label(new Label_(r.label().label,
+          replaceRelationOrPathAt(r.label().r, p2, er2), r.label().o)));
     case UNION:
       if (e.tag != Tag.Y)
         throw new RuntimeException("invalid path");
       Union u = r.union();
-      return x(Relation.union(new Relation.Union(replace(u.l, e.y(),
-          replaceRelationAt_(nth(u.l, e.y()).some().x.x(), p2, er)), u.i, u.o)));
+      return x(Relation
+          .union(new Relation.Union(replace(u.l, e.y(),
+              replaceRelationOrPathAt(nth(u.l, e.y()).some().x, p2, er2)), u.i,
+              u.o)));
     default:
       throw boom();
     }
@@ -350,7 +359,7 @@ public class RelationUtils {
       i++;
     }
     Relation r2 =
-        replaceRelationAt(root, path,
+        replaceRelationOrPathAt(root, path,
             x(Relation.composition(new Composition(l, c.i, c.o))));
     return adaptComposition(r2, path);
   }
@@ -375,8 +384,8 @@ public class RelationUtils {
       c = new Composition(append(x(dummy(last, c.o)), c.l), c.i, c.o);
 
     return Relation.composition(new Composition(adaptComposition_(
-        replaceRelationAt(root, path, x(Relation.composition(c))), c.l), c.i,
-        c.o));
+        replaceRelationOrPathAt(root, path, x(Relation.composition(c))), c.l),
+        c.i, c.o));
   }
 
   private static List<Either<Relation, List<Either3<Label, Integer, Unit>>>>

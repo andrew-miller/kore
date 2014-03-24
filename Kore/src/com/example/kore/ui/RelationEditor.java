@@ -8,7 +8,8 @@ import static com.example.kore.ui.RelationUtils.dummy;
 import static com.example.kore.ui.RelationUtils.enclosingAbstraction;
 import static com.example.kore.ui.RelationUtils.projection;
 import static com.example.kore.ui.RelationUtils.relationAt;
-import static com.example.kore.ui.RelationUtils.replaceRelationAt;
+import static com.example.kore.ui.RelationUtils.relationOrPathAt;
+import static com.example.kore.ui.RelationUtils.replaceRelationOrPathAt;
 import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.reroot;
@@ -145,7 +146,7 @@ public class RelationEditor extends FrameLayout implements
     default:
       throw boom();
     }
-    relation = replaceRelationAt(relation, path, x(r2));
+    relation = replaceRelationOrPathAt(relation, path, x(r2));
     setPath(path);
     initNodeEditor();
   }
@@ -156,9 +157,7 @@ public class RelationEditor extends FrameLayout implements
 
   public void selectPath(List<Either3<Label, Integer, Unit>> p) {
     notNull(p);
-    Optional<Relation> or = relationAt(p, relation);
-    if (or.isNothing())
-      throw new RuntimeException("invalid path");
+    relationOrPathAt(p, relation);
     path = p;
     setPath(p);
     initNodeEditor();
@@ -193,7 +192,8 @@ public class RelationEditor extends FrameLayout implements
     default:
       throw boom();
     }
-    relation = replaceRelationAt(relation, path, x(Relation.composition(comp)));
+    relation =
+        replaceRelationOrPathAt(relation, path, x(Relation.composition(comp)));
     initNodeEditor();
     setPath(path);
   }
@@ -218,37 +218,8 @@ public class RelationEditor extends FrameLayout implements
     default:
       throw boom();
     }
-    relation = replaceRelationAt(relation, path, x(Relation.composition(comp)));
-    initNodeEditor();
-    setPath(path);
-  }
-
-  public void move(Integer src, Integer dest) {
-    if (dest < 0 | src < 0)
-      throw new RuntimeException("indexes can't be negative");
-    Relation r = relationAt(path, relation).some().x;
-    switch (r.tag) {
-    case COMPOSITION:
-      Composition c = r.composition();
-      relation =
-          replaceRelationAt(
-              relation,
-              path,
-              x(adaptComposition(
-                  replaceRelationAt(relation, path, x(Relation
-                      .composition(new Composition(ListUtils.move(c.l, src,
-                          dest), c.i, c.o)))), path)));
-      break;
-    case UNION:
-      Union u = r.union();
-      relation =
-          replaceRelationAt(relation, path,
-              x(Relation.union(new Relation.Union(ListUtils
-                  .move(u.l, src, dest), u.i, u.o))));
-      break;
-    default:
-      throw boom();
-    }
+    relation =
+        replaceRelationOrPathAt(relation, path, x(Relation.composition(comp)));
     initNodeEditor();
     setPath(path);
   }
@@ -258,20 +229,22 @@ public class RelationEditor extends FrameLayout implements
     if (i < 0)
       throw new RuntimeException("index can't be negative");
     List<Either3<Label, Integer, Unit>> path = append(this.path, p);
-    Relation r = relationAt(path, relation).some().x;
-    Code d = domain(r);
-    Code c = codomain(r);
+    Either<Relation, List<Either3<Label, Integer, Unit>>> er =
+        relationOrPathAt(path, relation);
+    Relation r1 = er.isY() ? relationAt(er.y(), relation).some().x : er.x();
+    Code d = domain(r1);
+    Code c = codomain(r1);
 
     Composition comp;
-    if (r.tag == Tag.COMPOSITION) {
-      comp = new Composition(insert(r.composition().l, i, x(r2)), d, c);
+    if (!er.isY() && er.x().tag == Tag.COMPOSITION) {
+      comp = new Composition(insert(er.x().composition().l, i, x(r2)), d, c);
     } else {
       switch (i) {
       case 0:
-        comp = new Composition(cons(x(r2), cons(x(r), nil)), d, c);
+        comp = new Composition(fromArray(x(r2), er), d, c);
         break;
       case 1:
-        comp = new Composition(cons(x(r), cons(x(r2), nil)), d, c);
+        comp = new Composition(fromArray(er, x(r2)), d, c);
         break;
       default:
         throw new RuntimeException("invalid index");
@@ -279,12 +252,12 @@ public class RelationEditor extends FrameLayout implements
     }
 
     relation =
-        replaceRelationAt(
+        replaceRelationOrPathAt(
             relation,
             path,
             x(adaptComposition(
-                replaceRelationAt(relation, path, x(Relation.composition(comp))),
-                path)));
+                replaceRelationOrPathAt(relation, path,
+                    x(Relation.composition(comp))), path)));
     initNodeEditor();
     setPath(this.path);
   }
@@ -294,9 +267,11 @@ public class RelationEditor extends FrameLayout implements
     if (i < 0)
       throw new RuntimeException("index can't be negative");
     List<Either3<Label, Integer, Unit>> path = append(this.path, p);
-    Relation r = relationAt(path, relation).some().x;
-    Code d = domain(r);
-    Code c = codomain(r);
+    Either<Relation, List<Either3<Label, Integer, Unit>>> er =
+        relationOrPathAt(path, relation);
+    Relation r1 = er.isY() ? relationAt(er.y(), relation).some().x : er.x();
+    Code d = domain(r1);
+    Code c = codomain(r1);
     Code d2 = domain(r2);
     Code c2 = codomain(r2);
     if (!equal(d, d2)) {
@@ -307,8 +282,8 @@ public class RelationEditor extends FrameLayout implements
                 cons(x(t), r2.composition().l), d, c2));
       else
         r2 =
-            Relation.composition(new Composition(cons(x(t), cons(x(r2), nil)),
-                d, c2));
+            Relation
+                .composition(new Composition(fromArray(x(t), x(r2)), d, c2));
     }
     if (!equal(c, c2)) {
       Relation t = dummy(c2, c);
@@ -318,25 +293,26 @@ public class RelationEditor extends FrameLayout implements
                 r2.composition().l), d, c));
       else
         r2 =
-            Relation.composition(new Composition(cons(x(r2), cons(x(t), nil)),
-                d, c));
+            Relation.composition(new Composition(fromArray(x(r2), x(t)), d, c));
     }
     Union union;
-    if (r.tag == Tag.UNION)
+    if (!er.isY() && er.x().tag == Tag.UNION)
       union =
-          new Union(insert(r.union().l, i, x(r2)), r.union().i, r.union().o);
+          new Union(insert(er.x().union().l, i, x(r2)), er.x().union().i, er
+              .x().union().o);
     else
       switch (i) {
       case 0:
-        union = new Union(cons(x(r2), cons(x(r), nil)), d, c);
+        union = new Union(fromArray(x(r2), er), d, c);
         break;
       case 1:
-        union = new Union(cons(x(r), cons(x(r2), nil)), d, c);
+        union = new Union(fromArray(er, x(r2)), d, c);
         break;
       default:
         throw new RuntimeException("invalid index");
       }
-    relation = replaceRelationAt(relation, path, x(Relation.union(union)));
+    relation =
+        replaceRelationOrPathAt(relation, path, x(Relation.union(union)));
     initNodeEditor();
     setPath(this.path);
   }
@@ -353,7 +329,7 @@ public class RelationEditor extends FrameLayout implements
       replaceRelation(List<Either3<Label, Integer, Unit>> p, Relation r2) {
     p = append(path, p);
     Relation r = relationAt(p, relation).some().x;
-    relation = replaceRelationAt(relation, p, x(r2));
+    relation = replaceRelationOrPathAt(relation, p, x(r2));
     initNodeEditor();
     setPath(path);
   }
@@ -373,10 +349,10 @@ public class RelationEditor extends FrameLayout implements
     if (!equal(domain(r), domain(r2)) | !equal(codomain(r), codomain(r2)))
       er =
           x(adaptComposition(
-              replaceRelationAt(relation, path,
+              replaceRelationOrPathAt(relation, path,
                   x(Relation.composition(new Composition(fromArray(er),
                       domain(r), codomain(r))))), path));
-    relation = replaceRelationAt(relation, path, er);
+    relation = replaceRelationOrPathAt(relation, path, er);
     initNodeEditor();
     setPath(path);
   }
