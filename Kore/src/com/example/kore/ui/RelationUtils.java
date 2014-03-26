@@ -10,14 +10,19 @@ import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.cons;
+import static com.example.kore.utils.ListUtils.drop;
 import static com.example.kore.utils.ListUtils.fromArray;
+import static com.example.kore.utils.ListUtils.isSubList;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.length;
+import static com.example.kore.utils.ListUtils.map;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.ListUtils.nth;
 import static com.example.kore.utils.ListUtils.replace;
+import static com.example.kore.utils.MapUtils.map;
 import static com.example.kore.utils.OptionalUtils.nothing;
 import static com.example.kore.utils.OptionalUtils.some;
+import static com.example.kore.utils.Pair.pair;
 import static com.example.kore.utils.Unit.unit;
 
 import java.util.HashSet;
@@ -38,6 +43,7 @@ import com.example.kore.codes.Relation.Union;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.Either3.Tag;
+import com.example.kore.utils.F;
 import com.example.kore.utils.Identity;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
@@ -364,46 +370,65 @@ public class RelationUtils {
     return adaptComposition(r2, path);
   }
 
-  // FIXME adjust indexes in paths that go through the composition
+  /**
+   * Insert transformations between elements of the composition that are not
+   * compatible. Also pads the start and end of the composition if the first
+   * element's domain is not the same as the composition's domain, or the last
+   * element's codomain is not the same as the composition's codomain,
+   * respectively.
+   */
   public static Relation adaptComposition(Relation root,
-      List<Either3<Label, Integer, Unit>> path) {
+      final List<Either3<Label, Integer, Unit>> path) {
     Composition c = relationAt(path, root).some().x.composition();
-
-    Either<Relation, List<Either3<Label, Integer, Unit>>> efirst =
-        nth(c.l, 0).some().x;
+    Either<Relation, List<Either3<Label, Integer, Unit>>> er = c.l.cons().x;
+    final Pair<List<Boolean>, List<Either<Relation, List<Either3<Label, Integer, Unit>>>>> p =
+        adaptComposition_(root, domain(er.isY() ? relationAt(er.y(), root)
+            .some().x : er.x()), c.l);
     Either<Relation, List<Either3<Label, Integer, Unit>>> elast =
         nth(c.l, length(c.l) - 1).some().x;
-    Code first =
-        domain(efirst.isY() ? relationAt(efirst.y(), root).some().x : efirst
-            .x());
     Code last =
         codomain(elast.isY() ? relationAt(elast.y(), root).some().x : elast.x());
-    if (!equal(first, c.i))
-      c = new Composition(cons(x(dummy(c.i, first)), c.l), c.i, c.o);
-    if (!equal(last, c.o))
-      c = new Composition(append(x(dummy(last, c.o)), c.l), c.i, c.o);
-
-    return Relation.composition(new Composition(adaptComposition_(
-        replaceRelationOrPathAt(root, path, x(Relation.composition(c))), c.l),
-        c.i, c.o));
+    return mapPaths(
+        replaceRelationOrPathAt(root, path,
+            x(Relation.composition(new Composition(equal(last, c.o) ? p.y
+                : append(x(dummy(last, c.o)), c.l), c.i, c.o)))),
+        new F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>>() {
+          public List<Either3<Label, Integer, Unit>> f(
+              List<Either3<Label, Integer, Unit>> p2) {
+            if (isSubList(path, p2)) {
+              List<Either3<Label, Integer, Unit>> l = drop(p2, length(path));
+              if (!l.isEmpty()) {
+                Integer o = 0;
+                Integer i = 0;
+                for (Boolean b_ : iter(p.x)) {
+                  if (i++ > l.cons().x.y())
+                    break;
+                  if (b_)
+                    o++;
+                }
+                return append(
+                    path,
+                    cons(Either3.<Label, Integer, Unit> y(l.cons().x.y() + o),
+                        l.cons().tail));
+              }
+            }
+            return p2;
+          }
+        });
   }
 
-  private static List<Either<Relation, List<Either3<Label, Integer, Unit>>>>
-      adaptComposition_(Relation root,
+  private static
+      Pair<List<Boolean>, List<Either<Relation, List<Either3<Label, Integer, Unit>>>>>
+      adaptComposition_(Relation root, Code c,
           List<Either<Relation, List<Either3<Label, Integer, Unit>>>> l) {
-    if (l.isEmpty() || l.cons().tail.isEmpty())
-      return l;
-    Either<Relation, List<Either3<Label, Integer, Unit>>> er1 = l.cons().x;
-    Either<Relation, List<Either3<Label, Integer, Unit>>> er2 =
-        l.cons().tail.cons().x;
-    Relation r1 = er1.isY() ? relationAt(er1.y(), root).some().x : er1.x();
-    Relation r2 = er2.isY() ? relationAt(er2.y(), root).some().x : er2.x();
-    if (equal(codomain(r1), domain(r2)))
-      return cons(er1, adaptComposition_(root, l.cons().tail));
-    return cons(
-        er1,
-        cons(x(dummy(codomain(r1), domain(r2))),
-            adaptComposition_(root, l.cons().tail)));
+    if (l.isEmpty())
+      return pair(ListUtils.<Boolean> nil(), l);
+    Either<Relation, List<Either3<Label, Integer, Unit>>> er = l.cons().x;
+    Relation r = er.isY() ? relationAt(er.y(), root).some().x : er.x();
+    Pair<List<Boolean>, List<Either<Relation, List<Either3<Label, Integer, Unit>>>>> p =
+        adaptComposition_(root, codomain(r), l.cons().tail);
+    return equal(c, domain(r)) ? pair(cons(false, p.x), cons(er, p.y)) : pair(
+        cons(true, p.x), cons(x(dummy(c, domain(r))), cons(er, p.y)));
   }
 
   /** Empty relation from <tt>i</tt> to <tt>o</tt> */
@@ -415,6 +440,11 @@ public class RelationUtils {
   private static Either<Relation, List<Either3<Label, Integer, Unit>>> x(
       Relation r) {
     return Either.<Relation, List<Either3<Label, Integer, Unit>>> x(r);
+  }
+
+  private static Either<Relation, List<Either3<Label, Integer, Unit>>> y(
+      List<Either3<Label, Integer, Unit>> x) {
+    return Either.y(x);
   }
 
   public static Optional<Projection> projection(Code i, Code o) {
@@ -515,5 +545,49 @@ public class RelationUtils {
     if (osp.some().x.isY())
       return relationAt(osp.some().x.y(), root);
     return some(osp.some().x.x());
+  }
+
+  public static
+      Relation
+      mapPaths(
+          Relation r,
+          final F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>> f) {
+    F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Either<Relation, List<Either3<Label, Integer, Unit>>>> ff =
+        new F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Either<Relation, List<Either3<Label, Integer, Unit>>>>() {
+          public Either<Relation, List<Either3<Label, Integer, Unit>>> f(
+              Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+            return mapPaths_(f, er);
+          }
+        };
+    switch (r.tag) {
+    case ABSTRACTION:
+      Abstraction a = r.abstraction();
+      return Relation.abstraction(new Relation.Abstraction(a.pattern,
+          mapPaths_(f, a.r), a.i, a.o));
+    case COMPOSITION:
+      Composition c = r.composition();
+      return Relation.composition(new Composition(map(ff, c.l), c.i, c.o));
+    case LABEL:
+      Label_ l = r.label();
+      return Relation.label(new Label_(l.label, mapPaths_(f, l.r), l.o));
+    case PRODUCT:
+      Product p = r.product();
+      return Relation.product(new Product(map(ff, p.m), p.o));
+    case PROJECTION:
+      return r;
+    case UNION:
+      Union u = r.union();
+      return Relation.union(new Union(map(ff, u.l), u.i, u.o));
+    default:
+      throw boom();
+    }
+  }
+
+  private static
+      Either<Relation, List<Either3<Label, Integer, Unit>>>
+      mapPaths_(
+          final F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>> f,
+          Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+    return er.isY() ? y(f.f(er.y())) : x(mapPaths(er.x(), f));
   }
 }

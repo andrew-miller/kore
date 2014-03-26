@@ -6,6 +6,7 @@ import static com.example.kore.ui.RelationUtils.codomain;
 import static com.example.kore.ui.RelationUtils.domain;
 import static com.example.kore.ui.RelationUtils.dummy;
 import static com.example.kore.ui.RelationUtils.enclosingAbstraction;
+import static com.example.kore.ui.RelationUtils.mapPaths;
 import static com.example.kore.ui.RelationUtils.projection;
 import static com.example.kore.ui.RelationUtils.relationAt;
 import static com.example.kore.ui.RelationUtils.relationOrPathAt;
@@ -16,9 +17,12 @@ import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.cons;
+import static com.example.kore.utils.ListUtils.drop;
 import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.ListUtils.insert;
+import static com.example.kore.utils.ListUtils.isSubList;
 import static com.example.kore.utils.ListUtils.iter;
+import static com.example.kore.utils.ListUtils.length;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
 import android.content.Context;
@@ -41,6 +45,7 @@ import com.example.kore.codes.Relation.Tag;
 import com.example.kore.codes.Relation.Union;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
+import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
@@ -225,10 +230,10 @@ public class RelationEditor extends FrameLayout implements
   }
 
   public void extendComposition(List<Either3<Label, Integer, Unit>> p,
-      Integer i, Relation r2) {
+      final Integer i, Relation r2) {
     if (i < 0)
       throw new RuntimeException("index can't be negative");
-    List<Either3<Label, Integer, Unit>> path = append(this.path, p);
+    final List<Either3<Label, Integer, Unit>> path = append(this.path, p);
     Either<Relation, List<Either3<Label, Integer, Unit>>> er =
         relationOrPathAt(path, relation);
     Relation r1 = er.isY() ? relationAt(er.y(), relation).some().x : er.x();
@@ -236,8 +241,10 @@ public class RelationEditor extends FrameLayout implements
     Code c = codomain(r1);
 
     Composition comp;
+    Relation remappedRelation;
     if (!er.isY() && er.x().tag == Tag.COMPOSITION) {
       comp = new Composition(insert(er.x().composition().l, i, x(r2)), d, c);
+      remappedRelation = bumpIndexes(relation, i, path);
     } else {
       switch (i) {
       case 0:
@@ -249,24 +256,22 @@ public class RelationEditor extends FrameLayout implements
       default:
         throw new RuntimeException("invalid index");
       }
+      remappedRelation = insertIndexes(relation, i, path);
     }
 
     relation =
-        replaceRelationOrPathAt(
-            relation,
-            path,
-            x(adaptComposition(
-                replaceRelationOrPathAt(relation, path,
-                    x(Relation.composition(comp))), path)));
+        adaptComposition(
+            replaceRelationOrPathAt(remappedRelation, path,
+                x(Relation.composition(comp))), path);
     initNodeEditor();
     setPath(this.path);
   }
 
-  public void extendUnion(List<Either3<Label, Integer, Unit>> p, Integer i,
-      Relation r2) {
+  public void extendUnion(List<Either3<Label, Integer, Unit>> p,
+      final Integer i, Relation r2) {
     if (i < 0)
       throw new RuntimeException("index can't be negative");
-    List<Either3<Label, Integer, Unit>> path = append(this.path, p);
+    final List<Either3<Label, Integer, Unit>> path = append(this.path, p);
     Either<Relation, List<Either3<Label, Integer, Unit>>> er =
         relationOrPathAt(path, relation);
     Relation r1 = er.isY() ? relationAt(er.y(), relation).some().x : er.x();
@@ -296,11 +301,13 @@ public class RelationEditor extends FrameLayout implements
             Relation.composition(new Composition(fromArray(x(r2), x(t)), d, c));
     }
     Union union;
-    if (!er.isY() && er.x().tag == Tag.UNION)
+    Relation remappedRelation;
+    if (!er.isY() && er.x().tag == Tag.UNION) {
       union =
           new Union(insert(er.x().union().l, i, x(r2)), er.x().union().i, er
               .x().union().o);
-    else
+      remappedRelation = bumpIndexes(relation, i, path);
+    } else {
       switch (i) {
       case 0:
         union = new Union(fromArray(x(r2), er), d, c);
@@ -311,10 +318,51 @@ public class RelationEditor extends FrameLayout implements
       default:
         throw new RuntimeException("invalid index");
       }
+      remappedRelation = insertIndexes(relation, i, path);
+    }
     relation =
-        replaceRelationOrPathAt(relation, path, x(Relation.union(union)));
+        replaceRelationOrPathAt(remappedRelation, path,
+            x(Relation.union(union)));
     initNodeEditor();
     setPath(this.path);
+  }
+
+  private Relation bumpIndexes(Relation r, final Integer i,
+      final List<Either3<Label, Integer, Unit>> path) {
+    return mapPaths(
+        r,
+        new F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>>() {
+          public List<Either3<Label, Integer, Unit>> f(
+              List<Either3<Label, Integer, Unit>> p) {
+            if (isSubList(path, p)) {
+              List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
+              if (!l.isEmpty() && l.cons().x.y() >= i)
+                return append(
+                    path,
+                    cons(Either3.<Label, Integer, Unit> y(l.cons().x.y() + 1),
+                        l.cons().tail));
+            }
+            return p;
+          }
+        });
+  }
+
+  private Relation insertIndexes(Relation r, final Integer i,
+      final List<Either3<Label, Integer, Unit>> path) {
+    return mapPaths(
+        r,
+        new F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>>() {
+          public List<Either3<Label, Integer, Unit>> f(
+              List<Either3<Label, Integer, Unit>> p) {
+            if (isSubList(path, p)) {
+              List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
+              if (!l.isEmpty())
+                return append(path,
+                    cons(Either3.<Label, Integer, Unit> y((i + 1) % 2), l));
+            }
+            return p;
+          }
+        });
   }
 
   private static List<Either<Relation, List<Either3<Label, Integer, Unit>>>> nil =
@@ -356,5 +404,4 @@ public class RelationEditor extends FrameLayout implements
     initNodeEditor();
     setPath(path);
   }
-
 }
