@@ -383,10 +383,8 @@ public class RelationUtils {
   public static Relation adaptComposition(Relation root,
       final List<Either3<Label, Integer, Unit>> path) {
     Composition c = relationAt(path, root).some().x.composition();
-    Either<Relation, List<Either3<Label, Integer, Unit>>> er = c.l.cons().x;
     final Pair<List<Boolean>, List<Either<Relation, List<Either3<Label, Integer, Unit>>>>> p =
-        adaptComposition_(root, domain(er.isY() ? relationAt(er.y(), root)
-            .some().x : er.x()), c.l);
+        adaptComposition_(root, c.i, c.l);
     Either<Relation, List<Either3<Label, Integer, Unit>>> elast =
         nth(c.l, length(c.l) - 1).some().x;
     Code last =
