@@ -326,14 +326,17 @@ public class RelationUtils {
     }
   }
 
-  public static boolean inAbstraction(List<Either3<Label, Integer, Unit>> path,
-      Relation relation) {
+  public static boolean inAbstraction(Relation relation,
+      List<Either3<Label, Integer, Unit>> path) {
     if (path.isEmpty())
       return false;
     if (relation.tag == Relation.Tag.ABSTRACTION)
       return true;
-    return inAbstraction(path.cons().tail, subRelation(relation, path.cons().x)
-        .some().x);
+    Either<Relation, List<Either3<Label, Integer, Unit>>> zz =
+        subRelationOrPath(relation, path.cons().x).some().x;
+    if (zz.isY())
+      return false;
+    return inAbstraction(zz.x(), path.cons().tail);
   }
 
   public static Optional<Abstraction> enclosingAbstraction(
