@@ -356,23 +356,6 @@ public class RelationUtils {
             : a);
   }
 
-  public static Relation removeFromComposition(Set<Integer> is, Relation root,
-      List<Either3<Label, Integer, Unit>> path) {
-    Relation r = relationAt(path, root).some().x;
-    Composition c = r.composition();
-    List<Either<Relation, List<Either3<Label, Integer, Unit>>>> l = nil();
-    Integer i = 0;
-    for (Either<Relation, List<Either3<Label, Integer, Unit>>> er : iter(c.l)) {
-      if (!is.contains(i))
-        l = cons(er, l);
-      i++;
-    }
-    Relation r2 =
-        replaceRelationOrPathAt(root, path,
-            x(Relation.composition(new Composition(l, c.i, c.o))));
-    return adaptComposition(r2, path);
-  }
-
   /**
    * Insert transformations between elements of the composition that are not
    * compatible. Also pads the start and end of the composition if the first

@@ -396,13 +396,12 @@ public class RelationEditor extends FrameLayout implements
       Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
     Relation r = relationAt(path, relation).some().x;
     Relation r2 = er.isY() ? relationAt(er.y(), relation).some().x : er.x();
-    if (!equal(domain(r), domain(r2)) | !equal(codomain(r), codomain(r2)))
-      er =
-          x(adaptComposition(
-              replaceRelationOrPathAt(relation, path,
-                  x(Relation.composition(new Composition(fromArray(er),
-                      domain(r), codomain(r))))), path));
-    relation = replaceRelationOrPathAt(relation, path, er);
+    relation =
+        !equal(domain(r), domain(r2)) | !equal(codomain(r), codomain(r2)) ? adaptComposition(
+            replaceRelationOrPathAt(relation, path,
+                x(Relation.composition(new Composition(fromArray(er),
+                    domain(r), codomain(r))))), path)
+            : replaceRelationOrPathAt(relation, path, er);
     initNodeEditor();
     setPath(path);
   }
