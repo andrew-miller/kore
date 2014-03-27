@@ -101,7 +101,9 @@ public class RelationEditor extends FrameLayout implements
   }
 
   public void changeRelationType(Relation.Tag t) {
-    Relation r = relationAt(path, relation).some().x;
+    Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
+        relationOrPathAt(path, relation);
+    Relation r = rp.isY() ? relationAt(rp.y(), relation).some().x : rp.x();
     Code d = domain(r);
     Code c = codomain(r);
     Relation r2;
@@ -115,7 +117,7 @@ public class RelationEditor extends FrameLayout implements
       r2 = Relation.composition(new Composition(nil, d, c));
       break;
     case PRODUCT:
-      if (!equal(domain(r), unit))
+      if (!equal(d, unit))
         throw new RuntimeException("cannot make product with non-unit domain");
       Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> m =
           Map.empty();
@@ -124,7 +126,7 @@ public class RelationEditor extends FrameLayout implements
       r2 = Relation.product(new Product(m, c));
       break;
     case LABEL:
-      if (!equal(domain(r), unit))
+      if (!equal(d, unit))
         throw new RuntimeException("cannot make label with non-unit domain");
       notEmpty: {
         for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
