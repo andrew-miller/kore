@@ -22,14 +22,14 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Composition;
+import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Unit;
 
-public class RelationEditor extends FrameLayout implements
-    RelationNodeEditor.Listener, RelationPath.Listener {
+public class RelationEditor extends FrameLayout {
 
   private RelationNodeEditor nodeEditor;
   private Relation relation;
@@ -68,11 +68,33 @@ public class RelationEditor extends FrameLayout implements
     setPath(path);
   }
 
-  private void setPath(List<Either3<Label, Integer, Unit>> path) {
+  private void setPath(List<Either3<Label, Integer, Unit>> p) {
     pathContainer.removeAllViews();
     pathContainer.addView(RelationPath.make(context,
-        relationViewColors.relationcolors, this, relation, relations,
-        codeLabelAliases, null, path));
+        relationViewColors.relationcolors, new RelationPath.Listener() {
+          public void selectPath(List<Either3<Label, Integer, Unit>> p) {
+            RelationEditor.this.selectPath(p);
+          }
+
+          public void replaceRelation(
+              Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+            Relation r = relationAt(path, relation).some().x;
+            Relation r2 =
+                er.isY() ? relationAt(er.y(), relation).some().x : er.x();
+            relation =
+                !equal(domain(r), domain(r2))
+                    | !equal(codomain(r), codomain(r2)) ? adaptComposition(
+                    replaceRelationOrPathAt(relation, path, x(Relation
+                        .composition(new Composition(fromArray(er), domain(r),
+                            codomain(r))))), path) : replaceRelationOrPathAt(
+                    relation, path, er);
+            initNodeEditor();
+            setPath(path);
+          }
+
+          public void changeRelationType(Tag y) {
+          }
+        }, relation, relations, codeLabelAliases, null, p));
   }
 
   public void changeRelationType(Relation.Tag t) {
@@ -81,11 +103,7 @@ public class RelationEditor extends FrameLayout implements
     initNodeEditor();
   }
 
-  public void onDone() {
-    doneListener.onDone(relation);
-  }
-
-  public void selectPath(List<Either3<Label, Integer, Unit>> p) {
+  private void selectPath(List<Either3<Label, Integer, Unit>> p) {
     notNull(p);
     relationOrPathAt(p, relation);
     path = p;
@@ -95,73 +113,66 @@ public class RelationEditor extends FrameLayout implements
 
   private void initNodeEditor() {
     nodeEditor =
-        new RelationNodeEditor(context, relation, this, path, codes,
-            codeLabelAliases, codeAliases, relationViewColors);
+        new RelationNodeEditor(context, relation,
+            new RelationNodeEditor.Listener() {
+              public void selectRelation(List<Either3<Label, Integer, Unit>> p) {
+                selectPath(append(path, p));
+              }
+
+              public void replaceRelation(
+                  List<Either3<Label, Integer, Unit>> p, Relation r2) {
+                p = append(path, p);
+                Relation r = relationAt(p, relation).some().x;
+                relation = replaceRelationOrPathAt(relation, p, x(r2));
+                initNodeEditor();
+                setPath(path);
+              }
+
+              public void onDone() {
+                doneListener.onDone(relation);
+              }
+
+              public void extendUnion(List<Either3<Label, Integer, Unit>> p,
+                  final Integer i, Relation r2) {
+                relation =
+                    RelationUtils.extendUnion(relation, append(path, p), i, r2);
+                initNodeEditor();
+                setPath(path);
+              }
+
+              public void
+                  extendComposition(List<Either3<Label, Integer, Unit>> p,
+                      Integer i, Relation r2) {
+                relation =
+                    RelationUtils.extendComposition(relation, append(path, p),
+                        i, r2);
+                initNodeEditor();
+                setPath(path);
+              }
+
+              public void changeRelationType(Tag t) {
+              }
+
+              public void changeDomain(Code d2) {
+                relation = RelationUtils.changeDomain(relation, path, d2);
+                initNodeEditor();
+                setPath(path);
+              }
+
+              public void changeCodomain(Code c2) {
+                relation = RelationUtils.changeCodomain(relation, path, c2);
+                initNodeEditor();
+                setPath(path);
+              }
+            }, path, codes, codeLabelAliases, codeAliases, relationViewColors);
     ViewGroup cont = (ViewGroup) findViewById(R.id.container_relation_editor);
     cont.removeAllViews();
     cont.addView(nodeEditor);
   }
 
-  public void changeCodomain(Code c2) {
-    relation = RelationUtils.changeCodomain(relation, path, c2);
-    initNodeEditor();
-    setPath(path);
-  }
-
-  public void changeDomain(Code d2) {
-    relation = RelationUtils.changeDomain(relation, path, d2);
-    initNodeEditor();
-    setPath(path);
-  }
-
-  public void extendComposition(List<Either3<Label, Integer, Unit>> p,
-      final Integer i, Relation r2) {
-    relation =
-        RelationUtils.extendComposition(relation, append(this.path, p), i, r2);
-    initNodeEditor();
-    setPath(this.path);
-  }
-
-  public void extendUnion(List<Either3<Label, Integer, Unit>> p,
-      final Integer i, Relation r2) {
-    relation = RelationUtils.extendUnion(relation, append(this.path, p), i, r2);
-    initNodeEditor();
-    setPath(this.path);
-  }
-
   private static Either<Relation, List<Either3<Label, Integer, Unit>>> x(
       Relation r) {
-    return Either.<Relation, List<Either3<Label, Integer, Unit>>> x(r);
+    return x(r);
   }
 
-  public void
-      replaceRelation(List<Either3<Label, Integer, Unit>> p, Relation r2) {
-    p = append(path, p);
-    Relation r = relationAt(p, relation).some().x;
-    relation = replaceRelationOrPathAt(relation, p, x(r2));
-    initNodeEditor();
-    setPath(path);
-  }
-
-  public void selectRelation(List<Either3<Label, Integer, Unit>> p) {
-    selectPath(append(path, p));
-  }
-
-  // XXX this is confusing as fuck because it's not obvious that
-  // this replaceRelation is reacting to PathEditor, whereas
-  // replaceRelation(List<...>, Relation) isn't. get rid of this multiple
-  // interface shit
-  public void replaceRelation(
-      Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
-    Relation r = relationAt(path, relation).some().x;
-    Relation r2 = er.isY() ? relationAt(er.y(), relation).some().x : er.x();
-    relation =
-        !equal(domain(r), domain(r2)) | !equal(codomain(r), codomain(r2)) ? adaptComposition(
-            replaceRelationOrPathAt(relation, path,
-                x(Relation.composition(new Composition(fromArray(er),
-                    domain(r), codomain(r))))), path)
-            : replaceRelationOrPathAt(relation, path, er);
-    initNodeEditor();
-    setPath(path);
-  }
 }
