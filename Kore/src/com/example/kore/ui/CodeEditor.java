@@ -30,8 +30,7 @@ import com.example.kore.utils.Optional;
 import com.example.kore.utils.Pair;
 import com.example.kore.utils.Random;
 
-public class CodeEditor extends FrameLayout implements CodeNodeEditor.Listener,
-    CodePath.SubpathSelectedListener {
+public class CodeEditor extends FrameLayout {
 
   private static final String STATE_CODE = "code";
   private static final String STATE_PATH = "path";
@@ -105,7 +104,21 @@ public class CodeEditor extends FrameLayout implements CodeNodeEditor.Listener,
 
   private void setPath(List<Label> path) {
     pathContainer.removeAllViews();
-    pathContainer.addView(new CodePath(context, this, code, path));
+    pathContainer.addView(new CodePath(context,
+        new CodePath.SubpathSelectedListener() {
+          public void pathSelected(List<Label> p) {
+            notNull(p);
+            Optional<Code> oc = CodeUtils.codeAt(p, code);
+            if (oc.isNothing())
+              throw new RuntimeException("invalid path");
+            if (!isSubList(p, pathShadow)) {
+              pathShadow = p;
+              setPath(pathShadow);
+            }
+            CodeEditor.this.path = p;
+            initNodeEditor(oc.some().x);
+          }
+        }, code, path));
   }
 
   private void onCodeEdited(Code c, List<Label> invalidatedPath) {
@@ -143,43 +156,6 @@ public class CodeEditor extends FrameLayout implements CodeNodeEditor.Listener,
     codeLabelAliases.setAliases(cc2, la2);
   }
 
-  public void newField() {
-    Code c = CodeUtils.codeAt(path, code).some().x;
-    Map<Label, CodeOrPath> m = c.labels;
-    Label l = null;
-    do {
-      if (l != null)
-        Log.e(CodeEditor.class.getName(), "generated duplicate label");
-      l = new Label(Random.randomId());
-    } while (containsKey(m, l));
-    m = m.put(l, CodeOrPath.newCode(CodeUtils.unit));
-    c = new Code(c.tag, m);
-    onCodeEdited(c, null);
-  }
-
-  public void deleteField(Label l) {
-    Code c = CodeUtils.codeAt(path, code).some().x;
-    Code c2 = new Code(c.tag, c.labels.delete(l));
-    if (CodeUtils.validCode(CodeUtils.replaceCodeAt(code, path,
-        CodeOrPath.newCode(c2))))
-      onCodeEdited(c2, append(l, path));
-  }
-
-  public void switchCodeOp() {
-    Code c = CodeUtils.codeAt(path, code).some().x;
-    switch (c.tag) {
-    case PRODUCT:
-      c = Code.newUnion(c.labels);
-      break;
-    case UNION:
-      c = Code.newProduct(c.labels);
-      break;
-    default:
-      throw Boom.boom();
-    }
-    onCodeEdited(c, null);
-  }
-
   private void remapAliases(Code c, Code c2, List<Label> path,
       List<Label> invalidatedPath) {
     if (path.equals(invalidatedPath))
@@ -191,69 +167,93 @@ public class CodeEditor extends FrameLayout implements CodeNodeEditor.Listener,
         remapAliases(e.v.code, c2, append(e.k, path), invalidatedPath);
   }
 
-  public void codeSelected(Label l) {
-    notNull(l);
-    Code c = CodeUtils.codeAt(path, code).some().x;
-    CodeOrPath cp = c.labels.get(l).some().x;
-    Code c2;
-    if (cp.tag != CodeOrPath.Tag.CODE) {
-      path = cp.path;
-      c2 = CodeUtils.codeAt(path, code).some().x;
-    } else {
-      path = append(l, path);
-      c2 = cp.code;
-    }
-    if (!isSubList(path, pathShadow)) {
-      pathShadow = path;
-      setPath(pathShadow);
-    }
-    initNodeEditor(c2);
-  }
-
-  public void pathSelected(List<Label> p) {
-    notNull(p);
-    Optional<Code> oc = CodeUtils.codeAt(p, code);
-    if (oc.isNothing())
-      throw new RuntimeException("invalid path");
-    if (!isSubList(p, pathShadow)) {
-      pathShadow = p;
-      setPath(pathShadow);
-    }
-    path = p;
-    initNodeEditor(oc.some().x);
-  }
-
-  public void fieldReplaced(CodeOrPath cp, Label l) {
-    Code c = CodeUtils.codeAt(path, code).some().x;
-    notNull(cp, l);
-    if (cp.tag == Tag.PATH)
-      if (CodeUtils.codeAt(cp.path, code).isNothing())
-        throw new RuntimeException("invalid path");
-    c = new Code(c.tag, c.labels.put(l, cp));
-    onCodeEdited(c, append(l, path));
-  }
-
-  public void labelAliasChanged(Label label, String alias) {
-    notNull(label, alias);
-    Code c = CodeUtils.codeAt(path, code).some().x;
-    if (!containsKey(c.labels, label))
-      throw new RuntimeException("non-existent label");
-    CanonicalCode cc = new CanonicalCode(code, path);
-    codeLabelAliases.setAlias(cc, label, alias);
-    initNodeEditor(c);
-  }
-
   private void initNodeEditor(Code c) {
     nodeEditor =
-        new CodeNodeEditor(context, c, code, this, codeAliases, codes, path,
-            codeLabelAliases);
+        new CodeNodeEditor(context, c, code, new CodeNodeEditor.Listener() {
+
+          public void switchCodeOp() {
+            Code c = CodeUtils.codeAt(path, code).some().x;
+            switch (c.tag) {
+            case PRODUCT:
+              c = Code.newUnion(c.labels);
+              break;
+            case UNION:
+              c = Code.newProduct(c.labels);
+              break;
+            default:
+              throw Boom.boom();
+            }
+            onCodeEdited(c, null);
+          }
+
+          public void onDone() {
+            doneListener.onDone(code);
+          }
+
+          public void newField() {
+            Code c = CodeUtils.codeAt(path, code).some().x;
+            Map<Label, CodeOrPath> m = c.labels;
+            Label l = null;
+            do {
+              if (l != null)
+                Log.e(CodeEditor.class.getName(), "generated duplicate label");
+              l = new Label(Random.randomId());
+            } while (containsKey(m, l));
+            m = m.put(l, CodeOrPath.newCode(CodeUtils.unit));
+            c = new Code(c.tag, m);
+            onCodeEdited(c, null);
+          }
+
+          public void labelAliasChanged(Label label, String alias) {
+            notNull(label, alias);
+            Code c = CodeUtils.codeAt(path, code).some().x;
+            if (!containsKey(c.labels, label))
+              throw new RuntimeException("non-existent label");
+            CanonicalCode cc = new CanonicalCode(code, path);
+            codeLabelAliases.setAlias(cc, label, alias);
+            initNodeEditor(c);
+          }
+
+          public void fieldReplaced(CodeOrPath cp, Label l) {
+            Code c = CodeUtils.codeAt(path, code).some().x;
+            notNull(cp, l);
+            if (cp.tag == Tag.PATH)
+              if (CodeUtils.codeAt(cp.path, code).isNothing())
+                throw new RuntimeException("invalid path");
+            c = new Code(c.tag, c.labels.put(l, cp));
+            onCodeEdited(c, append(l, path));
+          }
+
+          public void deleteField(Label l) {
+            Code c = CodeUtils.codeAt(path, code).some().x;
+            Code c2 = new Code(c.tag, c.labels.delete(l));
+            if (CodeUtils.validCode(CodeUtils.replaceCodeAt(code, path,
+                CodeOrPath.newCode(c2))))
+              onCodeEdited(c2, append(l, path));
+          }
+
+          public void codeSelected(Label l) {
+            notNull(l);
+            Code c = CodeUtils.codeAt(path, code).some().x;
+            CodeOrPath cp = c.labels.get(l).some().x;
+            Code c2;
+            if (cp.tag != CodeOrPath.Tag.CODE) {
+              path = cp.path;
+              c2 = CodeUtils.codeAt(path, code).some().x;
+            } else {
+              path = append(l, path);
+              c2 = cp.code;
+            }
+            if (!isSubList(path, pathShadow)) {
+              pathShadow = path;
+              setPath(pathShadow);
+            }
+            initNodeEditor(c2);
+          }
+        }, codeAliases, codes, path, codeLabelAliases);
     ViewGroup cont = (ViewGroup) findViewById(R.id.container_code_editor);
     cont.removeAllViews();
     cont.addView(nodeEditor);
-  }
-
-  public void onDone() {
-    doneListener.onDone(code);
   }
 
 }
