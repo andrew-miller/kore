@@ -152,8 +152,8 @@ public class MainActivity extends FragmentActivity {
     if (codeEditorState != null) {
       newCodeEditorDoneListener();
       codeEditor =
-          new CodeEditor(this, codeEditorState, codeLabelAliasMap,
-              codeEditorDoneListener);
+          new CodeEditor(this, codeEditorState, codeLabelAliasMap, codeAliases,
+              recentCodes, codeEditorDoneListener);
       mainLayout.setVisibility(View.GONE);
       codeEditorContainer.addView(codeEditor);
       codeEditorContainer.setVisibility(View.VISIBLE);

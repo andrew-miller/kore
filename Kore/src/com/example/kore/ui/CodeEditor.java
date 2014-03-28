@@ -3,14 +3,12 @@ package com.example.kore.ui;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.isSubList;
 import static com.example.kore.utils.ListUtils.iter;
-import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.MapUtils.containsKey;
 import static com.example.kore.utils.Null.notNull;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -31,19 +29,16 @@ import com.example.kore.utils.Pair;
 import com.example.kore.utils.Random;
 
 public class CodeEditor extends FrameLayout {
-
   private static final String STATE_CODE = "code";
   private static final String STATE_PATH = "path";
-  private static final String STATE_CODE_ALIASES = "code_aliases";
   private static final String STATE_PATH_SHADOW = "path_shadow";
-  private static final String STATE_CODES = "codes";
 
   private CodeNodeEditor nodeEditor;
   private Code code = CodeUtils.unit;
-  private List<Label> path = nil();
+  private List<Label> path;
   private final CodeLabelAliasMap codeLabelAliases;
   private final Map<CanonicalCode, String> codeAliases;
-  private List<Label> pathShadow = nil();
+  private List<Label> pathShadow;
   private final List<Code> codes;
   private final Context context;
   private final ViewGroup pathContainer;
@@ -56,7 +51,7 @@ public class CodeEditor extends FrameLayout {
   public CodeEditor(Context context, Code code,
       CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, List<Code> codes,
-      DoneListener doneListener) {
+      DoneListener doneListener, List<Label> path, List<Label> pathShadow) {
     super(context);
     notNull(code, codeLabelAliases, codeAliases, codes, doneListener);
     this.context = context;
@@ -65,6 +60,8 @@ public class CodeEditor extends FrameLayout {
     this.codeAliases = codeAliases;
     this.codes = codes;
     this.doneListener = doneListener;
+    this.path = path;
+    this.pathShadow = pathShadow;
     LayoutInflater.from(context).inflate(R.layout.code_editor, this, true);
     pathContainer = (ViewGroup) findViewById(R.id.container_path);
 
@@ -72,33 +69,28 @@ public class CodeEditor extends FrameLayout {
     setPath(pathShadow);
   }
 
-  public CodeEditor(Context context, Bundle b,
-      CodeLabelAliasMap codeLabelAliases, DoneListener doneListener) {
-    super(context);
-    notNull(doneListener, b);
-    this.context = context;
-    code = (Code) b.get(STATE_CODE);
-    path = (List<Label>) b.get(STATE_PATH);
-    this.codeLabelAliases = codeLabelAliases;
-    codeAliases = (Map<CanonicalCode, String>) b.get(STATE_CODE_ALIASES);
-    pathShadow = (List<Label>) b.get(STATE_PATH_SHADOW);
-    codes = (List<Code>) b.get(STATE_CODES);
-    this.doneListener = doneListener;
-    View v =
-        LayoutInflater.from(context).inflate(R.layout.code_editor, this, true);
-    pathContainer = (ViewGroup) findViewById(R.id.container_path);
+  public CodeEditor(Context context, Code code,
+      CodeLabelAliasMap codeLabelAliases,
+      Map<CanonicalCode, String> codeAliases, List<Code> codes,
+      DoneListener doneListener) {
+    this(context, code, codeLabelAliases, codeAliases, codes, doneListener,
+        ListUtils.<Label> nil(), ListUtils.<Label> nil());
+  }
 
-    initNodeEditor(CodeUtils.codeAt(path, code).some().x);
-    setPath(pathShadow);
+  public CodeEditor(Context context, Bundle b,
+      CodeLabelAliasMap codeLabelAliases,
+      Map<CanonicalCode, String> codeAliases, List<Code> codes,
+      DoneListener doneListener) {
+    this(context, (Code) b.get(STATE_CODE), codeLabelAliases, codeAliases,
+        codes, doneListener, (List<Label>) b.get(STATE_PATH), (List<Label>) b
+            .get(STATE_PATH_SHADOW));
   }
 
   public Bundle getState() {
     Bundle b = new Bundle();
     b.putSerializable(STATE_CODE, code);
     b.putSerializable(STATE_PATH, path);
-    b.putSerializable(STATE_CODE_ALIASES, codeAliases);
     b.putSerializable(STATE_PATH_SHADOW, pathShadow);
-    b.putSerializable(STATE_CODES, codes);
     return b;
   }
 
