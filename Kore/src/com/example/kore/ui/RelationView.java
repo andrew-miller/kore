@@ -13,7 +13,6 @@ import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.ListUtils.length;
 import static com.example.kore.utils.OptionalUtils.some;
-import static com.example.kore.utils.Pair.pair;
 import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
@@ -56,7 +55,7 @@ public final class RelationView {
     View rv;
     Pair<Integer, Integer> cp;
     if (er.isY()) {
-      cp = pair(0xFF000000, 0xFF444444); // TODO unhardcode
+      cp = rvc.referenceColors;
       rv = RelationRefView.make(context, er.y());
     } else {
       Optional<Abstraction> oea = enclosingAbstraction(path, root);

@@ -54,12 +54,13 @@ public class RelationPath {
       Listener listener, Relation root, List<Relation> relations,
       CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalRelation, String> relationAliases,
-      List<Either3<Label, Integer, Unit>> path) {
+      List<Either3<Label, Integer, Unit>> path, int referenceColor) {
     View v = LayoutInflater.from(context).inflate(R.layout.path, null);
     ViewGroup vg = (ViewGroup) v.findViewById(R.id.layout_path);
     make(context, rc, listener, root, relations, codeLabelAliases,
         relationAliases, ListUtils.<Either3<Label, Integer, Unit>> nil(), path,
-        Either.<Relation, List<Either3<Label, Integer, Unit>>> x(root), vg);
+        Either.<Relation, List<Either3<Label, Integer, Unit>>> x(root), vg,
+        referenceColor);
     return v;
   }
 
@@ -70,11 +71,11 @@ public class RelationPath {
       final List<Either3<Label, Integer, Unit>> before,
       final List<Either3<Label, Integer, Unit>> after,
       final Either<Relation, List<Either3<Label, Integer, Unit>>> rp,
-      ViewGroup vg) {
+      ViewGroup vg, int referenceColor) {
     final Relation r = rp.isY() ? relationAt(rp.y(), root).some().x : rp.x();
     final Button b = new Button(context);
-    b.setBackgroundColor(rp.isY() ? 0xFF000000 // TODO unhardcode
-        : rc.m.get(rp.x().tag).some().x.x);
+    b.setBackgroundColor(rp.isY() ? referenceColor : rc.m.get(rp.x().tag)
+        .some().x.x);
     b.setWidth(0);
     b.setHeight(LayoutParams.MATCH_PARENT);
     b.setOnClickListener(new OnClickListener() {
@@ -163,7 +164,7 @@ public class RelationPath {
       vg.addView(b2);
       make(context, rc, listener, root, relations, codeLabelAliases,
           relationAliases, append(e, before), after.cons().tail,
-          subRelationOrPath(rp.x(), e).some().x, vg);
+          subRelationOrPath(rp.x(), e).some().x, vg, referenceColor);
     }
   }
 }

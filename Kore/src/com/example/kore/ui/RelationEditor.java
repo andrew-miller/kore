@@ -70,8 +70,10 @@ public class RelationEditor extends FrameLayout {
 
   private void setPath(List<Either3<Label, Integer, Unit>> p) {
     pathContainer.removeAllViews();
-    pathContainer.addView(RelationPath.make(context,
-        relationViewColors.relationcolors, new RelationPath.Listener() {
+    pathContainer.addView(RelationPath.make(
+        context,
+        relationViewColors.relationcolors,
+        new RelationPath.Listener() {
           public void selectPath(List<Either3<Label, Integer, Unit>> p) {
             RelationEditor.this.selectPath(p);
           }
@@ -94,7 +96,8 @@ public class RelationEditor extends FrameLayout {
 
           public void changeRelationType(Tag y) {
           }
-        }, relation, relations, codeLabelAliases, null, p));
+        }, relation, relations, codeLabelAliases, null, p,
+        relationViewColors.referenceColors.x));
   }
 
   public void changeRelationType(Relation.Tag t) {

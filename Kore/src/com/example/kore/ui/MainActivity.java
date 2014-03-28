@@ -53,7 +53,8 @@ public class MainActivity extends FragmentActivity {
       .put(Tag.UNION, pair(0xFF00AA00, 0xFF00FF00)));
 
   private final static RelationViewColors relationViewColors =
-      new RelationViewColors(relationColors, 0xFFCCCCCC);
+      new RelationViewColors(relationColors, 0xFFCCCCCC, pair(0xFF000000,
+          0xFF444444));
 
   private HashSet<Code> codes = new HashSet<Code>();
   private List<Code> recentCodes = nil();
