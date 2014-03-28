@@ -170,7 +170,6 @@ public class CodeEditor extends FrameLayout {
   private void initNodeEditor(Code c) {
     nodeEditor =
         new CodeNodeEditor(context, c, code, new CodeNodeEditor.Listener() {
-
           public void switchCodeOp() {
             Code c = CodeUtils.codeAt(path, code).some().x;
             switch (c.tag) {

@@ -99,14 +99,13 @@ public class UIUtils {
     });
     Map<Label, String> las =
         codeLabelAliases.getAliases(new CanonicalCode(root, path));
-    if (cp.tag == CodeOrPath.Tag.CODE) {
+    if (cp.tag == CodeOrPath.Tag.CODE)
       for (Entry<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
         Optional<String> ls2 = las.get(e.k);
         addCodeToMenu(m, root, append(e.k, path), e.v,
             ls2.isNothing() ? e.k.label : ls2.some().x, space + "  ",
             codeLabelAliases, codeAliases, f);
       }
-    }
   }
 
   /**

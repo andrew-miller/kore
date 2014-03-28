@@ -51,7 +51,6 @@ public class MainActivity extends FragmentActivity {
       .put(Tag.PRODUCT, pair(0xFF00AAAA, 0xFF00FFFF))
       .put(Tag.PROJECTION, pair(0xFFAA0000, 0xFFFF0000))
       .put(Tag.UNION, pair(0xFF00AA00, 0xFF00FF00)));
-
   private final static RelationViewColors relationViewColors =
       new RelationViewColors(relationColors, 0xFFCCCCCC, pair(0xFF000000,
           0xFF444444));
