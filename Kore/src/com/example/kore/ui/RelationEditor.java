@@ -156,12 +156,6 @@ public class RelationEditor extends FrameLayout {
                 setPath(path);
               }
 
-              public void changeRelationType(Tag t) {
-                relation = RelationUtils.changeRelationType(relation, path, t);
-                setPath(path);
-                initNodeEditor();
-              }
-
               public void changeDomain(Code d2) {
                 relation = RelationUtils.changeDomain(relation, path, d2);
                 initNodeEditor();

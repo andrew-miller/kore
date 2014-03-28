@@ -35,8 +35,6 @@ import com.example.kore.utils.Unit;
 
 public class RelationNodeEditor extends FrameLayout {
   interface Listener {
-    void changeRelationType(Relation.Tag t);
-
     void selectRelation(List<Either3<Label, Integer, Unit>> path);
 
     void onDone();
