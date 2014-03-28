@@ -12,6 +12,7 @@ import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.cons;
 import static com.example.kore.utils.ListUtils.drop;
 import static com.example.kore.utils.ListUtils.fromArray;
+import static com.example.kore.utils.ListUtils.insert;
 import static com.example.kore.utils.ListUtils.isSubList;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.length;
@@ -32,6 +33,7 @@ import org.jgrapht.graph.DirectedMultigraph;
 
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
+import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Abstraction;
@@ -573,5 +575,242 @@ public class RelationUtils {
           final F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>> f,
           Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
     return er.isY() ? y(f.f(er.y())) : x(mapPaths(er.x(), f));
+  }
+
+  public static Relation extendComposition(Relation relation,
+      List<Either3<Label, Integer, Unit>> path, final Integer i, Relation r2) {
+    if (i < 0)
+      throw new RuntimeException("index can't be negative");
+    Either<Relation, List<Either3<Label, Integer, Unit>>> er =
+        relationOrPathAt(path, relation);
+    Relation r1 = er.isY() ? relationAt(er.y(), relation).some().x : er.x();
+    Code d = domain(r1);
+    Code c = codomain(r1);
+
+    Composition comp;
+    Relation remappedRelation;
+    if (!er.isY() && er.x().tag == Relation.Tag.COMPOSITION) {
+      comp = new Composition(insert(er.x().composition().l, i, x(r2)), d, c);
+      remappedRelation = bumpIndexes(relation, i, path);
+    } else {
+      switch (i) {
+      case 0:
+        comp = new Composition(fromArray(x(r2), er), d, c);
+        break;
+      case 1:
+        comp = new Composition(fromArray(er, x(r2)), d, c);
+        break;
+      default:
+        throw new RuntimeException("invalid index");
+      }
+      remappedRelation = insertIndexes(relation, i, path);
+    }
+    return adaptComposition(
+        replaceRelationOrPathAt(remappedRelation, path,
+            x(Relation.composition(comp))), path);
+  }
+
+  public static Relation extendUnion(Relation relation,
+      List<Either3<Label, Integer, Unit>> path, final Integer i, Relation r2) {
+    if (i < 0)
+      throw new RuntimeException("index can't be negative");
+    Either<Relation, List<Either3<Label, Integer, Unit>>> er =
+        relationOrPathAt(path, relation);
+    Relation r1 = er.isY() ? relationAt(er.y(), relation).some().x : er.x();
+    Code d = domain(r1);
+    Code c = codomain(r1);
+    Code d2 = domain(r2);
+    Code c2 = codomain(r2);
+    if (!equal(d, d2)) {
+      Relation t = dummy(d, d2);
+      if (r2.tag == Relation.Tag.COMPOSITION)
+        r2 =
+            Relation.composition(new Composition(
+                cons(x(t), r2.composition().l), d, c2));
+      else
+        r2 =
+            Relation
+                .composition(new Composition(fromArray(x(t), x(r2)), d, c2));
+    }
+    if (!equal(c, c2)) {
+      Relation t = dummy(c2, c);
+      if (r2.tag == Relation.Tag.COMPOSITION)
+        r2 =
+            Relation.composition(new Composition(append(x(t),
+                r2.composition().l), d, c));
+      else
+        r2 =
+            Relation.composition(new Composition(fromArray(x(r2), x(t)), d, c));
+    }
+    Union union;
+    Relation remappedRelation;
+    if (!er.isY() && er.x().tag == Relation.Tag.UNION) {
+      union =
+          new Union(insert(er.x().union().l, i, x(r2)), er.x().union().i, er
+              .x().union().o);
+      remappedRelation = bumpIndexes(relation, i, path);
+    } else {
+      switch (i) {
+      case 0:
+        union = new Union(fromArray(x(r2), er), d, c);
+        break;
+      case 1:
+        union = new Union(fromArray(er, x(r2)), d, c);
+        break;
+      default:
+        throw new RuntimeException("invalid index");
+      }
+      remappedRelation = insertIndexes(relation, i, path);
+    }
+    return replaceRelationOrPathAt(remappedRelation, path,
+        x(Relation.union(union)));
+  }
+
+  private static Relation bumpIndexes(Relation r, final Integer i,
+      final List<Either3<Label, Integer, Unit>> path) {
+    return mapPaths(
+        r,
+        new F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>>() {
+          public List<Either3<Label, Integer, Unit>> f(
+              List<Either3<Label, Integer, Unit>> p) {
+            if (isSubList(path, p)) {
+              List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
+              if (!l.isEmpty() && l.cons().x.y() >= i)
+                return append(
+                    path,
+                    cons(Either3.<Label, Integer, Unit> y(l.cons().x.y() + 1),
+                        l.cons().tail));
+            }
+            return p;
+          }
+        });
+  }
+
+  private static Relation insertIndexes(Relation r, final Integer i,
+      final List<Either3<Label, Integer, Unit>> path) {
+    return mapPaths(
+        r,
+        new F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>>() {
+          public List<Either3<Label, Integer, Unit>> f(
+              List<Either3<Label, Integer, Unit>> p) {
+            if (isSubList(path, p)) {
+              List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
+              if (!l.isEmpty())
+                return append(path,
+                    cons(Either3.<Label, Integer, Unit> y((i + 1) % 2), l));
+            }
+            return p;
+          }
+        });
+  }
+
+  public static Relation changeRelationType(Relation relation,
+      List<Either3<Label, Integer, Unit>> path, Relation.Tag t) {
+    Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
+        relationOrPathAt(path, relation);
+    Relation r = rp.isY() ? relationAt(rp.y(), relation).some().x : rp.x();
+    Code d = domain(r);
+    Code c = codomain(r);
+    Relation r2;
+    switch (t) {
+    case ABSTRACTION:
+      r2 =
+          Relation.abstraction(new Abstraction(emptyPattern, x(dummy(unit, c)),
+              d, c));
+      break;
+    case COMPOSITION:
+      r2 = Relation.composition(new Composition(nil, d, c));
+      break;
+    case PRODUCT:
+      if (!equal(d, unit))
+        throw new RuntimeException("cannot make product with non-unit domain");
+      Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> m =
+          Map.empty();
+      for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet()))
+        m = m.put(e.k, x(dummy(unit, reroot(c, fromArray(e.k)))));
+      r2 = Relation.product(new Product(m, c));
+      break;
+    case LABEL:
+      if (!equal(d, unit))
+        throw new RuntimeException("cannot make label with non-unit domain");
+      notEmpty: {
+        for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
+          r2 =
+              Relation.label(new Label_(e.k, x(dummy(unit,
+                  reroot(c, fromArray(e.k)))), c));
+          break notEmpty;
+        }
+        r2 = dummy(d, c);
+      }
+      break;
+    case PROJECTION:
+      Optional<Abstraction> oa = enclosingAbstraction(path, relation);
+      if (oa.isNothing())
+        throw new RuntimeException(
+            "attempt to make projection that isn't contained within an abstraction");
+      Code arg = oa.some().x.i;
+      Optional<Projection> or2 = projection(arg, c);
+      r2 = or2.isNothing() ? dummy(d, c) : Relation.projection(or2.some().x);
+      break;
+    case UNION:
+      r2 = dummy(d, c);
+      break;
+    default:
+      throw boom();
+    }
+    return replaceRelationOrPathAt(relation, path, x(r2));
+  }
+
+  private static List<Either<Relation, List<Either3<Label, Integer, Unit>>>> nil =
+      nil();
+
+  public static Relation changeCodomain(Relation relation,
+      List<Either3<Label, Integer, Unit>> path, Code c2) {
+    Relation r = relationAt(path, relation).some().x;
+    Composition comp;
+    Code d = domain(r);
+    Code c = codomain(r);
+    Relation t = dummy(c, c2);
+    switch (r.tag) {
+    case COMPOSITION:
+      comp = new Composition(append(x(t), r.composition().l), d, c2);
+      break;
+    case ABSTRACTION:
+    case LABEL:
+    case PRODUCT:
+    case PROJECTION:
+    case UNION:
+      comp = new Composition(cons(x(r), cons(x(t), nil)), d, c2);
+      break;
+    default:
+      throw boom();
+    }
+    return replaceRelationOrPathAt(relation, path,
+        x(Relation.composition(comp)));
+  }
+
+  public static Relation changeDomain(Relation relation,
+      List<Either3<Label, Integer, Unit>> path, Code d2) {
+    Relation r = relationAt(path, relation).some().x;
+    Composition comp;
+    Code d = domain(r);
+    Code c = codomain(r);
+    Relation t = dummy(d2, d);
+    switch (r.tag) {
+    case COMPOSITION:
+      comp = new Composition(cons(x(t), r.composition().l), d2, c);
+      break;
+    case ABSTRACTION:
+    case LABEL:
+    case PRODUCT:
+    case PROJECTION:
+    case UNION:
+      comp = new Composition(cons(x(t), cons(x(r), nil)), d2, c);
+      break;
+    default:
+      throw boom();
+    }
+    return replaceRelationOrPathAt(relation, path,
+        x(Relation.composition(comp)));
   }
 }
