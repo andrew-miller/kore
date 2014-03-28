@@ -94,7 +94,10 @@ public class RelationEditor extends FrameLayout {
             setPath(path);
           }
 
-          public void changeRelationType(Tag y) {
+          public void changeRelationType(Tag t) {
+            relation = RelationUtils.changeRelationType(relation, path, t);
+            setPath(path);
+            initNodeEditor();
           }
         }, relation, relations, codeLabelAliases, null, p,
         relationViewColors.referenceColors.x));
@@ -154,6 +157,9 @@ public class RelationEditor extends FrameLayout {
               }
 
               public void changeRelationType(Tag t) {
+                relation = RelationUtils.changeRelationType(relation, path, t);
+                setPath(path);
+                initNodeEditor();
               }
 
               public void changeDomain(Code d2) {
