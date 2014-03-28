@@ -9,9 +9,9 @@ import static com.example.kore.ui.RelationUtils.replaceRelationOrPathAt;
 import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.fromArray;
-import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -26,14 +26,17 @@ import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.List;
+import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Unit;
 
 public class RelationEditor extends FrameLayout {
+  private static final String STATE_PATH = "path";
+  private static final String STATE_RELATION = "relation";
 
   private RelationNodeEditor nodeEditor;
   private Relation relation;
-  private List<Either3<Label, Integer, Unit>> path = nil();
+  private List<Either3<Label, Integer, Unit>> path;
   private final DoneListener doneListener;
   private final Context context;
   private final ViewGroup pathContainer;
@@ -47,13 +50,15 @@ public class RelationEditor extends FrameLayout {
     public void onDone(Relation r);
   }
 
-  public RelationEditor(Context context, Relation relation,
+  private RelationEditor(Context context, Relation relation,
       DoneListener doneListener, final List<Code> codes,
       final CodeLabelAliasMap codeLabelAliases,
       final Map<CanonicalCode, String> codeAliases, List<Relation> relations,
-      RelationViewColors relationViewColors) {
+      RelationViewColors relationViewColors,
+      List<Either3<Label, Integer, Unit>> path) {
     super(context);
     notNull(relation, doneListener, relationViewColors);
+    this.path = path;
     this.context = context;
     this.relation = relation;
     this.doneListener = doneListener;
@@ -66,6 +71,25 @@ public class RelationEditor extends FrameLayout {
     pathContainer = (ViewGroup) findViewById(R.id.container_path);
     initNodeEditor();
     setPath(path);
+  }
+
+  public RelationEditor(Context context, Relation relation,
+      DoneListener doneListener, final List<Code> codes,
+      final CodeLabelAliasMap codeLabelAliases,
+      final Map<CanonicalCode, String> codeAliases, List<Relation> relations,
+      RelationViewColors relationViewColors) {
+    this(context, relation, doneListener, codes, codeLabelAliases, codeAliases,
+        relations, relationViewColors, ListUtils
+            .<Either3<Label, Integer, Unit>> nil());
+  }
+
+  public RelationEditor(Context context, DoneListener doneListener,
+      final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
+      final Map<CanonicalCode, String> codeAliases, List<Relation> relations,
+      RelationViewColors relationViewColors, Bundle b) {
+    this(context, (Relation) b.getSerializable(STATE_RELATION), doneListener,
+        codes, codeLabelAliases, codeAliases, relations, relationViewColors,
+        (List<Either3<Label, Integer, Unit>>) b.getSerializable(STATE_PATH));
   }
 
   private void setPath(List<Either3<Label, Integer, Unit>> p) {
@@ -176,6 +200,13 @@ public class RelationEditor extends FrameLayout {
   private static Either<Relation, List<Either3<Label, Integer, Unit>>> x(
       Relation r) {
     return x(r);
+  }
+
+  public Bundle getState() {
+    Bundle b = new Bundle();
+    b.putSerializable(STATE_PATH, path);
+    b.putSerializable(STATE_RELATION, relation);
+    return b;
   }
 
 }

@@ -42,6 +42,7 @@ public class MainActivity extends FragmentActivity {
   private static final String STATE_CODE_ALIASES = "code_aliases";
   private static final String STATE_RELATION_ALIASES = "relation_aliases";
   private static final String STATE_CODE_EDITOR = "code_editor";
+  private static final String STATE_RELATION_EDITOR = "relation_editor";
 
   private final static RelationColors relationColors = new RelationColors(Map
       .<Tag, Pair<Integer, Integer>> empty()
@@ -129,6 +130,7 @@ public class MainActivity extends FragmentActivity {
         });
 
     Bundle codeEditorState = null;
+    Bundle relationEditorState = null;
     if (b != null) {
       codes = (HashSet<Code>) b.get(STATE_CODES);
       recentCodes = (List<Code>) b.get(STATE_RECENT_CODES);
@@ -141,6 +143,7 @@ public class MainActivity extends FragmentActivity {
       relationAliases =
           (Map<CanonicalRelation, String>) b.get(STATE_RELATION_ALIASES);
       codeEditorState = b.getBundle(STATE_CODE_EDITOR);
+      relationEditorState = b.getBundle(STATE_RELATION_EDITOR);
     }
 
     initRecentCodes();
@@ -154,6 +157,17 @@ public class MainActivity extends FragmentActivity {
       mainLayout.setVisibility(View.GONE);
       codeEditorContainer.addView(codeEditor);
       codeEditorContainer.setVisibility(View.VISIBLE);
+    }
+
+    if (relationEditorState != null) {
+      newRelationEditorDoneListener();
+      relationEditor =
+          new RelationEditor(this, relationEditorDoneListener, recentCodes,
+              codeLabelAliasMap, codeAliases, recentRelations,
+              relationViewColors, relationEditorState);
+      mainLayout.setVisibility(View.GONE);
+      relationEditorContainer.addView(relationEditor);
+      relationEditorContainer.setVisibility(View.VISIBLE);
     }
   }
 
@@ -169,6 +183,8 @@ public class MainActivity extends FragmentActivity {
     b.putSerializable(STATE_RELATION_ALIASES, relationAliases);
     if (codeEditor != null)
       b.putBundle(STATE_CODE_EDITOR, codeEditor.getState());
+    if (relationEditor != null)
+      b.putBundle(STATE_RELATION_EDITOR, relationEditor.getState());
   }
 
   private void initRecentCodes() {
