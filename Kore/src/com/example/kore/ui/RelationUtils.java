@@ -425,7 +425,7 @@ public class RelationUtils {
 
   private static Either<Relation, List<Either3<Label, Integer, Unit>>> x(
       Relation r) {
-    return Either.<Relation, List<Either3<Label, Integer, Unit>>> x(r);
+    return Either.x(r);
   }
 
   private static Either<Relation, List<Either3<Label, Integer, Unit>>> y(

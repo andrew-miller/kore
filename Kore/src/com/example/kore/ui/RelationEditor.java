@@ -199,7 +199,7 @@ public class RelationEditor extends FrameLayout {
 
   private static Either<Relation, List<Either3<Label, Integer, Unit>>> x(
       Relation r) {
-    return x(r);
+    return Either.x(r);
   }
 
   public Bundle getState() {
