@@ -65,8 +65,6 @@ public class UIUtils {
               .getSystemService(Context.INPUT_METHOD_SERVICE))
               .hideSoftInputFromWindow(t.getWindowToken(), 0);
           vg.removeAllViews();
-          // WTF if you change the above line to this, it messes up:
-          // fl.removeView(v);
           vg.addView(v);
         }
       }
