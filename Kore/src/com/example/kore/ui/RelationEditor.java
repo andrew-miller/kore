@@ -18,6 +18,7 @@ import android.widget.FrameLayout;
 
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
+import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
@@ -43,6 +44,7 @@ public class RelationEditor extends FrameLayout {
   private final List<Code> codes;
   private final CodeLabelAliasMap codeLabelAliases;
   private final Map<CanonicalCode, String> codeAliases;
+  private final Map<CanonicalRelation, String> relationAliases;
   private final RelationViewColors relationViewColors;
   private final List<Relation> relations;
 
@@ -53,7 +55,9 @@ public class RelationEditor extends FrameLayout {
   private RelationEditor(Context context, Relation relation,
       DoneListener doneListener, final List<Code> codes,
       final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalCode, String> codeAliases, List<Relation> relations,
+      final Map<CanonicalCode, String> codeAliases,
+      final Map<CanonicalRelation, String> relationAliases,
+      List<Relation> relations,
       RelationViewColors relationViewColors,
       List<Either3<Label, Integer, Unit>> path) {
     super(context);
@@ -65,6 +69,7 @@ public class RelationEditor extends FrameLayout {
     this.codes = codes;
     this.codeLabelAliases = codeLabelAliases;
     this.codeAliases = codeAliases;
+    this.relationAliases = relationAliases;
     this.relationViewColors = relationViewColors;
     this.relations = relations;
     LayoutInflater.from(context).inflate(R.layout.relation_editor, this, true);
@@ -76,19 +81,23 @@ public class RelationEditor extends FrameLayout {
   public RelationEditor(Context context, Relation relation,
       DoneListener doneListener, final List<Code> codes,
       final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalCode, String> codeAliases, List<Relation> relations,
+      final Map<CanonicalCode, String> codeAliases,
+      final Map<CanonicalRelation, String> relationAliases,
+      List<Relation> relations,
       RelationViewColors relationViewColors) {
-    this(context, relation, doneListener, codes, codeLabelAliases, codeAliases,
+    this(context, relation, doneListener, codes, codeLabelAliases, codeAliases, relationAliases,
         relations, relationViewColors, ListUtils
             .<Either3<Label, Integer, Unit>> nil());
   }
 
   public RelationEditor(Context context, DoneListener doneListener,
       final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalCode, String> codeAliases, List<Relation> relations,
+      final Map<CanonicalCode, String> codeAliases,
+      final Map<CanonicalRelation, String> relationAliases,
+      List<Relation> relations,
       RelationViewColors relationViewColors, Bundle b) {
     this(context, (Relation) b.getSerializable(STATE_RELATION), doneListener,
-        codes, codeLabelAliases, codeAliases, relations, relationViewColors,
+        codes, codeLabelAliases, codeAliases, relationAliases, relations, relationViewColors,
         (List<Either3<Label, Integer, Unit>>) b.getSerializable(STATE_PATH));
   }
 
@@ -123,7 +132,7 @@ public class RelationEditor extends FrameLayout {
             setPath(path);
             initNodeEditor();
           }
-        }, relation, relations, codeLabelAliases, null, p,
+        }, relation, relations, codeLabelAliases, relationAliases, p,
         relationViewColors.referenceColors.x));
   }
 
