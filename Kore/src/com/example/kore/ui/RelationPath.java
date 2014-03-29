@@ -64,7 +64,7 @@ public class RelationPath {
     return v;
   }
 
-  public static void make(final Context context, RelationColors rc,
+  private static void make(final Context context, RelationColors rc,
       final Listener listener, final Relation root,
       final List<Relation> relations, final CodeLabelAliasMap codeLabelAliases,
       final Map<CanonicalRelation, String> relationAliases,
