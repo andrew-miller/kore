@@ -129,12 +129,15 @@ public class UIUtils {
     Optional<Abstraction> ea =
         rp.isY() ? OptionalUtils.<Abstraction> nothing()
             : enclosingAbstraction(path, root);
+    Optional<String> ra =
+        relationAliases.get(new CanonicalRelation(root, path));
     m.add(
         space
             + ls.substring(0, Math.min(10, ls.length()))
             + " "
-            + renderRelation(ea.isNothing() ? OptionalUtils.<Code> nothing()
-                : some(ea.some().x.i), rp, codeLabelAliases))
+            + (ra.isNothing() ? renderRelation(ea.isNothing()
+                ? OptionalUtils.<Code> nothing()
+                : some(ea.some().x.i), rp, codeLabelAliases) : ra.some().x))
         .setOnMenuItemClickListener(new OnMenuItemClickListener() {
           public boolean onMenuItemClick(MenuItem _) {
             f.f(path);
