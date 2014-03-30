@@ -1,14 +1,10 @@
 package com.example.kore.utils;
 
-import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.ListUtils.append;
-import static com.example.kore.utils.ListUtils.iter;
-import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.MapUtils.containsKey;
 import static com.example.kore.utils.MapUtils.values;
 import static com.example.kore.utils.OptionalUtils.nothing;
 import static com.example.kore.utils.OptionalUtils.some;
-import static com.example.kore.utils.Pair.pair;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -27,7 +23,13 @@ import com.example.kore.codes.Code.Tag;
 import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.ui.CodeLabelAliasMap;
+import com.example.kore.ui.LinkTree;
+import static com.example.kore.utils.Boom.boom;
+import static com.example.kore.utils.ListUtils.cons;
+import static com.example.kore.utils.ListUtils.iter;
+import static com.example.kore.utils.ListUtils.nil;
 import com.example.kore.utils.Map.Entry;
+import static com.example.kore.utils.Pair.pair;
 
 public final class CodeUtils {
   private static String className = CodeUtils.class.getName();
@@ -294,19 +296,7 @@ public final class CodeUtils {
    * <tt>c2</tt>, then <tt>canonicalCode(c1).equals(canonicalCode(c2))</tt>
    */
   public static Code canonicalCode(Code c, List<Label> path) {
-    Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
-        codeToGraph(c);
-    DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g = p.x;
-    Identity<Tag> root = p.y;
-    Set<Pair<Identity<Tag>, Label>> spanningTreeEdges =
-        new HashSet<Pair<Identity<Tag>, Label>>();
-    Ref<Map<Identity<Tag>, List<Label>>> m =
-        new Ref<Map<Identity<Tag>, List<Label>>>(
-            Map.<Identity<Tag>, List<Label>> empty());
-    Identity<Tag> r = followPath(path, g, root);
-    buildCanonicalSpanningTreeOfCodeGraph(g, r, m, ListUtils.<Label> nil(),
-        spanningTreeEdges);
-    return buildCodeFromSpanningTree(g, m.get(), r, spanningTreeEdges);
+    return linkTreeToCode(LinkTreeUtils.canonicalLinkTree(linkTree(c), path, new LabelComparer()));
   }
 
   /**
@@ -479,7 +469,7 @@ public final class CodeUtils {
    * map cyclic path over the graph represented by this <tt>Code</tt> (rooted at
    * this <tt>Code</tt>) to a simple path from this <tt>Code</tt> to another
    * <tt>Code</tt>
-   * 
+   *
    * @param Code
    *          a <tt>Code</tt> that <tt>validCode</tt> maps to <tt>true</tt>
    */
@@ -511,4 +501,58 @@ public final class CodeUtils {
       throw boom();
     }
   }
+
+  public static LinkTree<Label, Code.Tag> linkTree(final Code c) {
+    return new LinkTree<Label, Code.Tag>() {
+      public List<Pair<Label, Either<LinkTree<Label, Tag>, List<Label>>>>
+          edges() {
+        List<Pair<Label, Either<LinkTree<Label, Tag>, List<Label>>>> l = nil();
+        for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet()))
+          switch (e.v.tag) {
+          case CODE:
+            l =
+                cons(
+                    pair(
+                        e.k,
+                        Either
+                            .<LinkTree<Label, Code.Tag>, List<Label>> x(linkTree(e.v.code))),
+                    l);
+            break;
+          case PATH:
+            l =
+                cons(
+                    pair(e.k, Either
+                        .<LinkTree<Label, Code.Tag>, List<Label>> y(e.v.path)),
+                    l);
+            break;
+          default:
+            throw boom();
+          }
+        return l;
+      }
+
+      public Tag vertex() {
+        return c.tag;
+      }
+
+    };
+  }
+
+  private static Code linkTreeToCode(LinkTree<Label, Tag> lt) {
+    Map<Label,CodeOrPath> m = Map.empty();
+    for (Pair<Label, Either<LinkTree<Label, Tag>, List<Label>>> e :
+          iter(lt.edges()))
+      m = m.put(e.x, e.y.isY()
+          ? CodeOrPath.newPath(e.y.y())
+          : CodeOrPath.newCode(linkTreeToCode(e.y.x())));
+    switch (lt.vertex()) {
+      case PRODUCT:
+        return Code.newProduct(m);
+      case UNION:
+        return Code.newUnion(m);
+        default:
+          throw boom();
+    }
+  }
+
 }
