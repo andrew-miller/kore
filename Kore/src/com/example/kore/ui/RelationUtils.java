@@ -846,7 +846,7 @@ public class RelationUtils {
         }
         case LABEL:
           return fromArray(pair(
-              Either3.<Label, Integer, Unit> x(r.label().label),
+              Either3.<Label, Integer, Unit> z(unit()),
               f(r.label().r)));
         case PRODUCT: {
           List<Pair<Either3<Label, Integer, Unit>, Either<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>>>> l =
@@ -896,7 +896,7 @@ public class RelationUtils {
           return RVertex.composition(new RVertex.Composition(r.composition().i,
               r.composition().o));
         case LABEL:
-          return RVertex.label(new RVertex.Label(r.label().o));
+          return RVertex.label(new RVertex.Label(r.label().label, r.label().o));
         case PRODUCT:
           return RVertex.product(new RVertex.Product(r.product().o));
         case PROJECTION:
@@ -951,8 +951,7 @@ public class RelationUtils {
       case LABEL:
         if (!lt.edges().cons().tail.isEmpty()) throw boom();
         RVertex.Label l = lt.vertex().label();
-        return Relation.label(new Label_(lt.edges().cons().x.x.x(),
-            f(lt.edges().cons().x.y), l.o));
+        return Relation.label(new Label_(l.l, f(lt.edges().cons().x.y), l.o));
       case PRODUCT: {
         RVertex.Product p = lt.vertex().product();
         Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> m = Map.empty();

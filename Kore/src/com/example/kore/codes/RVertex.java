@@ -262,9 +262,11 @@ public final class RVertex implements Serializable {
   }
 
   public final static class Label implements Serializable {
+    public final com.example.kore.codes.Label l;
     public final Code o;
 
-    public Label(Code o) {
+    public Label(com.example.kore.codes.Label l, Code o) {
+      this.l = l;
       this.o = o;
     }
 
