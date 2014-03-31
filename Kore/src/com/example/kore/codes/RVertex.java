@@ -272,13 +272,14 @@ public final class RVertex implements Serializable {
 
     @Override
     public String toString() {
-      return "Label [o=" + o + "]";
+      return "Label [l=" + l + ", o=" + o + "]";
     }
 
     @Override
     public int hashCode() {
       final int prime = 31;
       int result = 1;
+      result = prime * result + ((l == null) ? 0 : l.hashCode());
       result = prime * result + ((o == null) ? 0 : o.hashCode());
       return result;
     }
@@ -292,6 +293,11 @@ public final class RVertex implements Serializable {
       if (getClass() != obj.getClass())
         return false;
       Label other = (Label) obj;
+      if (l == null) {
+        if (other.l != null)
+          return false;
+      } else if (!l.equals(other.l))
+        return false;
       if (o == null) {
         if (other.o != null)
           return false;
