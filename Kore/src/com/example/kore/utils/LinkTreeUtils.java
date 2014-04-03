@@ -157,4 +157,45 @@ public class LinkTreeUtils {
       r = g.getEdgeTarget(pair(r, e));
     return r;
   }
+
+  /** @return true if <code>lt</code> contains a link to the node
+   *          designated by <code>path</code> or any child of it */
+  public static <E,V> boolean isReferenced(LinkTree<E,V> lt, List<E> path) {
+    for (Pair<E, Either<LinkTree<E, V>, List<E>>> p : iter(lt.edges())) {
+      if (p.y.isY()) {
+        if (ListUtils.isSubList(path, p.y.y()))
+          return true;
+      } else {
+        if (isReferenced(p.y.x(), path))
+          return true;
+      }
+    }
+    return false;
+  }
+
+  public static <E,V> boolean validLinkTree(LinkTree<E,V> lt) {
+    return validLinkTree(lt, lt);
+  }
+
+  private static <E, V> boolean validLinkTree(LinkTree<E, V> root, LinkTree<E, V> lt) {
+    for (Pair<E, Either<LinkTree<E, V>, List<E>>> p : iter(lt.edges())) {
+      if (p.y.isY()) {
+        if (!validPath(root, p.y.y()))
+          return false;
+      } else {
+        if (!validLinkTree(root, p.y.x()))
+          return false;
+      }
+    }
+    return true;
+  }
+
+  public static <E, V> boolean validPath(LinkTree<E, V> lt, List<E> path) {
+    if (path.isEmpty()) return true;
+    for (Pair<E, Either<LinkTree<E, V>, List<E>>> p : iter(lt.edges()))
+      if (p.x.equals(path.cons().x))
+        return p.y.isY() ? false : validPath(p.y.x(), path.cons().tail);
+    return false;
+  }
+
 }

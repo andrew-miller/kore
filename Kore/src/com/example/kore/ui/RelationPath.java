@@ -5,11 +5,14 @@ import static com.example.kore.ui.RelationUtils.domain;
 import static com.example.kore.ui.RelationUtils.inAbstraction;
 import static com.example.kore.ui.RelationUtils.relationAt;
 import static com.example.kore.ui.RelationUtils.subRelationOrPath;
+import static com.example.kore.ui.RelationUtils.linkTree;
+import static com.example.kore.ui.RelationUtils.replaceRelationOrPathAt;
 import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.Unit.unit;
+import static com.example.kore.utils.LinkTreeUtils.validLinkTree;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -81,57 +84,61 @@ public class RelationPath {
     b.setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
         if (after.isEmpty()) {
-          PopupMenu pm = new PopupMenu(context, v);
-          final Menu m = pm.getMenu();
-          F<Pair<String, Tag>, Void> add = new F<Pair<String, Tag>, Void>() {
-            public Void f(final Pair<String, Tag> p) {
-              m.add(p.x).setOnMenuItemClickListener(
-                  new OnMenuItemClickListener() {
-                    public boolean onMenuItemClick(MenuItem _) {
-                      listener.changeRelationType(p.y);
-                      return true;
+          if (validLinkTree(linkTree(replaceRelationOrPathAt(root, before,
+              Either.<Relation, List<Either3<Label, Integer, Unit>>>
+                  x(RelationUtils.dummy(unit, unit)))))) {
+            PopupMenu pm = new PopupMenu(context, v);
+            final Menu m = pm.getMenu();
+            F<Pair<String, Tag>, Void> add = new F<Pair<String, Tag>, Void>() {
+              public Void f(final Pair<String, Tag> p) {
+                m.add(p.x).setOnMenuItemClickListener(
+                    new OnMenuItemClickListener() {
+                      public boolean onMenuItemClick(MenuItem _) {
+                        listener.changeRelationType(p.y);
+                        return true;
+                      }
+                    });
+                return null;
+              }
+            };
+            add.f(Pair.pair("[]", Tag.UNION));
+            if (equal(domain(r), unit)) {
+              if (codomain(r).tag == Code.Tag.PRODUCT)
+                add.f(Pair.pair("{}", Tag.PRODUCT));
+              if (codomain(r).tag == Code.Tag.UNION)
+                add.f(Pair.pair("'", Tag.LABEL));
+            }
+            add.f(Pair.pair("->", Tag.ABSTRACTION));
+            add.f(Pair.pair("|", Tag.COMPOSITION));
+            if (inAbstraction(root, before))
+              add.f(Pair.pair(".", Tag.PROJECTION));
+            m.add("---");
+            for (final Relation r : iter(relations))
+              UIUtils.addRelationToMenu(m, r,
+                  ListUtils.<Either3<Label, Integer, Unit>> nil(),
+                  codeLabelAliases, relationAliases,
+                  new F<List<Either3<Label, Integer, Unit>>, Unit>() {
+                    public Unit f(List<Either3<Label, Integer, Unit>> p) {
+                      listener.replaceRelation(Either
+                          .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
+                      return unit();
                     }
                   });
-              return null;
+            if (!(before.isEmpty() & after.isEmpty())) {
+              m.add("---");
+              UIUtils.addRelationToMenu(m, root,
+                  ListUtils.<Either3<Label, Integer, Unit>> nil(),
+                  codeLabelAliases, relationAliases,
+                  new F<List<Either3<Label, Integer, Unit>>, Unit>() {
+                    public Unit f(List<Either3<Label, Integer, Unit>> p) {
+                      listener.replaceRelation(Either
+                          .<Relation, List<Either3<Label, Integer, Unit>>> y(p));
+                      return unit();
+                    }
+                  });
             }
-          };
-          add.f(Pair.pair("[]", Tag.UNION));
-          if (equal(domain(r), unit)) {
-            if (codomain(r).tag == Code.Tag.PRODUCT)
-              add.f(Pair.pair("{}", Tag.PRODUCT));
-            if (codomain(r).tag == Code.Tag.UNION)
-              add.f(Pair.pair("'", Tag.LABEL));
+            pm.show();
           }
-          add.f(Pair.pair("->", Tag.ABSTRACTION));
-          add.f(Pair.pair("|", Tag.COMPOSITION));
-          if (inAbstraction(root, before))
-            add.f(Pair.pair(".", Tag.PROJECTION));
-          m.add("---");
-          for (final Relation r : iter(relations))
-            UIUtils.addRelationToMenu(m, r,
-                ListUtils.<Either3<Label, Integer, Unit>> nil(),
-                codeLabelAliases, relationAliases,
-                new F<List<Either3<Label, Integer, Unit>>, Unit>() {
-                  public Unit f(List<Either3<Label, Integer, Unit>> p) {
-                    listener.replaceRelation(Either
-                        .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
-                    return unit();
-                  }
-                });
-          if (!(before.isEmpty() & after.isEmpty())) {
-            m.add("---");
-            UIUtils.addRelationToMenu(m, root,
-                ListUtils.<Either3<Label, Integer, Unit>> nil(),
-                codeLabelAliases, relationAliases,
-                new F<List<Either3<Label, Integer, Unit>>, Unit>() {
-                  public Unit f(List<Either3<Label, Integer, Unit>> p) {
-                    listener.replaceRelation(Either
-                        .<Relation, List<Either3<Label, Integer, Unit>>> y(p));
-                    return unit();
-                  }
-                });
-          }
-          pm.show();
         } else
           listener.selectPath(before);
       }
