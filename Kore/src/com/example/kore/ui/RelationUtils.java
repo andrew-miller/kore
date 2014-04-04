@@ -652,12 +652,13 @@ public class RelationUtils {
             Relation.composition(new Composition(fromArray(x(r2), x(t)), d, c));
     }
     Union union;
-    Relation remappedRelation;
     if (!er.isY() && er.x().tag == Relation.Tag.UNION) {
       union =
           new Union(insert(er.x().union().l, i, x(r2)), er.x().union().i, er
               .x().union().o);
-      remappedRelation = bumpIndexes(relation, i, path);
+      return bumpIndexes(
+          replaceRelationOrPathAt(relation,path,x(Relation.union(union))),
+          i, path);
     } else {
       switch (i) {
       case 0:
@@ -669,10 +670,10 @@ public class RelationUtils {
       default:
         throw new RuntimeException("invalid index");
       }
-      remappedRelation = insertIndexes(relation, i, path);
+      return insertIndexes(
+          replaceRelationOrPathAt(relation,path,x(Relation.union(union))),
+          i, path);
     }
-    return replaceRelationOrPathAt(remappedRelation, path,
-        x(Relation.union(union)));
   }
 
   private static Relation bumpIndexes(Relation r, final Integer i,
