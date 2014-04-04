@@ -113,7 +113,8 @@ public class RelationEditor extends FrameLayout {
 
           public void replaceRelation(
               Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
-            Relation r = relationAt(path, relation).some().x;
+            Either<Relation, List<Either3<Label, Integer, Unit>>> rp = relationOrPathAt(path, relation);
+            Relation r = rp.isY() ? relationAt(rp.y(), relation).some().x : rp.x();
             Relation r2 =
                 er.isY() ? relationAt(er.y(), relation).some().x : er.x();
             relation =
