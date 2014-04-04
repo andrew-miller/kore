@@ -704,7 +704,6 @@ public class RelationUtils {
               List<Either3<Label, Integer, Unit>> p) {
             if (isSubList(path, p)) {
               List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
-              if (!l.isEmpty())
                 return append(path,
                     cons(Either3.<Label, Integer, Unit> y((i + 1) % 2), l));
             }
