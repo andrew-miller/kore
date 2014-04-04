@@ -122,7 +122,7 @@ public class UIUtils {
 
   private static void addRelationToMenu(Menu m, final Relation root,
       final List<Either3<Label, Integer, Unit>> path,
-      Either<Relation, List<Either3<Label, Integer, Unit>>> rp, String ls,
+      final Either<Relation, List<Either3<Label, Integer, Unit>>> rp, String ls,
       String space, CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalRelation, String> relationAliases,
       final F<List<Either3<Label, Integer, Unit>>, Unit> f) {
@@ -143,7 +143,7 @@ public class UIUtils {
             f.f(path);
             return true;
           }
-        });
+        }).setEnabled(!rp.isY());
     if (!rp.isY())
       for (Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(edges(rp
           .x()))) {
