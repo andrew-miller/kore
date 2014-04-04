@@ -156,7 +156,7 @@ public class RelationEditor extends FrameLayout {
         new RelationNodeEditor(context, relation,
             new RelationNodeEditor.Listener() {
               public void selectRelation(List<Either3<Label, Integer, Unit>> p) {
-                selectPath(append(path, p));
+                RelationEditor.this.selectPath(append(path, p));
               }
 
               public void replaceRelation(
@@ -200,6 +200,11 @@ public class RelationEditor extends FrameLayout {
                 relation = RelationUtils.changeCodomain(relation, path, c2);
                 initNodeEditor();
                 setPath(path);
+              }
+
+              public void selectPath(List<Either3<Label, Integer, Unit>> p) {
+                RelationEditor.this.selectPath(
+                    relationOrPathAt(p, relation).y());
               }
             }, path, codes, codeLabelAliases, codeAliases, relationViewColors);
     ViewGroup cont = (ViewGroup) findViewById(R.id.container_relation_editor);

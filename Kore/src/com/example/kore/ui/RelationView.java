@@ -43,6 +43,8 @@ public final class RelationView {
 
     void select(List<Either3<Label, Integer, Unit>> path);
 
+    void selectPath(List<Either3<Label, Integer, Unit>> path);
+
     void replaceRelation(List<Either3<Label, Integer, Unit>> path, Relation r);
   }
 
@@ -56,7 +58,12 @@ public final class RelationView {
     Pair<Integer, Integer> cp;
     if (er.isY()) {
       cp = rvc.referenceColors;
-      rv = RelationRefView.make(context, er.y());
+      rv = RelationRefView.make(context, er.y(), new F<Unit, Unit>() {
+        public Unit f(Unit _) {
+          listener.selectPath(path);
+          return unit();
+        }
+      });
     } else {
       Optional<Abstraction> oea = enclosingAbstraction(path, root);
       Optional<Code> argCode =

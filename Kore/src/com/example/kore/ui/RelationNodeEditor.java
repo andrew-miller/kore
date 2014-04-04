@@ -51,6 +51,8 @@ public class RelationNodeEditor extends FrameLayout {
 
     void replaceRelation(List<Either3<Label, Integer, Unit>> path, Relation r);
 
+    void selectPath(List<Either3<Label, Integer, Unit>> p);
+
   }
 
   private final Relation rootRelation;
@@ -166,6 +168,10 @@ public class RelationNodeEditor extends FrameLayout {
               public void replaceRelation(
                   List<Either3<Label, Integer, Unit>> p, Relation r) {
                 listener.replaceRelation(drop(p, length(path)), r);
+              }
+
+              public void selectPath(List<Either3<Label, Integer, Unit>> p) {
+                listener.selectPath(p);
               }
             }, codeLabelAliases);
     // workaround that you can't drag onto the outer 10 pixels
