@@ -597,10 +597,14 @@ public class RelationUtils {
     Code c = codomain(r1);
 
     Composition comp;
-    Relation remappedRelation;
     if (!er.isY() && er.x().tag == Relation.Tag.COMPOSITION) {
       comp = new Composition(insert(er.x().composition().l, i, x(r2)), d, c);
-      remappedRelation = bumpIndexes(relation, i, path);
+      return adaptComposition(
+        bumpIndexes(
+          replaceRelationOrPathAt(
+              relation, path, x(Relation.composition(comp))),
+          i, path),
+        path);
     } else {
       switch (i) {
       case 0:
@@ -612,11 +616,13 @@ public class RelationUtils {
       default:
         throw new RuntimeException("invalid index");
       }
-      remappedRelation = insertIndexes(relation, i, path);
+      return adaptComposition(
+        insertIndexes(
+          replaceRelationOrPathAt(
+              relation, path, x(Relation.composition(comp))),
+          i, path),
+        path);
     }
-    return adaptComposition(
-        replaceRelationOrPathAt(remappedRelation, path,
-            x(Relation.composition(comp))), path);
   }
 
   public static Relation extendUnion(Relation relation,
