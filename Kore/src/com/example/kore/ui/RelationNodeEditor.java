@@ -1,6 +1,7 @@
 package com.example.kore.ui;
 
 import static com.example.kore.ui.RelationUtils.relationAt;
+import static com.example.kore.ui.RelationUtils.relationOrPathAt;
 import static com.example.kore.ui.RelationUtils.unit_unit;
 import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.ListUtils.drop;
@@ -24,6 +25,7 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.utils.CodeUtils;
+import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
@@ -33,8 +35,6 @@ import com.example.kore.utils.Unit;
 
 public class RelationNodeEditor extends FrameLayout {
   interface Listener {
-    void changeRelationType(Relation.Tag t);
-
     void selectRelation(List<Either3<Label, Integer, Unit>> path);
 
     void onDone();
@@ -49,9 +49,9 @@ public class RelationNodeEditor extends FrameLayout {
     void extendUnion(List<Either3<Label, Integer, Unit>> path, Integer i,
         Relation r);
 
-    void move(Integer src, Integer dest);
-
     void replaceRelation(List<Either3<Label, Integer, Unit>> path, Relation r);
+
+    void selectPath(List<Either3<Label, Integer, Unit>> p);
 
   }
 
@@ -78,7 +78,9 @@ public class RelationNodeEditor extends FrameLayout {
       RelationViewColors relationViewColors) {
     super(context);
     notNull(rootRelation, listener, path, codes, codeLabelAliases, codeAliases);
-    Relation r = relationAt(path, rootRelation).some().x;
+    Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
+        relationOrPathAt(path, rootRelation);
+    Relation r = rp.isY() ? relationAt(rp.y(), rootRelation).some().x : rp.x();
     this.rootRelation = rootRelation;
     this.listener = listener;
     this.path = path;
@@ -166,6 +168,10 @@ public class RelationNodeEditor extends FrameLayout {
               public void replaceRelation(
                   List<Either3<Label, Integer, Unit>> p, Relation r) {
                 listener.replaceRelation(drop(p, length(path)), r);
+              }
+
+              public void selectPath(List<Either3<Label, Integer, Unit>> p) {
+                listener.selectPath(p);
               }
             }, codeLabelAliases);
     // workaround that you can't drag onto the outer 10 pixels

@@ -5,7 +5,8 @@ import static com.example.kore.utils.Null.notNull;
 import java.io.Serializable;
 
 /**
- * <code> tree(E,V) <is> {'v V, 'edges list(pair(E, tree(E,D)))};
+ * &lt;code&gt; tree(E,V) &lt;is&gt; {'v V, 'edges list(pair(E, tree(E,V)))};
+ * 
  * Immutable, thread-safe, null-free.
  * 
  * default serialization

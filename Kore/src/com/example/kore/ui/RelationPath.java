@@ -3,12 +3,16 @@ package com.example.kore.ui;
 import static com.example.kore.ui.RelationUtils.codomain;
 import static com.example.kore.ui.RelationUtils.domain;
 import static com.example.kore.ui.RelationUtils.inAbstraction;
-import static com.example.kore.ui.RelationUtils.subRelation;
+import static com.example.kore.ui.RelationUtils.relationAt;
+import static com.example.kore.ui.RelationUtils.subRelationOrPath;
+import static com.example.kore.ui.RelationUtils.linkTree;
+import static com.example.kore.ui.RelationUtils.replaceRelationOrPathAt;
 import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
-import static com.example.kore.utils.ListUtils.nil;
-import static com.example.kore.utils.Null.notNull;
+import static com.example.kore.utils.ListUtils.iter;
+import static com.example.kore.utils.Unit.unit;
+import static com.example.kore.utils.LinkTreeUtils.validLinkTree;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,51 +20,73 @@ import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.DragShadowBuilder;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.PopupMenu;
 
 import com.example.kore.R;
+import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Tag;
+import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
+import com.example.kore.utils.ListUtils;
+import com.example.kore.utils.Map;
 import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
-public class RelationPath extends FrameLayout {
-
+public class RelationPath {
   interface Listener {
     void selectPath(List<Either3<Label, Integer, Unit>> p);
 
     void changeRelationType(Tag y);
+
+    void replaceRelation(
+        Either<Relation, List<Either3<Label, Integer, Unit>>> er);
   }
 
-  public RelationPath(final Context context, RelationColors rc,
-      final Listener listener, final Relation rootRelation,
-      final List<Either3<Label, Integer, Unit>> path) {
-    super(context);
-    notNull(listener, rootRelation, path);
-    View v = LayoutInflater.from(context).inflate(R.layout.path, this, true);
-    ViewGroup pathVG = (ViewGroup) v.findViewById(R.id.layout_path);
+  public static View make(final Context context, RelationColors rc,
+      Listener listener, Relation root, List<Relation> relations,
+      CodeLabelAliasMap codeLabelAliases,
+      Map<CanonicalRelation, String> relationAliases,
+      List<Either3<Label, Integer, Unit>> path, int referenceColor) {
+    View v = LayoutInflater.from(context).inflate(R.layout.path, null);
+    ViewGroup vg = (ViewGroup) v.findViewById(R.id.layout_path);
+    make(context, rc, listener, root, relations, codeLabelAliases,
+        relationAliases, ListUtils.<Either3<Label, Integer, Unit>> nil(), path,
+        Either.<Relation, List<Either3<Label, Integer, Unit>>> x(root), vg,
+        referenceColor);
+    return v;
+  }
 
-    Relation relation = rootRelation;
-    List<Either3<Label, Integer, Unit>> path_ = path;
-    List<Either3<Label, Integer, Unit>> subpath = nil();
-    while (true) {
-      final Button b = new Button(context);
-      b.setBackgroundColor(rc.m.get(relation.tag).some().x.x);
-      b.setWidth(0);
-      b.setHeight(LayoutParams.MATCH_PARENT);
-      final List<Either3<Label, Integer, Unit>> subpathS = subpath;
-      final Relation relation_ = relation;
-      b.setOnClickListener(new OnClickListener() {
-        public void onClick(View v) {
-          if (subpathS.equals(path)) {
+  private static void make(final Context context, RelationColors rc,
+      final Listener listener, final Relation root,
+      final List<Relation> relations, final CodeLabelAliasMap codeLabelAliases,
+      final Map<CanonicalRelation, String> relationAliases,
+      final List<Either3<Label, Integer, Unit>> before,
+      final List<Either3<Label, Integer, Unit>> after,
+      final Either<Relation, List<Either3<Label, Integer, Unit>>> rp,
+      ViewGroup vg, int referenceColor) {
+    final Relation r = rp.isY() ? relationAt(rp.y(), root).some().x : rp.x();
+    final Button b = new Button(context);
+    b.setBackgroundColor(rp.isY() ? referenceColor : rc.m.get(rp.x().tag)
+        .some().x.x);
+    b.setWidth(0);
+    b.setHeight(LayoutParams.MATCH_PARENT);
+    b.setOnClickListener(new OnClickListener() {
+      public void onClick(View v) {
+        if (after.isEmpty()) {
+          if (validLinkTree(linkTree(replaceRelationOrPathAt(root, before,
+              Either.<Relation, List<Either3<Label, Integer, Unit>>>
+                  x(RelationUtils.dummy(unit, unit)))))) {
             PopupMenu pm = new PopupMenu(context, v);
             final Menu m = pm.getMenu();
             F<Pair<String, Tag>, Void> add = new F<Pair<String, Tag>, Void>() {
@@ -76,36 +102,58 @@ public class RelationPath extends FrameLayout {
               }
             };
             add.f(Pair.pair("[]", Tag.UNION));
-            if (equal(domain(relation_), unit)) {
-              if (codomain(relation_).tag == Code.Tag.PRODUCT)
+            if (equal(domain(r), unit)) {
+              if (codomain(r).tag == Code.Tag.PRODUCT)
                 add.f(Pair.pair("{}", Tag.PRODUCT));
-              if (codomain(relation_).tag == Code.Tag.UNION)
+              if (codomain(r).tag == Code.Tag.UNION)
                 add.f(Pair.pair("'", Tag.LABEL));
             }
             add.f(Pair.pair("->", Tag.ABSTRACTION));
             add.f(Pair.pair("|", Tag.COMPOSITION));
-            if (inAbstraction(path, rootRelation))
+            if (inAbstraction(root, before))
               add.f(Pair.pair(".", Tag.PROJECTION));
+            m.add("---");
+            for (final Relation r : iter(relations))
+              UIUtils.addRelationToMenu(m, r,
+                  ListUtils.<Either3<Label, Integer, Unit>> nil(),
+                  codeLabelAliases, relationAliases,
+                  new F<List<Either3<Label, Integer, Unit>>, Unit>() {
+                    public Unit f(List<Either3<Label, Integer, Unit>> p) {
+                      listener.replaceRelation(Either
+                          .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
+                      return unit();
+                    }
+                  });
+            if (!(before.isEmpty() & after.isEmpty())) {
+              m.add("---");
+              UIUtils.addRelationToMenu(m, root,
+                  ListUtils.<Either3<Label, Integer, Unit>> nil(),
+                  codeLabelAliases, relationAliases,
+                  new F<List<Either3<Label, Integer, Unit>>, Unit>() {
+                    public Unit f(List<Either3<Label, Integer, Unit>> p) {
+                      listener.replaceRelation(Either
+                          .<Relation, List<Either3<Label, Integer, Unit>>> y(p));
+                      return unit();
+                    }
+                  });
+            }
             pm.show();
-          } else
-            listener.selectPath(subpathS);
-        }
-      });
-      b.setOnTouchListener(new OnTouchListener() {
-        public boolean onTouch(View _, MotionEvent e) {
-          if (e.getAction() == MotionEvent.ACTION_CANCEL)
-            b.startDrag(null, new DragShadowBuilder(), new SelectRelation(), 0);
-          return false;
-        }
-      });
-      pathVG.addView(b);
-      if (path_.isEmpty())
-        break;
-      Either3<Label, Integer, Unit> e = path_.cons().x;
-      path_ = path_.cons().tail;
-      subpath = append(e, subpath);
-      relation = subRelation(relation, e).some().x;
-      Button b2 = new Button(context);
+          }
+        } else
+          listener.selectPath(before);
+      }
+    });
+    b.setOnTouchListener(new OnTouchListener() {
+      public boolean onTouch(View _, MotionEvent e) {
+        if (e.getAction() == MotionEvent.ACTION_CANCEL)
+          b.startDrag(null, new DragShadowBuilder(), new SelectRelation(), 0);
+        return false;
+      }
+    });
+    vg.addView(b);
+    Button b2 = new Button(context);
+    if (!rp.isY() & !after.isEmpty()) {
+      Either3<Label, Integer, Unit> e = after.cons().x;
       switch (e.tag) {
       case X:
         b2.setBackgroundColor((int) Long.parseLong(e.x().label.substring(0, 8),
@@ -120,8 +168,10 @@ public class RelationPath extends FrameLayout {
       }
       b2.setWidth(0);
       b2.setHeight(LayoutParams.MATCH_PARENT);
-      pathVG.addView(b2);
+      vg.addView(b2);
+      make(context, rc, listener, root, relations, codeLabelAliases,
+          relationAliases, append(e, before), after.cons().tail,
+          subRelationOrPath(rp.x(), e).some().x, vg, referenceColor);
     }
-
   }
 }

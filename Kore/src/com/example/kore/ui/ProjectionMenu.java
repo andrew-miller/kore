@@ -2,7 +2,7 @@ package com.example.kore.ui;
 
 import static com.example.kore.ui.RelationUtils.renderRelation;
 import static com.example.kore.utils.CodeUtils.equal;
-import static com.example.kore.utils.CodeUtils.followPath;
+import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.OptionalUtils.some;
@@ -29,6 +29,7 @@ import com.example.kore.utils.Optional;
 import com.example.kore.utils.Unit;
 
 public class ProjectionMenu {
+  /** <tt>c</tt> and <tt>out</tt> are root codes */
   public static void make(Context context, View v,
       CodeLabelAliasMap codeLabelAliases, Code c, Code out,
       F<List<Label>, Void> select) {
@@ -40,7 +41,7 @@ public class ProjectionMenu {
       final Code c, final Code out, final F<List<Label>, Void> select) {
     PopupMenu pm = new PopupMenu(context, v);
     Menu m = pm.getMenu();
-    Code o = followPath(proj, c).some().x;
+    Code o = reroot(c, proj);
     m.add(
         renderRelation(some(c), Either
             .<Relation, List<Either3<Label, Integer, Unit>>> x(Relation

@@ -15,21 +15,18 @@ public class ListUtils {
     return List.cons(new List.Cons<T>(x, l));
   }
 
-  public static <T, T2> List<T2> map(F<T, T2> f, Class<T2> t2, List<T> l) {
-    return l.isEmpty() ? List.nil(new List.Nil<T2>()) : List
-        .cons(new List.Cons<T2>(f.f(l.cons().x), map(f, t2, l.cons().tail)));
+  public static <T, T2> List<T2> map(F<T, T2> f, List<T> l) {
+    return l.isEmpty() ? ListUtils.<T2> nil() : cons(f.f(l.cons().x),
+        map(f, l.cons().tail));
   }
 
   public static <T> List<T> append(T x, List<T> l) {
-    if (l.isEmpty())
-      return cons(x, l);
-    return cons(l.cons().x, append(x, l.cons().tail));
+    return l.isEmpty() ? cons(x, l)
+        : cons(l.cons().x, append(x, l.cons().tail));
   }
 
   public static <T> List<T> append(List<T> l1, List<T> l2) {
-    if (l1.isEmpty())
-      return l2;
-    return cons(l1.cons().x, append(l1.cons().tail, l2));
+    return l1.isEmpty() ? l2 : cons(l1.cons().x, append(l1.cons().tail, l2));
   }
 
   public static <T> boolean isSubList(List<T> xs, List<T> ys) {
@@ -69,10 +66,6 @@ public class ListUtils {
         };
       }
     };
-  }
-
-  public static <T> List<T> singleton(T x) {
-    return cons(x, ListUtils.<T> nil());
   }
 
   public static <T> List<T> reverse(List<T> l) {
@@ -155,12 +148,8 @@ public class ListUtils {
   }
 
   public static <T> List<T> replace(List<T> l, int i, T x) {
-    if (i == 0) {
-      if (l.isEmpty())
-        return singleton(x);
-      return cons(x, l.cons().tail);
-    }
-    return cons(l.cons().x, replace(l.cons().tail, i - 1, x));
+    return i == 0 ? l.isEmpty() ? fromArray(x) : cons(x, l.cons().tail) : cons(
+        l.cons().x, replace(l.cons().tail, i - 1, x));
   }
 
   public static <T> Integer length(List<T> l) {
@@ -207,15 +196,13 @@ public class ListUtils {
   }
 
   public static <T> List<T> insert(List<T> l, Integer i, T x) {
-    if (i == 0)
-      return cons(x, l);
-    return cons(l.cons().x, insert(l.cons().tail, i - 1, x));
+    return i == 0 ? cons(x, l) : cons(l.cons().x,
+        insert(l.cons().tail, i - 1, x));
   }
 
   public static <T> List<T> remove(List<T> l, Integer i) {
-    if (i == 0)
-      return l.cons().tail;
-    return cons(l.cons().x, remove(l.cons().tail, i - 1));
+    return i == 0 ? l.cons().tail : cons(l.cons().x,
+        remove(l.cons().tail, i - 1));
   }
 
   public static <T> List<T> move(List<T> l, Integer src, Integer dest) {

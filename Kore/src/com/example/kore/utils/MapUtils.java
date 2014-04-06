@@ -26,4 +26,11 @@ public class MapUtils {
     return l;
   }
 
+  public static <K, V, V2> Map<K, V2> map(F<V, V2> f, Map<K, V> m) {
+    Map<K, V2> m2 = Map.empty();
+    for (Entry<K, V> x : iter(m.entrySet()))
+      m2 = m2.put(x.k, f.f(x.v));
+    return m2;
+  }
+
 }
