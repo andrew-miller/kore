@@ -296,7 +296,8 @@ public final class CodeUtils {
    * <tt>c2</tt>, then <tt>canonicalCode(c1).equals(canonicalCode(c2))</tt>
    */
   public static Code canonicalCode(Code c, List<Label> path) {
-    return linkTreeToCode(LinkTreeUtils.canonicalLinkTree(linkTree(c), path, new LabelComparer()));
+    return linkTreeToCode(LinkTreeUtils.canonicalLinkTree(linkTree(c), path,
+        new LabelComparer()));
   }
 
   /**
@@ -469,7 +470,7 @@ public final class CodeUtils {
    * map cyclic path over the graph represented by this <tt>Code</tt> (rooted at
    * this <tt>Code</tt>) to a simple path from this <tt>Code</tt> to another
    * <tt>Code</tt>
-   *
+   * 
    * @param Code
    *          a <tt>Code</tt> that <tt>validCode</tt> maps to <tt>true</tt>
    */
@@ -539,19 +540,21 @@ public final class CodeUtils {
   }
 
   private static Code linkTreeToCode(LinkTree<Label, Tag> lt) {
-    Map<Label,CodeOrPath> m = Map.empty();
-    for (Pair<Label, Either<LinkTree<Label, Tag>, List<Label>>> e :
-          iter(lt.edges()))
-      m = m.put(e.x, e.y.isY()
-          ? CodeOrPath.newPath(e.y.y())
-          : CodeOrPath.newCode(linkTreeToCode(e.y.x())));
+    Map<Label, CodeOrPath> m = Map.empty();
+    for (Pair<Label, Either<LinkTree<Label, Tag>, List<Label>>> e : iter(lt
+        .edges()))
+      m =
+          m.put(
+              e.x,
+              e.y.isY() ? CodeOrPath.newPath(e.y.y()) : CodeOrPath
+                  .newCode(linkTreeToCode(e.y.x())));
     switch (lt.vertex()) {
-      case PRODUCT:
-        return Code.newProduct(m);
-      case UNION:
-        return Code.newUnion(m);
-        default:
-          throw boom();
+    case PRODUCT:
+      return Code.newProduct(m);
+    case UNION:
+      return Code.newUnion(m);
+    default:
+      throw boom();
     }
   }
 

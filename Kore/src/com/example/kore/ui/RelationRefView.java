@@ -13,9 +13,8 @@ import com.example.kore.utils.Unit;
 import static com.example.kore.utils.Unit.unit;
 
 public class RelationRefView {
-  public static View
-      make(Context context, List<Either3<Label, Integer, Unit>> p,
-           final F<Unit, Unit> selected) {
+  public static View make(Context context,
+      List<Either3<Label, Integer, Unit>> p, final F<Unit, Unit> selected) {
     Button b = new Button(context);
     b.setBackgroundColor(0xFF000000);
     b.setOnClickListener(new OnClickListener() {

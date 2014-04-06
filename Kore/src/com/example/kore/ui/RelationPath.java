@@ -84,9 +84,12 @@ public class RelationPath {
     b.setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
         if (after.isEmpty()) {
-          if (validLinkTree(linkTree(replaceRelationOrPathAt(root, before,
-              Either.<Relation, List<Either3<Label, Integer, Unit>>>
-                  x(RelationUtils.dummy(unit, unit)))))) {
+          if (validLinkTree(linkTree(replaceRelationOrPathAt(
+              root,
+              before,
+              Either
+                  .<Relation, List<Either3<Label, Integer, Unit>>> x(RelationUtils
+                      .dummy(unit, unit)))))) {
             PopupMenu pm = new PopupMenu(context, v);
             final Menu m = pm.getMenu();
             F<Pair<String, Tag>, Void> add = new F<Pair<String, Tag>, Void>() {

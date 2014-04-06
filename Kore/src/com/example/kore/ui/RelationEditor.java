@@ -57,8 +57,7 @@ public class RelationEditor extends FrameLayout {
       final CodeLabelAliasMap codeLabelAliases,
       final Map<CanonicalCode, String> codeAliases,
       final Map<CanonicalRelation, String> relationAliases,
-      List<Relation> relations,
-      RelationViewColors relationViewColors,
+      List<Relation> relations, RelationViewColors relationViewColors,
       List<Either3<Label, Integer, Unit>> path) {
     super(context);
     notNull(relation, doneListener, relationViewColors);
@@ -83,10 +82,9 @@ public class RelationEditor extends FrameLayout {
       final CodeLabelAliasMap codeLabelAliases,
       final Map<CanonicalCode, String> codeAliases,
       final Map<CanonicalRelation, String> relationAliases,
-      List<Relation> relations,
-      RelationViewColors relationViewColors) {
-    this(context, relation, doneListener, codes, codeLabelAliases, codeAliases, relationAliases,
-        relations, relationViewColors, ListUtils
+      List<Relation> relations, RelationViewColors relationViewColors) {
+    this(context, relation, doneListener, codes, codeLabelAliases, codeAliases,
+        relationAliases, relations, relationViewColors, ListUtils
             .<Either3<Label, Integer, Unit>> nil());
   }
 
@@ -94,11 +92,11 @@ public class RelationEditor extends FrameLayout {
       final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
       final Map<CanonicalCode, String> codeAliases,
       final Map<CanonicalRelation, String> relationAliases,
-      List<Relation> relations,
-      RelationViewColors relationViewColors, Bundle b) {
+      List<Relation> relations, RelationViewColors relationViewColors, Bundle b) {
     this(context, (Relation) b.getSerializable(STATE_RELATION), doneListener,
-        codes, codeLabelAliases, codeAliases, relationAliases, relations, relationViewColors,
-        (List<Either3<Label, Integer, Unit>>) b.getSerializable(STATE_PATH));
+        codes, codeLabelAliases, codeAliases, relationAliases, relations,
+        relationViewColors, (List<Either3<Label, Integer, Unit>>) b
+            .getSerializable(STATE_PATH));
   }
 
   private void setPath(List<Either3<Label, Integer, Unit>> p) {
@@ -113,8 +111,10 @@ public class RelationEditor extends FrameLayout {
 
           public void replaceRelation(
               Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
-            Either<Relation, List<Either3<Label, Integer, Unit>>> rp = relationOrPathAt(path, relation);
-            Relation r = rp.isY() ? relationAt(rp.y(), relation).some().x : rp.x();
+            Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
+                relationOrPathAt(path, relation);
+            Relation r =
+                rp.isY() ? relationAt(rp.y(), relation).some().x : rp.x();
             Relation r2 =
                 er.isY() ? relationAt(er.y(), relation).some().x : er.x();
             relation =
@@ -203,8 +203,8 @@ public class RelationEditor extends FrameLayout {
               }
 
               public void selectPath(List<Either3<Label, Integer, Unit>> p) {
-                RelationEditor.this.selectPath(
-                    relationOrPathAt(p, relation).y());
+                RelationEditor.this.selectPath(relationOrPathAt(p, relation)
+                    .y());
               }
             }, path, codes, codeLabelAliases, codeAliases, relationViewColors);
     ViewGroup cont = (ViewGroup) findViewById(R.id.container_relation_editor);

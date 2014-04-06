@@ -17,8 +17,8 @@ import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
 
 public class PatternUtils {
-  public static final Pattern emptyPattern =
-      new Pattern(Map.<Label, Pattern> empty());
+  public static final Pattern emptyPattern = new Pattern(
+      Map.<Label, Pattern> empty());
 
   public static Optional<Pattern> patternAt(Pattern pattern, List<Label> path) {
     if (path.isEmpty())

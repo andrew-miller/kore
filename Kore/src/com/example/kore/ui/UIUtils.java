@@ -122,8 +122,8 @@ public class UIUtils {
 
   private static void addRelationToMenu(Menu m, final Relation root,
       final List<Either3<Label, Integer, Unit>> path,
-      final Either<Relation, List<Either3<Label, Integer, Unit>>> rp, String ls,
-      String space, CodeLabelAliasMap codeLabelAliases,
+      final Either<Relation, List<Either3<Label, Integer, Unit>>> rp,
+      String ls, String space, CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalRelation, String> relationAliases,
       final F<List<Either3<Label, Integer, Unit>>, Unit> f) {
     Optional<Abstraction> ea =
@@ -135,9 +135,9 @@ public class UIUtils {
         space
             + ls.substring(0, Math.min(10, ls.length()))
             + " "
-            + (ra.isNothing() ? renderRelation(ea.isNothing()
-                ? OptionalUtils.<Code> nothing()
-                : some(ea.some().x.i), rp, codeLabelAliases) : ra.some().x))
+            + (ra.isNothing() ? renderRelation(
+                ea.isNothing() ? OptionalUtils.<Code> nothing() : some(ea
+                    .some().x.i), rp, codeLabelAliases) : ra.some().x))
         .setOnMenuItemClickListener(new OnMenuItemClickListener() {
           public boolean onMenuItemClick(MenuItem _) {
             f.f(path);

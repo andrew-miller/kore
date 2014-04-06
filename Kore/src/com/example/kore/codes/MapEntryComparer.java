@@ -15,7 +15,8 @@ public class MapEntryComparer<K, V> implements Comparer<Map.Entry<K, V>> {
 
   public Comparison compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
     Comparison ck = kc.compare(a.k, b.k);
-    if (ck != Comparison.EQ) return ck;
+    if (ck != Comparison.EQ)
+      return ck;
     return vc.compare(a.v, b.v);
   }
 }
