@@ -213,4 +213,9 @@ public class ListUtils {
   public static <T> List<T> drop(List<T> l, Integer n) {
     return n == 0 ? l : drop(l.cons().tail, n - 1);
   }
+
+  public static <T> List<T> take(List<T> l, Integer n) {
+    return n == 0 ? ListUtils.<T> nil() : cons(l.cons().x,
+        take(l.cons().tail, n - 1));
+  }
 }

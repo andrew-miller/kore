@@ -1,27 +1,37 @@
 package com.example.kore.ui;
 
-import com.example.kore.utils.UnitComparer;
 import static com.example.kore.ui.PatternUtils.emptyPattern;
 import static com.example.kore.ui.PatternUtils.renderPattern;
+import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.CodeUtils.codeToGraph;
 import static com.example.kore.utils.CodeUtils.directPath;
 import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.CodeUtils.unit;
+import static com.example.kore.utils.LinkTreeUtils.canonicalLinkTree;
 import static com.example.kore.utils.ListUtils.append;
+import static com.example.kore.utils.ListUtils.cons;
 import static com.example.kore.utils.ListUtils.drop;
+import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.ListUtils.insert;
 import static com.example.kore.utils.ListUtils.isSubList;
+import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.length;
 import static com.example.kore.utils.ListUtils.map;
+import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.ListUtils.nth;
 import static com.example.kore.utils.ListUtils.replace;
+import static com.example.kore.utils.MapUtils.containsKey;
 import static com.example.kore.utils.MapUtils.map;
 import static com.example.kore.utils.OptionalUtils.nothing;
 import static com.example.kore.utils.OptionalUtils.some;
+import static com.example.kore.utils.Pair.pair;
+import static com.example.kore.utils.Unit.unit;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.jgrapht.graph.DirectedMultigraph;
 
@@ -37,7 +47,6 @@ import com.example.kore.codes.Relation.Label_;
 import com.example.kore.codes.Relation.Product;
 import com.example.kore.codes.Relation.Projection;
 import com.example.kore.codes.Relation.Union;
-import static com.example.kore.utils.Boom.boom;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.Either3.Tag;
@@ -46,24 +55,15 @@ import com.example.kore.utils.F;
 import com.example.kore.utils.Identity;
 import com.example.kore.utils.IntegerComparer;
 import com.example.kore.utils.LabelComparer;
-import static com.example.kore.utils.LinkTreeUtils.canonicalLinkTree;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-import static com.example.kore.utils.ListUtils.cons;
-import static com.example.kore.utils.ListUtils.fromArray;
-import static com.example.kore.utils.ListUtils.iter;
-import static com.example.kore.utils.ListUtils.nil;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Map.Entry;
-import static com.example.kore.utils.MapUtils.containsKey;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Pair;
-import static com.example.kore.utils.Pair.pair;
 import com.example.kore.utils.Unit;
-import static com.example.kore.utils.Unit.unit;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import com.example.kore.utils.UnitComparer;
 
 public class RelationUtils {
   public static final Relation unit_unit =
@@ -394,13 +394,9 @@ public class RelationUtils {
               List<Either3<Label, Integer, Unit>> l = drop(p2, length(path));
               if (!l.isEmpty()) {
                 Integer o = 0;
-                Integer i = 0;
-                for (Boolean b_ : iter(p.x)) {
-                  if (i++ > l.cons().x.y())
-                    break;
+                for (Boolean b_ : iter(ListUtils.take(p.x, l.cons().x.y() + 1)))
                   if (b_)
                     o++;
-                }
                 return append(
                     path,
                     cons(Either3.<Label, Integer, Unit> y(l.cons().x.y() + o),
