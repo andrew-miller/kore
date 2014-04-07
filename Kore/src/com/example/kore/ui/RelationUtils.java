@@ -386,7 +386,7 @@ public class RelationUtils {
     return mapPaths(
         replaceRelationOrPathAt(root, path,
             x(Relation.composition(new Composition(equal(last, c.o) ? p.y
-                : append(x(dummy(last, c.o)), c.l), c.i, c.o)))),
+                : append(x(dummy(last, c.o)), p.y), c.i, c.o)))),
         new F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>>() {
           public List<Either3<Label, Integer, Unit>> f(
               List<Either3<Label, Integer, Unit>> p2) {
