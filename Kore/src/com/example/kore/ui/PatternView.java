@@ -61,13 +61,16 @@ public class PatternView {
     for (Entry<Label, Pattern> e : iter(pattern.fields.entrySet())) {
       LinearLayout ll2 = new LinearLayout(context);
       Optional<String> ola = las.get(e.k);
+      View v;
       if (ola.isNothing())
-        ll2.addView(LabelView.make(context, e.k, aliasTextColor));
+        ll2.addView(v = LabelView.make(context, e.k, aliasTextColor));
       else {
         Button b = new Button(context);
         b.setText(ola.some().x);
         ll2.addView(b);
+        v = b;
       }
+      f.f(v);
       ll2.addView(make(context, aliasTextColor, rootPattern,
           append(e.k, patternPath), rootCode,
           directPath(append(e.k, codePath), rootCode), codeLabelAliases,
