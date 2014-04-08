@@ -4,6 +4,10 @@ import static com.example.kore.ui.PatternUtils.emptyPattern;
 import static com.example.kore.ui.PatternUtils.renderPattern;
 import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.CodeUtils.codeAt;
+import static com.example.kore.utils.CodeUtils.directPath;
+import static com.example.kore.utils.CodeUtils.equal;
+import static com.example.kore.utils.CodeUtils.reroot;
+import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import android.content.Context;
 import android.view.Menu;
@@ -29,7 +33,8 @@ public class PatternMenu {
 
   public static void make(final View v, final Context context,
       final Code rootCode, final List<Label> path,
-      final CodeLabelAliasMap codeLabelAliases, final Listener listener) {
+      final CodeLabelAliasMap codeLabelAliases, final Pattern current,
+      final Listener listener) {
     CanonicalCode cc = new CanonicalCode(rootCode, path);
     Code code = codeAt(path, rootCode).some().x;
     PopupMenu pm = new PopupMenu(context, v);
@@ -61,7 +66,18 @@ public class PatternMenu {
             .setOnMenuItemClickListener(new OnMenuItemClickListener() {
               public boolean onMenuItemClick(MenuItem _) {
                 listener.select(new Pattern(Map.<Label, Pattern> empty().put(
-                    e.k, emptyPattern)));
+                    e.k,
+                    !current.fields.entrySet().isEmpty()
+                        && equal(
+                            reroot(rootCode,
+                                directPath(append(e.k, path), rootCode)),
+                            reroot(
+                                rootCode,
+                                directPath(
+                                    append(
+                                        current.fields.entrySet().cons().x.k,
+                                        path), rootCode))) ? current.fields
+                        .entrySet().cons().x.v : emptyPattern)));
                 return true;
               }
             });

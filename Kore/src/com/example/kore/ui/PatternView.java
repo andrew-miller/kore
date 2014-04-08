@@ -37,13 +37,13 @@ public class PatternView {
       final Pattern rootPattern, final List<Label> patternPath,
       final Code rootCode, final List<Label> codePath,
       final CodeLabelAliasMap codeLabelAliases, final F<Pattern, Unit> replace) {
-    Pattern pattern = patternAt(rootPattern, patternPath).some().x;
+    final Pattern pattern = patternAt(rootPattern, patternPath).some().x;
     F<View, Unit> f = new F<View, Unit>() {
       public Unit f(final View v) {
         v.setOnClickListener(new OnClickListener() {
           public void onClick(View _) {
             PatternMenu.make(v, context, rootCode, codePath, codeLabelAliases,
-                new PatternMenu.Listener() {
+                pattern, new PatternMenu.Listener() {
                   public void select(Pattern p) {
                     replace.f(replacePatternAt(rootPattern, patternPath, p)
                         .some().x);
