@@ -29,7 +29,7 @@ public class ProductView {
     Map<Label, String> las =
         codeLabelAliases.getAliases(new CanonicalCode(product.o, ListUtils
             .<Label> nil()));
-    for (Entry<Label, ? extends Object> e : iter(product.m.entrySet())) {
+    for (Entry<Label, ?> e : iter(product.m.entrySet())) {
       LinearLayout ll2 = new LinearLayout(context);
       Optional<String> ola = las.get(e.k);
       if (ola.isNothing())

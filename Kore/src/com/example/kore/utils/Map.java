@@ -17,7 +17,7 @@ import java.io.Serializable;
 // these two maps will have the same string representation:
 // k1: a
 // v1: x, b -> y}
-// empty.put(k1,v2).toString(): {a -> x, b -> y} 
+// empty.put(k1,v2).toString(): {a -> x, b -> y}
 // k2: a
 // v2: x
 // k3: b
@@ -26,13 +26,13 @@ import java.io.Serializable;
 //
 /**
  * Map implemented using a prefix tree. Immutable, thread-safe, null-free.
- * 
+ *
  * The tree is made using the string representation of values of <code>K</code>
  * using <tt>toString()</tt>.
- * 
+ *
  * Every value of <tt>Map</tt> has a unique representation obtained by
  * <tt>toString()</tt>.
- * 
+ *
  * default serialization
  */
 public final class Map<K, V> implements Serializable {
@@ -239,7 +239,7 @@ public final class Map<K, V> implements Serializable {
       Pair<K, V> p = t.v.some().x;
       l = cons(new Entry<K, V>(p.x, p.y), l);
     }
-    for (Pair<Character, Tree<Character, Optional<Pair<K, V>>>> e : iter(t.edges))
+    for (Pair<?, Tree<Character, Optional<Pair<K, V>>>> e : iter(t.edges))
       l = entrySet(l, e.y);
     return l;
   }
