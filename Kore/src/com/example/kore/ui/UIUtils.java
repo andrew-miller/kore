@@ -34,7 +34,6 @@ import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
-import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Pair;
@@ -98,10 +97,10 @@ public class UIUtils {
     Map<Label, String> las =
         codeLabelAliases.getAliases(new CanonicalCode(root, path));
     if (cp.tag == CodeOrPath.Tag.CODE)
-      for (Entry<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
-        Optional<String> ls2 = las.get(e.k);
-        addCodeToMenu(m, root, append(e.k, path), e.v,
-            ls2.isNothing() ? e.k.label : ls2.some().x, space + "  ",
+      for (Pair<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
+        Optional<String> ls2 = las.get(e.x);
+        addCodeToMenu(m, root, append(e.x, path), e.y,
+            ls2.isNothing() ? e.x.label : ls2.some().x, space + "  ",
             codeLabelAliases, codeAliases, f);
       }
   }

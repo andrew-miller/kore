@@ -15,7 +15,6 @@ import android.widget.PopupMenu;
 
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Projection;
@@ -24,8 +23,8 @@ import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
+import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
 public class ProjectionMenu {
@@ -53,13 +52,13 @@ public class ProjectionMenu {
             return true;
           }
         });
-    for (final Entry<Label, CodeOrPath> e : iter(o.labels.entrySet())) {
+    for (final Pair<Label, ?> e : iter(o.labels.entrySet())) {
       Optional<String> a =
-          codeLabelAliases.getAliases(new CanonicalCode(c, proj)).get(e.k);
-      m.add(a.isNothing() ? e.k.toString() : a.some().x)
+          codeLabelAliases.getAliases(new CanonicalCode(c, proj)).get(e.x);
+      m.add(a.isNothing() ? e.x.toString() : a.some().x)
           .setOnMenuItemClickListener(new OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem _) {
-              make(context, v, codeLabelAliases, append(e.k, proj), c, out,
+              make(context, v, codeLabelAliases, append(e.x, proj), c, out,
                   select);
               return true;
             }

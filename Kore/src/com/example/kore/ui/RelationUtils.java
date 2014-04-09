@@ -58,7 +58,6 @@ import com.example.kore.utils.LabelComparer;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
-import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Pair;
@@ -119,22 +118,22 @@ public class RelationUtils {
       Map<Label, String> las =
           codeLabelAliases.getAliases(new CanonicalCode(r.product().o,
               ListUtils.<Label> nil()));
-      List<Entry<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>>> es =
+      List<Pair<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>>> es =
           r.product().m.entrySet();
       if (es.isEmpty())
         return "{}";
-      Optional<String> la = las.get(es.cons().x.k);
+      Optional<String> la = las.get(es.cons().x.x);
       String s =
-          "{'" + (la.isNothing() ? es.cons().x.k : la.some().x) + " "
-              + renderRelation(argCode, es.cons().x.v, codeLabelAliases);
+          "{'" + (la.isNothing() ? es.cons().x.x : la.some().x) + " "
+              + renderRelation(argCode, es.cons().x.y, codeLabelAliases);
       if (es.cons().tail.isEmpty())
         return s + "}";
-      for (Entry<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(es
+      for (Pair<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(es
           .cons().tail)) {
-        la = las.get(e.k);
+        la = las.get(e.x);
         s +=
-            "," + (la.isNothing() ? e.k : la.some().x) + " "
-                + renderRelation(argCode, e.v, codeLabelAliases);
+            "," + (la.isNothing() ? e.x : la.some().x) + " "
+                + renderRelation(argCode, e.y, codeLabelAliases);
       }
       return s + "}";
     }
@@ -494,9 +493,9 @@ public class RelationUtils {
     case PRODUCT: {
       List<Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>>> l =
           nil();
-      for (Entry<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(r
+      for (Pair<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(r
           .product().m.entrySet()))
-        l = append(Pair.pair(Either3.<Label, Integer, Unit> x(e.k), e.v), l);
+        l = append(Pair.pair(Either3.<Label, Integer, Unit> x(e.x), e.y), l);
       return l;
     }
     case PROJECTION:
@@ -733,18 +732,18 @@ public class RelationUtils {
         throw new RuntimeException("cannot make product with non-unit domain");
       Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> m =
           Map.empty();
-      for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet()))
-        m = m.put(e.k, x(defaultValue(unit, reroot(c, fromArray(e.k)))));
+      for (Pair<Label, ?> e : iter(c.labels.entrySet()))
+        m = m.put(e.x, x(defaultValue(unit, reroot(c, fromArray(e.x)))));
       r2 = Relation.product(new Product(m, c));
       break;
     case LABEL:
       if (!equal(d, unit))
         throw new RuntimeException("cannot make label with non-unit domain");
       notEmpty: {
-        for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
+        for (Pair<Label, ?> e : iter(c.labels.entrySet())) {
           r2 =
-              Relation.label(new Label_(e.k, x(defaultValue(unit,
-                  reroot(c, fromArray(e.k)))), c));
+              Relation.label(new Label_(e.x, x(defaultValue(unit,
+                  reroot(c, fromArray(e.x)))), c));
           break notEmpty;
         }
         r2 = defaultValue(d, c);
@@ -849,9 +848,9 @@ public class RelationUtils {
         case PRODUCT: {
           List<Pair<Either3<Label, Integer, Unit>, Either<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>>>> l =
               nil();
-          for (Entry<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(r
+          for (Pair<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(r
               .product().m.entrySet()))
-            l = cons(pair(Either3.<Label, Integer, Unit> x(e.k), f(e.v)), l);
+            l = cons(pair(Either3.<Label, Integer, Unit> x(e.x), f(e.y)), l);
           return l;
         }
         case PROJECTION:
@@ -981,14 +980,14 @@ public class RelationUtils {
       case PRODUCT:
         Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> fields =
             Map.empty();
-        for (Entry<Label, CodeOrPath> e : iter(o.labels.entrySet()))
+        for (Pair<Label, ?> e : iter(o.labels.entrySet()))
           fields =
-              fields.put(e.k, x(defaultValue(unit, reroot(o, fromArray(e.k)))));
+              fields.put(e.x, x(defaultValue(unit, reroot(o, fromArray(e.x)))));
         return Relation.product(new Product(fields, o));
       case UNION:
-        List<Entry<Label, CodeOrPath>> es = o.labels.entrySet();
+        List<Pair<Label, CodeOrPath>> es = o.labels.entrySet();
         if (!es.isEmpty() && es.cons().tail.isEmpty()) {
-          Label l = es.cons().x.k;
+          Label l = es.cons().x.x;
           return Relation
               .product(new Product(
                   Map.<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> empty()

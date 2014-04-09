@@ -20,8 +20,8 @@ import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
-import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
+import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
 public class PatternView {
@@ -58,12 +58,12 @@ public class PatternView {
     ll.setOrientation(LinearLayout.VERTICAL);
     Map<Label, String> las =
         codeLabelAliases.getAliases(new CanonicalCode(rootCode, codePath));
-    for (Entry<Label, Pattern> e : iter(pattern.fields.entrySet())) {
+    for (Pair<Label, ?> e : iter(pattern.fields.entrySet())) {
       LinearLayout ll2 = new LinearLayout(context);
-      Optional<String> ola = las.get(e.k);
+      Optional<String> ola = las.get(e.x);
       View v;
       if (ola.isNothing())
-        ll2.addView(v = LabelView.make(context, e.k, aliasTextColor));
+        ll2.addView(v = LabelView.make(context, e.x, aliasTextColor));
       else {
         Button b = new Button(context);
         b.setText(ola.some().x);
@@ -72,8 +72,8 @@ public class PatternView {
       }
       f.f(v);
       ll2.addView(make(context, aliasTextColor, rootPattern,
-          append(e.k, patternPath), rootCode,
-          directPath(append(e.k, codePath), rootCode), codeLabelAliases,
+          append(e.x, patternPath), rootCode,
+          directPath(append(e.x, codePath), rootCode), codeLabelAliases,
           replace));
       ll.addView(ll2);
     }

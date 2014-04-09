@@ -23,7 +23,6 @@ import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
-import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.Pair;
 import com.example.kore.utils.Random;
@@ -135,15 +134,15 @@ public class CodeEditor extends FrameLayout {
     Map<Label, String> la = codeLabelAliases.getAliases(cc);
     Map<Label, String> la2 = Map.empty();
     Map<Label, Label> m = i.get(cPath).some().x;
-    for (Entry<Label, CodeOrPath> e : iter(cNode.labels.entrySet())) {
-      Label l = e.k;
+    for (Pair<Label, CodeOrPath> e : iter(cNode.labels.entrySet())) {
+      Label l = e.x;
       Label l2 = m.get(l).some().x;
       Optional<String> oa = la.get(l);
       if (!oa.isNothing())
         la2 = la2.put(l2, oa.some().x);
-      if (e.v.tag == CodeOrPath.Tag.CODE)
-        mapAliases(cRoot, append(e.k, cPath), c2root, append(l2, c2Path),
-            e.v.code, i);
+      if (e.y.tag == CodeOrPath.Tag.CODE)
+        mapAliases(cRoot, append(e.x, cPath), c2root, append(l2, c2Path),
+            e.y.code, i);
     }
     codeLabelAliases.setAliases(cc2, la2);
   }
@@ -154,9 +153,9 @@ public class CodeEditor extends FrameLayout {
       return;
     codeLabelAliases.setAliases(new CanonicalCode(c2, path),
         codeLabelAliases.getAliases(new CanonicalCode(code, path)));
-    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet()))
-      if (e.v.tag == Tag.CODE)
-        remapAliases(e.v.code, c2, append(e.k, path), invalidatedPath);
+    for (Pair<Label, CodeOrPath> e : iter(c.labels.entrySet()))
+      if (e.y.tag == Tag.CODE)
+        remapAliases(e.y.code, c2, append(e.x, path), invalidatedPath);
   }
 
   private void initNodeEditor(Code c) {

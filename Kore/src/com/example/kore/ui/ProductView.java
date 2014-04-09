@@ -13,8 +13,8 @@ import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
-import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
+import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
 public class ProductView {
@@ -29,17 +29,17 @@ public class ProductView {
     Map<Label, String> las =
         codeLabelAliases.getAliases(new CanonicalCode(product.o, ListUtils
             .<Label> nil()));
-    for (Entry<Label, ?> e : iter(product.m.entrySet())) {
+    for (Pair<Label, ?> e : iter(product.m.entrySet())) {
       LinearLayout ll2 = new LinearLayout(context);
-      Optional<String> ola = las.get(e.k);
+      Optional<String> ola = las.get(e.x);
       if (ola.isNothing())
-        ll2.addView(LabelView.make(context, e.k, aliasTextColor));
+        ll2.addView(LabelView.make(context, e.x, aliasTextColor));
       else {
         Button b = new Button(context);
         b.setText(ola.some().x);
         ll2.addView(b);
       }
-      ll2.addView(make.f(Either3.<Label, Integer, Unit> x(e.k)));
+      ll2.addView(make.f(Either3.<Label, Integer, Unit> x(e.x)));
       ll.addView(ll2);
     }
     if (product.m.entrySet().isEmpty()) {

@@ -3,10 +3,12 @@ package com.example.kore;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.OptionalUtils.nothing;
+import static com.example.kore.utils.Pair.pair;
+import junit.framework.TestCase;
+
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
-import com.example.kore.utils.Map.Entry;
-import junit.framework.TestCase;
+import com.example.kore.utils.Pair;
 
 public class MapTest extends TestCase {
   public static void testEmptyMap() {
@@ -255,19 +257,19 @@ public class MapTest extends TestCase {
 
   public static void testEntrySet() {
     Map<Integer, Object> m = Map.empty();
-    List<Entry<Integer, Object>> l = nil();
+    List<Pair<Integer, Object>> l = nil();
     assertEquals(l, m.entrySet());
     Object o1 = new Object();
     m = m.put(1, o1);
-    l = append(new Entry<Integer, Object>(1, o1), l);
+    l = append(pair(1, o1), l);
     assertEquals(l, m.entrySet());
     Object o2 = new Object();
     m = m.put(2, o2);
-    l = append(new Entry<Integer, Object>(2, o2), l);
+    l = append(pair(2, o2), l);
     assertEquals(l, m.entrySet());
     Object o3 = new Object();
     m = m.put(3, o3);
-    l = append(new Entry<Integer, Object>(3, o3), l);
+    l = append(pair(3, o3), l);
     assertEquals(l, m.entrySet());
   }
 

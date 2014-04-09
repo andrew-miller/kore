@@ -13,8 +13,8 @@ import com.example.kore.codes.Label;
 import com.example.kore.codes.Pattern;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
-import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
+import com.example.kore.utils.Pair;
 
 public class PatternUtils {
   public static final Pattern emptyPattern = new Pattern(
@@ -60,25 +60,25 @@ public class PatternUtils {
     default:
       throw boom();
     }
-    List<Entry<Label, Pattern>> es = pattern.fields.entrySet();
+    List<Pair<Label, Pattern>> es = pattern.fields.entrySet();
     if (es.isEmpty())
       return start + end;
     CanonicalCode cc = new CanonicalCode(root, path);
     String s;
     {
-      Entry<Label, Pattern> e = es.cons().x;
-      Optional<String> a = codeLabelAliases.getAliases(cc).get(e.k);
+      Pair<Label, Pattern> e = es.cons().x;
+      Optional<String> a = codeLabelAliases.getAliases(cc).get(e.x);
       s =
-          start + (a.isNothing() ? e.k : a.some().x) + " "
-              + renderPattern(e.v, root, append(e.k, path), codeLabelAliases);
+          start + (a.isNothing() ? e.x : a.some().x) + " "
+              + renderPattern(e.y, root, append(e.x, path), codeLabelAliases);
     }
     if (es.cons().tail.isEmpty())
       return s + end;
-    for (Entry<Label, Pattern> e : iter(es.cons().tail)) {
-      Optional<String> a = codeLabelAliases.getAliases(cc).get(e.k);
+    for (Pair<Label, Pattern> e : iter(es.cons().tail)) {
+      Optional<String> a = codeLabelAliases.getAliases(cc).get(e.x);
       s +=
-          "," + (a.isNothing() ? e.k : a.some().x) + " "
-              + renderPattern(e.v, root, append(e.k, path), codeLabelAliases);
+          "," + (a.isNothing() ? e.x : a.some().x) + " "
+              + renderPattern(e.y, root, append(e.x, path), codeLabelAliases);
     }
     return s + end;
   }

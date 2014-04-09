@@ -28,8 +28,8 @@ import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
-import com.example.kore.utils.Map.Entry;
 import com.example.kore.utils.Optional;
+import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
 public class CodeField extends FrameLayout {
@@ -170,10 +170,10 @@ public class CodeField extends FrameLayout {
           });
           Map<Label, String> las =
               codeLabelAliases.getAliases(new CanonicalCode(rootCode, path));
-          for (Entry<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
-            Optional<String> ls2 = las.get(e.k);
-            addRootCodeToMenu(m, e.v, ls2.isNothing() ? e.k.label
-                : ls2.some().x, space + "  ", append(e.k, path));
+          for (Pair<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
+            Optional<String> ls2 = las.get(e.x);
+            addRootCodeToMenu(m, e.y, ls2.isNothing() ? e.x.label
+                : ls2.some().x, space + "  ", append(e.x, path));
           }
         }
       }

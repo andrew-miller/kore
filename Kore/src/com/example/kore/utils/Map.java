@@ -26,13 +26,13 @@ import java.io.Serializable;
 //
 /**
  * Map implemented using a prefix tree. Immutable, thread-safe, null-free.
- *
+ * 
  * The tree is made using the string representation of values of <code>K</code>
  * using <tt>toString()</tt>.
- *
+ * 
  * Every value of <tt>Map</tt> has a unique representation obtained by
  * <tt>toString()</tt>.
- *
+ * 
  * default serialization
  */
 public final class Map<K, V> implements Serializable {
@@ -144,14 +144,14 @@ public final class Map<K, V> implements Serializable {
 
   @Override
   public String toString() {
-    List<Entry<K, V>> es = entrySet();
+    List<Pair<K, V>> es = entrySet();
     if (es.isEmpty())
       return "{}";
     String s = "{";
-    s += es.cons().x.k + " -> " + es.cons().x.v;
+    s += es.cons().x.x + " -> " + es.cons().x.y;
     es = es.cons().tail;
     while (!es.isEmpty()) {
-      s += ", " + es.cons().x.k + " -> " + es.cons().x.v;
+      s += ", " + es.cons().x.x + " -> " + es.cons().x.y;
       es = es.cons().tail;
     }
     return s + "}";
@@ -182,63 +182,14 @@ public final class Map<K, V> implements Serializable {
     return true;
   }
 
-  public static class Entry<K, V> {
-    @Override
-    public String toString() {
-      return "Entry [k=" + k + ", v=" + v + "]";
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((k == null) ? 0 : k.hashCode());
-      result = prime * result + ((v == null) ? 0 : v.hashCode());
-      return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
-      Entry other = (Entry) obj;
-      if (k == null) {
-        if (other.k != null)
-          return false;
-      } else if (!k.equals(other.k))
-        return false;
-      if (v == null) {
-        if (other.v != null)
-          return false;
-      } else if (!v.equals(other.v))
-        return false;
-      return true;
-    }
-
-    public Entry(K k, V v) {
-      this.k = k;
-      this.v = v;
-    }
-
-    public final K k;
-    public final V v;
-
+  public List<Pair<K, V>> entrySet() {
+    return entrySet(ListUtils.<Pair<K, V>> nil(), tree);
   }
 
-  public List<Entry<K, V>> entrySet() {
-    return entrySet(ListUtils.<Entry<K, V>> nil(), tree);
-  }
-
-  private List<Entry<K, V>> entrySet(List<Entry<K, V>> l,
+  private List<Pair<K, V>> entrySet(List<Pair<K, V>> l,
       Tree<Character, Optional<Pair<K, V>>> t) {
-    if (!t.v.isNothing()) {
-      Pair<K, V> p = t.v.some().x;
-      l = cons(new Entry<K, V>(p.x, p.y), l);
-    }
+    if (!t.v.isNothing())
+      l = cons(t.v.some().x, l);
     for (Pair<?, Tree<Character, Optional<Pair<K, V>>>> e : iter(t.edges))
       l = entrySet(l, e.y);
     return l;

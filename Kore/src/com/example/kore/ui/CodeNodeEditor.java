@@ -21,7 +21,7 @@ import com.example.kore.ui.CodeField.LabelSelectedListener;
 import com.example.kore.utils.Boom;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
-import com.example.kore.utils.Map.Entry;
+import com.example.kore.utils.Pair;
 
 public class CodeNodeEditor extends FrameLayout {
   public static interface Listener {
@@ -105,8 +105,8 @@ public class CodeNodeEditor extends FrameLayout {
     fields.removeAllViews();
     Map<Label, String> las =
         codeLabelAliases.getAliases(new CanonicalCode(rootCode, path));
-    for (final Entry<Label, CodeOrPath> e : iter(code.labels.entrySet())) {
-      final Label l = e.k;
+    for (final Pair<Label, CodeOrPath> e : iter(code.labels.entrySet())) {
+      final Label l = e.x;
       LabelSelectedListener lsl = new CodeField.LabelSelectedListener() {
         public void labelSelected() {
           notNull(l);
@@ -140,7 +140,7 @@ public class CodeNodeEditor extends FrameLayout {
             }
           };
 
-      fields.addView(new CodeField(getContext(), csl, lsl, frl, lacl, l, e.v,
+      fields.addView(new CodeField(getContext(), csl, lsl, frl, lacl, l, e.y,
           rootCode, l.equals(selectedLabel), codeLabelAliases, codeAliases,
           codes, path, las.get(l)));
     }

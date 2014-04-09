@@ -28,7 +28,6 @@ import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.ListUtils.cons;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
-import com.example.kore.utils.Map.Entry;
 import static com.example.kore.utils.Pair.pair;
 
 public final class CodeUtils {
@@ -74,8 +73,8 @@ public final class CodeUtils {
     }
     Map<Label, String> labelAliases = codeLabelAliases.getAliases(cc);
     String result = "";
-    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
-      Label l = e.k;
+    for (Pair<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
+      Label l = e.x;
       if (result.equals(""))
         result = "'";
       else
@@ -83,7 +82,7 @@ public final class CodeUtils {
       Optional<String> la = labelAliases.get(l);
       String ls = la.isNothing() ? l.label : la.some().x;
       result +=
-          (ls + " " + renderCode(append(l, path), root, e.v, codeLabelAliases,
+          (ls + " " + renderCode(append(l, path), root, e.y, codeLabelAliases,
               codeAliases, depth - 1));
     }
     return start + result + end;
@@ -122,13 +121,13 @@ public final class CodeUtils {
   private static Code mapPaths(Code c, Map<List<Label>, Map<Label, Label>> i,
       List<Label> path) {
     Map<Label, CodeOrPath> m2 = Map.empty();
-    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet()))
-      if (e.v.tag == CodeOrPath.Tag.PATH)
-        m2 = m2.put(e.k, CodeOrPath.newPath(mapPath(e.v.path, i)));
+    for (Pair<Label, CodeOrPath> e : iter(c.labels.entrySet()))
+      if (e.y.tag == CodeOrPath.Tag.PATH)
+        m2 = m2.put(e.x, CodeOrPath.newPath(mapPath(e.y.path, i)));
       else
         m2 =
-            m2.put(e.k,
-                CodeOrPath.newCode(mapPaths(e.v.code, i, append(e.k, path))));
+            m2.put(e.x,
+                CodeOrPath.newCode(mapPaths(e.y.code, i, append(e.x, path))));
     return new Code(c.tag, m2);
   }
 
@@ -150,7 +149,7 @@ public final class CodeUtils {
     boolean randomize = vs.contains(v);
     Map<Label, CodeOrPath> m = Map.empty();
     Map<Label, Label> lm = Map.empty();
-    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
+    for (Pair<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
       Label l = null;
       if (randomize)
         do {
@@ -159,14 +158,14 @@ public final class CodeUtils {
           l = new Label(Random.randomId());
         } while (containsKey(m, l));
       else
-        l = e.k;
-      lm = lm.put(e.k, l);
+        l = e.x;
+      lm = lm.put(e.x, l);
       m =
           m.put(
               l,
-              e.v.tag == CodeOrPath.Tag.CODE ? CodeOrPath
-                  .newCode(dissassociate_(g, g.getEdgeTarget(pair(v, e.k)),
-                      e.v.code, vs, i, append(e.k, path))) : e.v);
+              e.y.tag == CodeOrPath.Tag.CODE ? CodeOrPath
+                  .newCode(dissassociate_(g, g.getEdgeTarget(pair(v, e.x)),
+                      e.y.code, vs, i, append(e.x, path))) : e.y);
     }
     i.set(i.get().put(path, lm));
     return new Code(c.tag, m);
@@ -247,18 +246,18 @@ public final class CodeUtils {
   private static void addLinksToCodeGraph(Code c,
       DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g,
       Identity<Tag> root, Identity<Tag> parent) {
-    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
-      CodeOrPath cp = e.v;
+    for (Pair<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
+      CodeOrPath cp = e.y;
       switch (cp.tag) {
       case PATH:
         Identity<Tag> v = root;
         for (Label l : iter(cp.path))
           v = g.getEdgeTarget(pair(v, l));
-        g.addEdge(parent, v, pair(parent, e.k));
+        g.addEdge(parent, v, pair(parent, e.x));
         break;
       case CODE:
         addLinksToCodeGraph(cp.code, g, root,
-            g.getEdgeTarget(pair(parent, e.k)));
+            g.getEdgeTarget(pair(parent, e.x)));
         break;
       default:
         throw boom();
@@ -273,12 +272,12 @@ public final class CodeUtils {
           Code c) {
     Identity<Code.Tag> v = new Identity<Code.Tag>(c.tag);
     g.addVertex(v);
-    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
-      CodeOrPath cp = e.v;
+    for (Pair<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
+      CodeOrPath cp = e.y;
       if (cp.tag != CodeOrPath.Tag.CODE)
         continue;
       Identity<Code.Tag> v2 = codeSpanningTreeToGraph(g, cp.code);
-      g.addEdge(v, v2, pair(v, e.k));
+      g.addEdge(v, v2, pair(v, e.x));
     }
     return v;
   }
@@ -386,9 +385,9 @@ public final class CodeUtils {
   /** append <tt>p</tt> to all paths */
   public static Code rebase(List<Label> p, Code c) {
     Map<Label, CodeOrPath> m = Map.empty();
-    for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
-      Label l = e.k;
-      CodeOrPath cp = e.v;
+    for (Pair<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
+      Label l = e.x;
+      CodeOrPath cp = e.y;
       switch (cp.tag) {
       case CODE:
         m = m.put(l, CodeOrPath.newCode(rebase(p, cp.code)));
@@ -470,7 +469,7 @@ public final class CodeUtils {
    * map cyclic path over the graph represented by this <tt>Code</tt> (rooted at
    * this <tt>Code</tt>) to a simple path from this <tt>Code</tt> to another
    * <tt>Code</tt>
-   * 
+   *
    * @param Code
    *          a <tt>Code</tt> that <tt>validCode</tt> maps to <tt>true</tt>
    */
@@ -508,22 +507,22 @@ public final class CodeUtils {
       public List<Pair<Label, Either<LinkTree<Label, Tag>, List<Label>>>>
           edges() {
         List<Pair<Label, Either<LinkTree<Label, Tag>, List<Label>>>> l = nil();
-        for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet()))
-          switch (e.v.tag) {
+        for (Pair<Label, CodeOrPath> e : iter(c.labels.entrySet()))
+          switch (e.y.tag) {
           case CODE:
             l =
                 cons(
                     pair(
-                        e.k,
+                        e.x,
                         Either
-                            .<LinkTree<Label, Code.Tag>, List<Label>> x(linkTree(e.v.code))),
+                            .<LinkTree<Label, Code.Tag>, List<Label>> x(linkTree(e.y.code))),
                     l);
             break;
           case PATH:
             l =
                 cons(
-                    pair(e.k, Either
-                        .<LinkTree<Label, Code.Tag>, List<Label>> y(e.v.path)),
+                    pair(e.x, Either
+                        .<LinkTree<Label, Code.Tag>, List<Label>> y(e.y.path)),
                     l);
             break;
           default:
