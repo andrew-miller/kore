@@ -1,7 +1,7 @@
 package com.example.kore.ui;
 
 import static com.example.kore.ui.RelationUtils.codomain;
-import static com.example.kore.ui.RelationUtils.dummy;
+import static com.example.kore.ui.RelationUtils.defaultValue;
 import static com.example.kore.ui.RelationUtils.enclosingAbstraction;
 import static com.example.kore.ui.RelationUtils.getRelation;
 import static com.example.kore.utils.Boom.boom;
@@ -116,7 +116,8 @@ public final class RelationView {
                     listener.replaceRelation(path, Relation.label(new Label_(l,
                         x(equal(codomain(sr),
                             getCode(r.label().o, r.label().o, l).some().x) ? sr
-                            : dummy(unit, reroot(r.label().o, fromArray(l)))),
+                            : defaultValue(unit,
+                                reroot(r.label().o, fromArray(l)))),
                         r.label().o)));
                     return unit();
                   }

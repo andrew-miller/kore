@@ -386,7 +386,7 @@ public class RelationUtils {
     return mapPaths(
         replaceRelationOrPathAt(root, path,
             x(Relation.composition(new Composition(equal(last, c.o) ? p.y
-                : append(x(dummy(last, c.o)), p.y), c.i, c.o)))),
+                : append(x(defaultValue(last, c.o)), p.y), c.i, c.o)))),
         new F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>>() {
           public List<Either3<Label, Integer, Unit>> f(
               List<Either3<Label, Integer, Unit>> p2) {
@@ -419,7 +419,7 @@ public class RelationUtils {
     Pair<List<Boolean>, List<Either<Relation, List<Either3<Label, Integer, Unit>>>>> p =
         adaptComposition_(root, codomain(r), l.cons().tail);
     return equal(c, domain(r)) ? pair(cons(false, p.x), cons(er, p.y)) : pair(
-        cons(true, p.x), cons(x(dummy(c, domain(r))), cons(er, p.y)));
+        cons(true, p.x), cons(x(defaultValue(c, domain(r))), cons(er, p.y)));
   }
 
   /** Empty relation from <tt>i</tt> to <tt>o</tt> */
@@ -629,7 +629,7 @@ public class RelationUtils {
     Code d2 = domain(r2);
     Code c2 = codomain(r2);
     if (!equal(d, d2)) {
-      Relation t = dummy(d, d2);
+      Relation t = defaultValue(d, d2);
       if (r2.tag == Relation.Tag.COMPOSITION)
         r2 =
             Relation.composition(new Composition(
@@ -640,7 +640,7 @@ public class RelationUtils {
                 .composition(new Composition(fromArray(x(t), x(r2)), d, c2));
     }
     if (!equal(c, c2)) {
-      Relation t = dummy(c2, c);
+      Relation t = defaultValue(c2, c);
       if (r2.tag == Relation.Tag.COMPOSITION)
         r2 =
             Relation.composition(new Composition(append(x(t),
@@ -722,8 +722,8 @@ public class RelationUtils {
     switch (t) {
     case ABSTRACTION:
       r2 =
-          Relation.abstraction(new Abstraction(emptyPattern, x(dummy(unit, c)),
-              d, c));
+          Relation.abstraction(new Abstraction(emptyPattern, x(defaultValue(
+              unit, c)), d, c));
       break;
     case COMPOSITION:
       r2 = Relation.composition(new Composition(nil, d, c));
@@ -734,7 +734,7 @@ public class RelationUtils {
       Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> m =
           Map.empty();
       for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet()))
-        m = m.put(e.k, x(dummy(unit, reroot(c, fromArray(e.k)))));
+        m = m.put(e.k, x(defaultValue(unit, reroot(c, fromArray(e.k)))));
       r2 = Relation.product(new Product(m, c));
       break;
     case LABEL:
@@ -743,11 +743,11 @@ public class RelationUtils {
       notEmpty: {
         for (Entry<Label, CodeOrPath> e : iter(c.labels.entrySet())) {
           r2 =
-              Relation.label(new Label_(e.k, x(dummy(unit,
+              Relation.label(new Label_(e.k, x(defaultValue(unit,
                   reroot(c, fromArray(e.k)))), c));
           break notEmpty;
         }
-        r2 = dummy(d, c);
+        r2 = defaultValue(d, c);
       }
       break;
     case PROJECTION:
@@ -757,7 +757,9 @@ public class RelationUtils {
             "attempt to make projection that isn't contained within an abstraction");
       Code arg = oa.some().x.i;
       Optional<Projection> or2 = projection(arg, c);
-      r2 = or2.isNothing() ? dummy(d, c) : Relation.projection(or2.some().x);
+      r2 =
+          or2.isNothing() ? defaultValue(d, c) : Relation
+              .projection(or2.some().x);
       break;
     case UNION:
       r2 = dummy(d, c);
@@ -777,7 +779,7 @@ public class RelationUtils {
     Composition comp;
     Code d = domain(r);
     Code c = codomain(r);
-    Relation t = dummy(c, c2);
+    Relation t = defaultValue(c, c2);
     switch (r.tag) {
     case COMPOSITION:
       comp = new Composition(append(x(t), r.composition().l), d, c2);
@@ -802,7 +804,7 @@ public class RelationUtils {
     Composition comp;
     Code d = domain(r);
     Code c = codomain(r);
-    Relation t = dummy(d2, d);
+    Relation t = defaultValue(d2, d);
     switch (r.tag) {
     case COMPOSITION:
       comp = new Composition(cons(x(t), r.composition().l), d2, c);
@@ -971,6 +973,31 @@ public class RelationUtils {
         .y()) : Either
         .<Relation, List<Either3<Label, Integer, Unit>>> x(linkTreeToRelation(e
             .x()));
+  }
+
+  public static Relation defaultValue(Code i, Code o) {
+    if (equal(i, unit)) {
+      switch (o.tag) {
+      case PRODUCT:
+        Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> fields =
+            Map.empty();
+        for (Entry<Label, CodeOrPath> e : iter(o.labels.entrySet()))
+          fields =
+              fields.put(e.k, x(defaultValue(unit, reroot(o, fromArray(e.k)))));
+        return Relation.product(new Product(fields, o));
+      case UNION:
+        List<Entry<Label, CodeOrPath>> es = o.labels.entrySet();
+        if (!es.isEmpty() && es.cons().tail.isEmpty()) {
+          Label l = es.cons().x.k;
+          return Relation
+              .product(new Product(
+                  Map.<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> empty()
+                      .put(l, x(defaultValue(unit, reroot(o, fromArray(l))))),
+                  o));
+        }
+      }
+    }
+    return dummy(i, o);
   }
 
 }
