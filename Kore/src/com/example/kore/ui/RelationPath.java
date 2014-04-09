@@ -109,7 +109,8 @@ public class RelationPath {
               if (codomain(r).tag == Code.Tag.PRODUCT)
                 add.f(Pair.pair("{}", Tag.PRODUCT));
               if (codomain(r).tag == Code.Tag.UNION)
-                add.f(Pair.pair("'", Tag.LABEL));
+                if (!codomain(r).labels.entrySet().isEmpty())
+                  add.f(Pair.pair("'", Tag.LABEL));
             }
             add.f(Pair.pair("->", Tag.ABSTRACTION));
             add.f(Pair.pair("|", Tag.COMPOSITION));
