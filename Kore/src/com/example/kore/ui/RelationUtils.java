@@ -37,7 +37,6 @@ import org.jgrapht.graph.DirectedMultigraph;
 
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.RVertex;
 import com.example.kore.codes.Relation;
@@ -1001,7 +1000,7 @@ public class RelationUtils {
               fields.put(e.x, x(defaultValue(unit, reroot(o, fromArray(e.x)))));
         return Relation.product(new Product(fields, o));
       case UNION:
-        List<Pair<Label, CodeOrPath>> es = o.labels.entrySet();
+        List<Pair<Label, Either<Code, List<Label>>>> es = o.labels.entrySet();
         if (!es.isEmpty() && es.cons().tail.isEmpty()) {
           Label l = es.cons().x.x;
           return Relation

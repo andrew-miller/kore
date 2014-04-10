@@ -15,11 +15,14 @@ import android.widget.FrameLayout;
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeOrPath;
-import com.example.kore.codes.CodeOrPath.Tag;
 import com.example.kore.codes.Label;
-import com.example.kore.utils.Boom;
+import static com.example.kore.utils.Boom.boom;
 import com.example.kore.utils.CodeUtils;
+import static com.example.kore.utils.CodeUtils.replaceCodeAt;
+import static com.example.kore.utils.CodeUtils.validCode;
+import static com.example.kore.utils.CodeUtils.codeAt;
+import static com.example.kore.utils.CodeUtils.unit;
+import com.example.kore.utils.Either;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
@@ -113,7 +116,7 @@ public class CodeEditor extends FrameLayout {
   }
 
   private void onCodeEdited(Code c, List<Label> invalidatedPath) {
-    Code code2 = CodeUtils.replaceCodeAt(code, path, CodeOrPath.newCode(c));
+    Code code2 = replaceCodeAt(code, path, Either.<Code, List<Label>> x(c));
     remapAliases(code, code2, ListUtils.<Label> nil(), invalidatedPath);
     pathShadow = CodeUtils.longestValidSubPath(pathShadow, code2);
     Pair<Code, Map<List<Label>, Map<Label, Label>>> p =
@@ -134,15 +137,16 @@ public class CodeEditor extends FrameLayout {
     Map<Label, String> la = codeLabelAliases.getAliases(cc);
     Map<Label, String> la2 = Map.empty();
     Map<Label, Label> m = i.get(cPath).some().x;
-    for (Pair<Label, CodeOrPath> e : iter(cNode.labels.entrySet())) {
+    for (Pair<Label, Either<Code, List<Label>>> e : iter(cNode.labels
+        .entrySet())) {
       Label l = e.x;
       Label l2 = m.get(l).some().x;
       Optional<String> oa = la.get(l);
       if (!oa.isNothing())
         la2 = la2.put(l2, oa.some().x);
-      if (e.y.tag == CodeOrPath.Tag.CODE)
+      if (e.y.tag == e.y.tag.X)
         mapAliases(cRoot, append(e.x, cPath), c2root, append(l2, c2Path),
-            e.y.code, i);
+            e.y.x(), i);
     }
     codeLabelAliases.setAliases(cc2, la2);
   }
@@ -153,16 +157,16 @@ public class CodeEditor extends FrameLayout {
       return;
     codeLabelAliases.setAliases(new CanonicalCode(c2, path),
         codeLabelAliases.getAliases(new CanonicalCode(code, path)));
-    for (Pair<Label, CodeOrPath> e : iter(c.labels.entrySet()))
-      if (e.y.tag == Tag.CODE)
-        remapAliases(e.y.code, c2, append(e.x, path), invalidatedPath);
+    for (Pair<Label, Either<Code, List<Label>>> e : iter(c.labels.entrySet()))
+      if (e.y.tag == e.y.tag.X)
+        remapAliases(e.y.x(), c2, append(e.x, path), invalidatedPath);
   }
 
   private void initNodeEditor(Code c) {
     nodeEditor =
         new CodeNodeEditor(context, c, code, new CodeNodeEditor.Listener() {
           public void switchCodeOp() {
-            Code c = CodeUtils.codeAt(path, code).some().x;
+            Code c = codeAt(path, code).some().x;
             switch (c.tag) {
             case PRODUCT:
               c = Code.newUnion(c.labels);
@@ -171,7 +175,7 @@ public class CodeEditor extends FrameLayout {
               c = Code.newProduct(c.labels);
               break;
             default:
-              throw Boom.boom();
+              throw boom();
             }
             onCodeEdited(c, null);
           }
@@ -182,14 +186,14 @@ public class CodeEditor extends FrameLayout {
 
           public void newField() {
             Code c = CodeUtils.codeAt(path, code).some().x;
-            Map<Label, CodeOrPath> m = c.labels;
+            Map<Label, Either<Code, List<Label>>> m = c.labels;
             Label l = null;
             do {
               if (l != null)
                 Log.e(CodeEditor.class.getName(), "generated duplicate label");
               l = new Label(Random.randomId());
             } while (containsKey(m, l));
-            m = m.put(l, CodeOrPath.newCode(CodeUtils.unit));
+            m = m.put(l, Either.<Code, List<Label>> x(unit));
             c = new Code(c.tag, m);
             onCodeEdited(c, null);
           }
@@ -204,11 +208,11 @@ public class CodeEditor extends FrameLayout {
             initNodeEditor(c);
           }
 
-          public void fieldReplaced(CodeOrPath cp, Label l) {
+          public void fieldReplaced(Either<Code, List<Label>> cp, Label l) {
             Code c = CodeUtils.codeAt(path, code).some().x;
             notNull(cp, l);
-            if (cp.tag == Tag.PATH)
-              if (CodeUtils.codeAt(cp.path, code).isNothing())
+            if (cp.tag == cp.tag.Y)
+              if (codeAt(cp.y(), code).isNothing())
                 throw new RuntimeException("invalid path");
             c = new Code(c.tag, c.labels.put(l, cp));
             onCodeEdited(c, append(l, path));
@@ -217,22 +221,27 @@ public class CodeEditor extends FrameLayout {
           public void deleteField(Label l) {
             Code c = CodeUtils.codeAt(path, code).some().x;
             Code c2 = new Code(c.tag, c.labels.delete(l));
-            if (CodeUtils.validCode(CodeUtils.replaceCodeAt(code, path,
-                CodeOrPath.newCode(c2))))
+            if (validCode(replaceCodeAt(code, path,
+                Either.<Code, List<Label>> x(c2))))
               onCodeEdited(c2, append(l, path));
           }
 
           public void codeSelected(Label l) {
             notNull(l);
             Code c = CodeUtils.codeAt(path, code).some().x;
-            CodeOrPath cp = c.labels.get(l).some().x;
+            Either<Code, List<Label>> cp = c.labels.get(l).some().x;
             Code c2;
-            if (cp.tag != CodeOrPath.Tag.CODE) {
-              path = cp.path;
+            switch (cp.tag) {
+            case Y:
+              path = cp.y();
               c2 = CodeUtils.codeAt(path, code).some().x;
-            } else {
+              break;
+            case X:
               path = append(l, path);
-              c2 = cp.code;
+              c2 = cp.x();
+              break;
+            default:
+              throw boom();
             }
             if (!isSubList(path, pathShadow)) {
               pathShadow = path;

@@ -12,13 +12,13 @@ import android.widget.LinearLayout;
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.ui.CodeField.CodeSelectedListener;
 import com.example.kore.ui.CodeField.FieldReplacedListener;
 import com.example.kore.ui.CodeField.LabelAliasChangedListener;
 import com.example.kore.ui.CodeField.LabelSelectedListener;
 import com.example.kore.utils.Boom;
+import com.example.kore.utils.Either;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Pair;
@@ -33,7 +33,7 @@ public class CodeNodeEditor extends FrameLayout {
 
     void codeSelected(Label l);
 
-    void fieldReplaced(CodeOrPath cp, Label l);
+    void fieldReplaced(Either<Code, List<Label>> cp, Label l);
 
     void labelAliasChanged(Label label, String alias);
 
@@ -105,7 +105,8 @@ public class CodeNodeEditor extends FrameLayout {
     fields.removeAllViews();
     Map<Label, String> las =
         codeLabelAliases.getAliases(new CanonicalCode(rootCode, path));
-    for (final Pair<Label, CodeOrPath> e : iter(code.labels.entrySet())) {
+    for (final Pair<Label, Either<Code, List<Label>>> e : iter(code.labels
+        .entrySet())) {
       final Label l = e.x;
       LabelSelectedListener lsl = new CodeField.LabelSelectedListener() {
         public void labelSelected() {
@@ -128,7 +129,7 @@ public class CodeNodeEditor extends FrameLayout {
       };
 
       FieldReplacedListener frl = new CodeField.FieldReplacedListener() {
-        public void fieldReplaced(CodeOrPath cp) {
+        public void fieldReplaced(Either<Code, List<Label>> cp) {
           listener.fieldReplaced(cp, l);
         }
       };

@@ -1,7 +1,5 @@
 package com.example.kore.utils;
 
-import com.example.kore.codes.CodeOrPath;
-import com.example.kore.codes.Label;
 import com.example.kore.ui.LinkTree;
 import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.ListUtils.append;
@@ -100,7 +98,6 @@ public class LinkTreeUtils {
       final DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g,
       final Map<Identity<V>, List<E>> m, final Identity<V> v,
       final Set<Pair<Identity<V>, E>> spanningTreeEdges) {
-    Map<Label, CodeOrPath> lm = Map.empty();
     return new LinkTree<E, V>() { /*
                                    * XXX Leaks capability to use mutable data
                                    * (g). Rewrite to be strict

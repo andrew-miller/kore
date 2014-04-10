@@ -16,7 +16,7 @@ import java.io.Serializable;
 // e.g if you have some value type that has these strings,
 // these two maps will have the same string representation:
 // k1: a
-// v1: x, b -> y}
+// v1: x, b -> y
 // empty.put(k1,v2).toString(): {a -> x, b -> y}
 // k2: a
 // v2: x

@@ -18,7 +18,6 @@ import android.widget.PopupMenu;
 
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Pattern;
 import com.example.kore.utils.List;
@@ -48,7 +47,7 @@ public class PatternMenu {
         }
       });
       Map<Label, Pattern> mp = Map.empty();
-      for (final Pair<Label, CodeOrPath> e : iter(code.labels.entrySet()))
+      for (final Pair<Label, ?> e : iter(code.labels.entrySet()))
         mp = mp.put(e.x, emptyPattern);
       final Pattern p = new Pattern(mp);
       m.add(renderPattern(p, rootCode, path, codeLabelAliases))
@@ -60,7 +59,7 @@ public class PatternMenu {
           });
       break;
     case UNION:
-      for (final Pair<Label, CodeOrPath> e : iter(code.labels.entrySet())) {
+      for (final Pair<Label, ?> e : iter(code.labels.entrySet())) {
         Optional<String> a = codeLabelAliases.getAliases(cc).get(e.x);
         m.add((a.isNothing() ? e.x : a.some().x) + " *")
             .setOnMenuItemClickListener(new OnMenuItemClickListener() {

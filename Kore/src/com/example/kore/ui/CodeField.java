@@ -20,10 +20,9 @@ import android.widget.PopupMenu;
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeOrPath;
-import com.example.kore.codes.CodeOrPath.Tag;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.CodeUtils;
+import com.example.kore.utils.Either;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
@@ -42,7 +41,7 @@ public class CodeField extends FrameLayout {
   }
 
   public static interface FieldReplacedListener {
-    public void fieldReplaced(CodeOrPath cp);
+    public void fieldReplaced(Either<Code, List<Label>> cp);
   }
 
   public static interface LabelAliasChangedListener {
@@ -69,7 +68,7 @@ public class CodeField extends FrameLayout {
       LabelSelectedListener labelSelectedListener,
       FieldReplacedListener fieldReplacedListener,
       LabelAliasChangedListener labelAliasChangedListener, Label label,
-      CodeOrPath codeOrPath, Code rootCode, boolean selected,
+      Either<Code, List<Label>> codeOrPath, Code rootCode, boolean selected,
       CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, List<Code> codes,
       List<Label> path, Optional<String> labelAlias) {
@@ -134,15 +133,16 @@ public class CodeField extends FrameLayout {
       public boolean onLongClick(View v) {
         PopupMenu pm = new PopupMenu(a, v);
         Menu m = pm.getMenu();
-        addRootCodeToMenu(m, CodeOrPath.newCode(rootCode), "", "",
+        addRootCodeToMenu(m, Either.<Code, List<Label>> x(rootCode), "", "",
             ListUtils.<Label> nil());
         m.add("---");
         for (final Code c : iter(codes))
           UIUtils.addCodeToMenu(m, c, ListUtils.<Label> nil(),
               codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
                 public Unit f(List<Label> p) {
-                  fieldReplacedListener.fieldReplaced(CodeOrPath
-                      .newCode(rebase(append(label, path), reroot(c, p))));
+                  fieldReplacedListener.fieldReplaced(Either
+                      .<Code, List<Label>> x(rebase(append(label, path),
+                          reroot(c, p))));
                   return unit();
                 }
               });
@@ -151,26 +151,29 @@ public class CodeField extends FrameLayout {
         return true;
       }
 
-      private void addRootCodeToMenu(Menu m, CodeOrPath cp, String ls,
-          String space, final List<Label> path) {
+      private void addRootCodeToMenu(Menu m, Either<Code, List<Label>> cp,
+          String ls, String space, final List<Label> path) {
         MenuItem i =
             m.add(space
                 + ls.substring(0, Math.min(10, ls.length()))
                 + " "
                 + CodeUtils.renderCode(rootCode, path, codeLabelAliases,
                     codeAliases, 1));
-        if (cp.tag == Tag.CODE) {
+        if (cp.tag == cp.tag.X) {
           i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem i) {
               if (CodeUtils.validCode(CodeUtils.replaceCodeAt(rootCode,
-                  append(label, CodeField.this.path), CodeOrPath.newPath(path))))
-                fieldReplacedListener.fieldReplaced(CodeOrPath.newPath(path));
+                  append(label, CodeField.this.path),
+                  Either.<Code, List<Label>> y(path))))
+                fieldReplacedListener.fieldReplaced(Either
+                    .<Code, List<Label>> y(path));
               return true;
             }
           });
           Map<Label, String> las =
               codeLabelAliases.getAliases(new CanonicalCode(rootCode, path));
-          for (Pair<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
+          for (Pair<Label, Either<Code, List<Label>>> e : iter(cp.x().labels
+              .entrySet())) {
             Optional<String> ls2 = las.get(e.x);
             addRootCodeToMenu(m, e.y, ls2.isNothing() ? e.x.label
                 : ls2.some().x, space + "  ", append(e.x, path));

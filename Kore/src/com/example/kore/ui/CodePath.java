@@ -12,9 +12,9 @@ import android.widget.FrameLayout;
 
 import com.example.kore.R;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.Boom;
+import com.example.kore.utils.Either;
 import com.example.kore.utils.List;
 
 public class CodePath extends FrameLayout {
@@ -57,10 +57,10 @@ public class CodePath extends FrameLayout {
       Label l = path.cons().x;
       path = path.cons().tail;
       subpath = append(l, subpath);
-      CodeOrPath codeOrPath = code.labels.get(l).some().x;
-      if (codeOrPath.tag != CodeOrPath.Tag.CODE)
+      Either<Code, List<Label>> codeOrPath = code.labels.get(l).some().x;
+      if (codeOrPath.tag != codeOrPath.tag.X)
         throw new RuntimeException("path exits the spanning tree");
-      code = codeOrPath.code;
+      code = codeOrPath.x();
       Button b2 = new Button(context);
       b2.setBackgroundColor((int) Long.parseLong(l.label.substring(0, 8), 16));
       b2.setWidth(0);

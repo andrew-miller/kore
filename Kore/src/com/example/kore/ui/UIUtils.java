@@ -25,7 +25,6 @@ import android.widget.TextView.OnEditorActionListener;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Abstraction;
@@ -77,13 +76,13 @@ public class UIUtils {
   public static void addCodeToMenu(Menu m, final Code root,
       final List<Label> path, CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, final F<List<Label>, Unit> f) {
-    addCodeToMenu(m, root, path, CodeOrPath.newCode(root), "", "",
+    addCodeToMenu(m, root, path, Either.<Code, List<Label>> x(root), "", "",
         codeLabelAliases, codeAliases, f);
   }
 
   private static void addCodeToMenu(Menu m, final Code root,
-      final List<Label> path, CodeOrPath cp, String ls, String space,
-      CodeLabelAliasMap codeLabelAliases,
+      final List<Label> path, Either<Code, List<Label>> cp, String ls,
+      String space, CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, final F<List<Label>, Unit> f) {
     MenuItem i =
         m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
@@ -96,8 +95,9 @@ public class UIUtils {
     });
     Map<Label, String> las =
         codeLabelAliases.getAliases(new CanonicalCode(root, path));
-    if (cp.tag == CodeOrPath.Tag.CODE)
-      for (Pair<Label, CodeOrPath> e : iter(cp.code.labels.entrySet())) {
+    if (cp.tag == cp.tag.X)
+      for (Pair<Label, Either<Code, List<Label>>> e : iter(cp.x().labels
+          .entrySet())) {
         Optional<String> ls2 = las.get(e.x);
         addCodeToMenu(m, root, append(e.x, path), e.y,
             ls2.isNothing() ? e.x.label : ls2.some().x, space + "  ",

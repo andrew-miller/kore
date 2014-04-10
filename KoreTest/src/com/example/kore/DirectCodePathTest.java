@@ -7,8 +7,8 @@ import static com.example.kore.utils.ListUtils.nil;
 import junit.framework.TestCase;
 
 import com.example.kore.codes.Code;
-import com.example.kore.codes.CodeOrPath;
 import com.example.kore.codes.Label;
+import com.example.kore.utils.Either;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
 
@@ -19,9 +19,9 @@ public class DirectCodePathTest extends TestCase {
   public static void testNat() {
     Label a = new Label("a");
     Label b = new Label("b");
-    Map<Label, CodeOrPath> m = Map.empty();
-    m = m.put(a, CodeOrPath.newPath(nil));
-    m = m.put(b, CodeOrPath.newCode(unit));
+    Map<Label, Either<Code, List<Label>>> m = Map.empty();
+    m = m.put(a, Either.<Code, List<Label>> y(nil));
+    m = m.put(b, Either.<Code, List<Label>> x(unit));
     Code c = Code.newProduct(m);
     assertEquals(nil, directPath(nil, c));
     assertEquals(nil, directPath(fromArray(a), c));
@@ -35,9 +35,9 @@ public class DirectCodePathTest extends TestCase {
   public static void testSilly() {
     Label a = new Label("a");
     Label b = new Label("b");
-    Map<Label, CodeOrPath> m = Map.empty();
-    m = m.put(a, CodeOrPath.newPath(fromArray(b)));
-    m = m.put(b, CodeOrPath.newCode(unit));
+    Map<Label, Either<Code, List<Label>>> m = Map.empty();
+    m = m.put(a, Either.<Code, List<Label>> y(fromArray(b)));
+    m = m.put(b, Either.<Code, List<Label>> x(unit));
     Code c = Code.newProduct(m);
     assertEquals(nil, directPath(nil, c));
     assertEquals(fromArray(b), directPath(fromArray(a), c));

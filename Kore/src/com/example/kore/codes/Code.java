@@ -1,5 +1,7 @@
 package com.example.kore.codes;
 
+import com.example.kore.utils.Either;
+import com.example.kore.utils.List;
 import static com.example.kore.utils.Null.notNull;
 
 import java.io.Serializable;
@@ -11,9 +13,9 @@ public final class Code implements Serializable {
   }
 
   public final Tag tag;
-  public final Map<Label, CodeOrPath> labels;
+  public final Map<Label, Either<Code, List<Label>>> labels;
 
-  public Code(Tag tag, Map<Label, CodeOrPath> labels) {
+  public Code(Tag tag, Map<Label, Either<Code, List<Label>>> labels) {
     notNull(tag, labels);
     this.tag = tag;
     this.labels = labels;
@@ -24,11 +26,12 @@ public final class Code implements Serializable {
     return "Code [tag=" + tag + ", labels=" + labels + "]";
   }
 
-  public final static Code newUnion(Map<Label, CodeOrPath> labels) {
+  public final static Code
+      newUnion(Map<Label, Either<Code, List<Label>>> labels) {
     return new Code(Tag.UNION, labels);
   }
 
-  public static Code newProduct(Map<Label, CodeOrPath> labels) {
+  public static Code newProduct(Map<Label, Either<Code, List<Label>>> labels) {
     return new Code(Tag.PRODUCT, labels);
   }
 
