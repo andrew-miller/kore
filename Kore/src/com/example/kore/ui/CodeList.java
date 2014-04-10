@@ -22,20 +22,16 @@ import com.example.kore.utils.Optional;
 
 public class CodeList extends FrameLayout {
 
-  public static interface CodeSelectListener {
-    public void onCodeSelected(Code c);
+  public static interface Listener {
+    public void select(Code c);
+
+    public void changeAlias(Code code, List<Label> path, String alias);
   }
 
-  public static interface CodeAliasChangedListener {
-    public void codeAliasChanged(Code code, List<Label> path, String alias);
-  }
-
-  public CodeList(Context context, final CodeSelectListener codeSelectListener,
-      List<Code> codes, CodeLabelAliasMap codeLabelAliases,
-      final CodeAliasChangedListener codeAliasChangedListener,
-      Map<CanonicalCode, String> codeAliases) {
+  public CodeList(Context context, final Listener listener, List<Code> codes,
+      CodeLabelAliasMap codeLabelAliases, Map<CanonicalCode, String> codeAliases) {
     super(context);
-    notNull(codes, codeSelectListener, codeLabelAliases, codeAliases);
+    notNull(codes, listener, codeLabelAliases, codeAliases);
     View v =
         LayoutInflater.from(context).inflate(R.layout.code_list, this, true);
     LinearLayout codeListLayout =
@@ -52,7 +48,7 @@ public class CodeList extends FrameLayout {
       b.setText(strCode);
       b.setOnClickListener(new OnClickListener() {
         public void onClick(View v) {
-          codeSelectListener.onCodeSelected(code);
+          listener.select(code);
         }
       });
       fl.addView(b);
@@ -62,8 +58,7 @@ public class CodeList extends FrameLayout {
           UIUtils.replaceWithTextEntry(fl, v, getContext(), strCode,
               new F<String, Void>() {
                 public Void f(String s) {
-                  codeAliasChangedListener.codeAliasChanged(code,
-                      ListUtils.<Label> nil(), s);
+                  listener.changeAlias(code, ListUtils.<Label> nil(), s);
                   return null;
                 }
               });

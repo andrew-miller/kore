@@ -27,6 +27,7 @@ import com.example.kore.codes.Relation.Composition;
 import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
+import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
@@ -39,7 +40,7 @@ public class RelationEditor extends FrameLayout {
   private RelationNodeEditor nodeEditor;
   private Relation relation;
   private List<Either3<Label, Integer, Unit>> path;
-  private final DoneListener doneListener;
+  private final F<Relation, Unit> done;
   private final Context context;
   private final ViewGroup pathContainer;
   private final List<Code> codes;
@@ -49,23 +50,18 @@ public class RelationEditor extends FrameLayout {
   private final RelationViewColors relationViewColors;
   private final List<Relation> relations;
 
-  public interface DoneListener {
-    public void onDone(Relation r);
-  }
-
   private RelationEditor(Context context, Relation relation,
-      DoneListener doneListener, final List<Code> codes,
-      final CodeLabelAliasMap codeLabelAliases,
+      final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
       final Map<CanonicalCode, String> codeAliases,
       final Map<CanonicalRelation, String> relationAliases,
       List<Relation> relations, RelationViewColors relationViewColors,
-      List<Either3<Label, Integer, Unit>> path) {
+      List<Either3<Label, Integer, Unit>> path, F<Relation, Unit> done) {
     super(context);
-    notNull(relation, doneListener, relationViewColors);
+    notNull(relation, done, relationViewColors);
     this.path = path;
     this.context = context;
     this.relation = relation;
-    this.doneListener = doneListener;
+    this.done = done;
     this.codes = codes;
     this.codeLabelAliases = codeLabelAliases;
     this.codeAliases = codeAliases;
@@ -79,25 +75,26 @@ public class RelationEditor extends FrameLayout {
   }
 
   public RelationEditor(Context context, Relation relation,
-      DoneListener doneListener, final List<Code> codes,
-      final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalCode, String> codeAliases,
-      final Map<CanonicalRelation, String> relationAliases,
-      List<Relation> relations, RelationViewColors relationViewColors) {
-    this(context, relation, doneListener, codes, codeLabelAliases, codeAliases,
-        relationAliases, relations, relationViewColors, ListUtils
-            .<Either3<Label, Integer, Unit>> nil());
-  }
-
-  public RelationEditor(Context context, DoneListener doneListener,
       final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
       final Map<CanonicalCode, String> codeAliases,
       final Map<CanonicalRelation, String> relationAliases,
-      List<Relation> relations, RelationViewColors relationViewColors, Bundle b) {
-    this(context, (Relation) b.getSerializable(STATE_RELATION), doneListener,
-        codes, codeLabelAliases, codeAliases, relationAliases, relations,
+      List<Relation> relations, RelationViewColors relationViewColors,
+      F<Relation, Unit> done) {
+    this(context, relation, codes, codeLabelAliases, codeAliases,
+        relationAliases, relations, relationViewColors, ListUtils
+            .<Either3<Label, Integer, Unit>> nil(), done);
+  }
+
+  public RelationEditor(Context context, final List<Code> codes,
+      final CodeLabelAliasMap codeLabelAliases,
+      final Map<CanonicalCode, String> codeAliases,
+      final Map<CanonicalRelation, String> relationAliases,
+      List<Relation> relations, RelationViewColors relationViewColors,
+      Bundle b, F<Relation, Unit> done) {
+    this(context, (Relation) b.getSerializable(STATE_RELATION), codes,
+        codeLabelAliases, codeAliases, relationAliases, relations,
         relationViewColors, (List<Either3<Label, Integer, Unit>>) b
-            .getSerializable(STATE_PATH));
+            .getSerializable(STATE_PATH), done);
   }
 
   private void setPath(List<Either3<Label, Integer, Unit>> p) {
@@ -167,8 +164,8 @@ public class RelationEditor extends FrameLayout {
                 setPath(path);
               }
 
-              public void onDone() {
-                doneListener.onDone(relation);
+              public void done() {
+                done.f(relation);
               }
 
               public void extendUnion(List<Either3<Label, Integer, Unit>> p,

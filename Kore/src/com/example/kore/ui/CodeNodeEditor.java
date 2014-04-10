@@ -13,10 +13,6 @@ import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
-import com.example.kore.ui.CodeField.CodeSelectedListener;
-import com.example.kore.ui.CodeField.FieldReplacedListener;
-import com.example.kore.ui.CodeField.LabelAliasChangedListener;
-import com.example.kore.ui.CodeField.LabelSelectedListener;
 import com.example.kore.utils.Boom;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.List;
@@ -31,13 +27,13 @@ public class CodeNodeEditor extends FrameLayout {
 
     void deleteField(Label l);
 
-    void codeSelected(Label l);
+    void selectCode(Label l);
 
-    void fieldReplaced(Either<Code, List<Label>> cp, Label l);
+    void replaceField(Either<Code, List<Label>> cp, Label l);
 
-    void labelAliasChanged(Label label, String alias);
+    void changeLabelAlias(Label label, String alias);
 
-    void onDone();
+    void done();
   }
 
   private final Code code;
@@ -84,7 +80,7 @@ public class CodeNodeEditor extends FrameLayout {
 
     v.findViewById(R.id.button_done).setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
-        listener.onDone();
+        listener.done();
       }
     });
 
@@ -108,7 +104,7 @@ public class CodeNodeEditor extends FrameLayout {
     for (final Pair<Label, Either<Code, List<Label>>> e : iter(code.labels
         .entrySet())) {
       final Label l = e.x;
-      LabelSelectedListener lsl = new CodeField.LabelSelectedListener() {
+      CodeField.Listener cfl = new CodeField.Listener() {
         public void labelSelected() {
           notNull(l);
           deleteButton.setVisibility(View.VISIBLE);
@@ -120,30 +116,23 @@ public class CodeNodeEditor extends FrameLayout {
           });
           render();
         }
-      };
 
-      CodeSelectedListener csl = new CodeField.CodeSelectedListener() {
         public void codeSelected() {
-          listener.codeSelected(l);
+          listener.selectCode(l);
         }
-      };
 
-      FieldReplacedListener frl = new CodeField.FieldReplacedListener() {
         public void fieldReplaced(Either<Code, List<Label>> cp) {
-          listener.fieldReplaced(cp, l);
+          listener.replaceField(cp, l);
+        }
+
+        public void labelAliasChanged(String alias) {
+          listener.changeLabelAlias(l, alias);
         }
       };
 
-      LabelAliasChangedListener lacl =
-          new CodeField.LabelAliasChangedListener() {
-            public void labelAliasChanged(String alias) {
-              listener.labelAliasChanged(l, alias);
-            }
-          };
-
-      fields.addView(new CodeField(getContext(), csl, lsl, frl, lacl, l, e.y,
-          rootCode, l.equals(selectedLabel), codeLabelAliases, codeAliases,
-          codes, path, las.get(l)));
+      fields.addView(new CodeField(getContext(), cfl, l, e.y, rootCode, l
+          .equals(selectedLabel), codeLabelAliases, codeAliases, codes, path,
+          las.get(l)));
     }
   }
 

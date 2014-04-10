@@ -32,27 +32,18 @@ import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
 public class CodeField extends FrameLayout {
-  public static interface CodeSelectedListener {
+  public static interface Listener {
     public void codeSelected();
-  }
 
-  public static interface LabelSelectedListener {
     public void labelSelected();
-  }
 
-  public static interface FieldReplacedListener {
     public void fieldReplaced(Either<Code, List<Label>> cp);
-  }
 
-  public static interface LabelAliasChangedListener {
     public void labelAliasChanged(String alias);
   }
 
   private final Context a;
-  private final CodeSelectedListener codeSelectedListener;
-  private final LabelSelectedListener labelSelectedListener;
-  private final FieldReplacedListener fieldReplacedListener;
-  private final LabelAliasChangedListener labelAliasChangedListener;
+  private final Listener listener;
   private final Label label;
   private final Code rootCode;
   private final boolean selected;
@@ -64,22 +55,15 @@ public class CodeField extends FrameLayout {
   private final List<Label> path;
   private final Optional<String> labelAlias;
 
-  public CodeField(Context context, CodeSelectedListener codeSelectedListener,
-      LabelSelectedListener labelSelectedListener,
-      FieldReplacedListener fieldReplacedListener,
-      LabelAliasChangedListener labelAliasChangedListener, Label label,
+  public CodeField(Context context, Listener listener, Label label,
       Either<Code, List<Label>> codeOrPath, Code rootCode, boolean selected,
       CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, List<Code> codes,
       List<Label> path, Optional<String> labelAlias) {
     super(context);
-    notNull(codeSelectedListener, labelSelectedListener, fieldReplacedListener,
-        labelAliasChangedListener, label, codeOrPath, rootCode, codeAliases,
-        codes, path, labelAlias);
-    this.codeSelectedListener = codeSelectedListener;
-    this.labelSelectedListener = labelSelectedListener;
-    this.fieldReplacedListener = fieldReplacedListener;
-    this.labelAliasChangedListener = labelAliasChangedListener;
+    notNull(listener, label, codeOrPath, rootCode, codeAliases, codes, path,
+        labelAlias);
+    this.listener = listener;
     this.label = label;
     this.rootCode = rootCode;
     this.selected = selected;
@@ -106,7 +90,7 @@ public class CodeField extends FrameLayout {
       labelButton.setText("---");
     labelButton.setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
-        labelSelectedListener.labelSelected();
+        listener.labelSelected();
       }
     });
     labelButton.setOnLongClickListener(new OnLongClickListener() {
@@ -114,7 +98,7 @@ public class CodeField extends FrameLayout {
         UIUtils.replaceWithTextEntry((ViewGroup) v.getParent(), v, a,
             label.label, new F<String, Void>() {
               public Void f(String s) {
-                labelAliasChangedListener.labelAliasChanged(s);
+                listener.labelAliasChanged(s);
                 return null;
               }
             });
@@ -126,7 +110,7 @@ public class CodeField extends FrameLayout {
   private void initCodeButton() {
     codeButton.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
-        codeSelectedListener.codeSelected();
+        listener.codeSelected();
       }
     });
     codeButton.setOnLongClickListener(new OnLongClickListener() {
@@ -140,9 +124,8 @@ public class CodeField extends FrameLayout {
           UIUtils.addCodeToMenu(m, c, ListUtils.<Label> nil(),
               codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
                 public Unit f(List<Label> p) {
-                  fieldReplacedListener.fieldReplaced(Either
-                      .<Code, List<Label>> x(rebase(append(label, path),
-                          reroot(c, p))));
+                  listener.fieldReplaced(Either.<Code, List<Label>> x(rebase(
+                      append(label, path), reroot(c, p))));
                   return unit();
                 }
               });
@@ -165,8 +148,7 @@ public class CodeField extends FrameLayout {
               if (CodeUtils.validCode(CodeUtils.replaceCodeAt(rootCode,
                   append(label, CodeField.this.path),
                   Either.<Code, List<Label>> y(path))))
-                fieldReplacedListener.fieldReplaced(Either
-                    .<Code, List<Label>> y(path));
+                listener.fieldReplaced(Either.<Code, List<Label>> y(path));
               return true;
             }
           });

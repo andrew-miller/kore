@@ -37,7 +37,7 @@ public class RelationNodeEditor extends FrameLayout {
   interface Listener {
     void selectRelation(List<Either3<Label, Integer, Unit>> path);
 
-    void onDone();
+    void done();
 
     void changeCodomain(Code c);
 
@@ -92,7 +92,7 @@ public class RelationNodeEditor extends FrameLayout {
     fields = (LinearLayout) v.findViewById(R.id.layout_fields);
     v.findViewById(R.id.button_done).setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
-        listener.onDone();
+        listener.done();
       }
     });
 

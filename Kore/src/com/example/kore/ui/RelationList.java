@@ -26,23 +26,18 @@ import com.example.kore.utils.Unit;
 
 public class RelationList extends FrameLayout {
 
-  public static interface RelationSelectListener {
-    public void onRelationSelected(Relation r);
-  }
+  public static interface Listener {
+    public void select(Relation r);
 
-  public static interface RelationAliasChangedListener {
-    public void relationAliasChanged(Relation relation,
+    public void changeAlias(Relation relation,
         List<Either3<Label, Integer, Unit>> path, String alias);
   }
 
-  public RelationList(Context context,
-      final RelationSelectListener relationSelectListener,
+  public RelationList(Context context, final Listener listener,
       List<Relation> relations, CodeLabelAliasMap codeLabelAliases,
-      final RelationAliasChangedListener relationAliasChangedListener,
       Map<CanonicalRelation, String> relationAliases) {
     super(context);
-    notNull(relations, relationSelectListener, codeLabelAliases,
-        relationAliasChangedListener, relationAliases);
+    notNull(relations, listener, codeLabelAliases, relationAliases);
     View v =
         LayoutInflater.from(context)
             .inflate(R.layout.relation_list, this, true);
@@ -62,7 +57,7 @@ public class RelationList extends FrameLayout {
       b.setText(strRelation);
       b.setOnClickListener(new OnClickListener() {
         public void onClick(View v) {
-          relationSelectListener.onRelationSelected(relation);
+          listener.select(relation);
         }
       });
       fl.addView(b);
@@ -72,7 +67,7 @@ public class RelationList extends FrameLayout {
           UIUtils.replaceWithTextEntry(fl, v, getContext(), strRelation,
               new F<String, Void>() {
                 public Void f(String s) {
-                  relationAliasChangedListener.relationAliasChanged(relation,
+                  listener.changeAlias(relation,
                       ListUtils.<Either3<Label, Integer, Unit>> nil(), s);
                   return null;
                 }

@@ -15,18 +15,15 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.utils.Boom;
 import com.example.kore.utils.Either;
+import com.example.kore.utils.F;
 import com.example.kore.utils.List;
+import com.example.kore.utils.Unit;
 
 public class CodePath extends FrameLayout {
-  public static interface SubpathSelectedListener {
-    public void pathSelected(List<Label> subpath);
-  }
-
-  public CodePath(Context context,
-      final SubpathSelectedListener subpathSelectedListener, Code code,
-      List<Label> path) {
+  public CodePath(Context context, final F<List<Label>, Unit> subpathSelected,
+      Code code, List<Label> path) {
     super(context);
-    notNull(subpathSelectedListener, code, path);
+    notNull(subpathSelected, code, path);
     View v = LayoutInflater.from(context).inflate(R.layout.path, this, true);
     ViewGroup pathVG = (ViewGroup) v.findViewById(R.id.layout_path);
 
@@ -48,7 +45,7 @@ public class CodePath extends FrameLayout {
       final List<Label> subpathS = subpath;
       b.setOnClickListener(new OnClickListener() {
         public void onClick(View v) {
-          subpathSelectedListener.pathSelected(subpathS);
+          subpathSelected.f(subpathS);
         }
       });
       pathVG.addView(b);
