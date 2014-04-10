@@ -126,7 +126,7 @@ public class UIUtils {
       Map<CanonicalRelation, String> relationAliases,
       final F<List<Either3<Label, Integer, Unit>>, Unit> f) {
     Optional<Abstraction> ea =
-        rp.isY() ? OptionalUtils.<Abstraction> nothing()
+        rp.tag == rp.tag.Y ? OptionalUtils.<Abstraction> nothing()
             : enclosingAbstraction(path, root);
     Optional<String> ra =
         relationAliases.get(new CanonicalRelation(root, path));
@@ -142,8 +142,8 @@ public class UIUtils {
             f.f(path);
             return true;
           }
-        }).setEnabled(!rp.isY());
-    if (!rp.isY())
+        }).setEnabled(rp.tag == rp.tag.X);
+    if (rp.tag == rp.tag.X)
       for (Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(edges(rp
           .x()))) {
         addRelationToMenu(m, root, append(e.x, path), e.y,

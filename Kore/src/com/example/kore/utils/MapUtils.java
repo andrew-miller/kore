@@ -4,7 +4,6 @@ import static com.example.kore.utils.ListUtils.cons;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
 
-
 public class MapUtils {
 
   public static <K, V> boolean containsKey(Map<K, V> m, K k) {

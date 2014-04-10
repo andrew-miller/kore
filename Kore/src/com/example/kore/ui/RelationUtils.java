@@ -82,7 +82,7 @@ public class RelationUtils {
   public static String renderRelation(Optional<Code> argCode,
       Either<Relation, List<Either3<Label, Integer, Unit>>> rx,
       CodeLabelAliasMap codeLabelAliases) {
-    if (rx.isY())
+    if (rx.tag == rx.tag.Y)
       return "^";
     Relation r = rx.x();
     switch (r.tag) {
@@ -175,7 +175,7 @@ public class RelationUtils {
         subRelationOrPath(r, e);
     if (oe.isNothing())
       return nothing();
-    if (oe.some().x.isY())
+    if (oe.some().x.tag == Either.Tag.Y)
       return nothing();
     return some(oe.some().x.x());
   }
@@ -344,7 +344,7 @@ public class RelationUtils {
       return true;
     Either<Relation, List<Either3<Label, Integer, Unit>>> zz =
         subRelationOrPath(relation, path.cons().x).some().x;
-    if (zz.isY())
+    if (zz.tag == zz.tag.Y)
       return false;
     return inAbstraction(zz.x(), path.cons().tail);
   }
@@ -380,8 +380,7 @@ public class RelationUtils {
         adaptComposition_(root, c.i, c.l);
     Either<Relation, List<Either3<Label, Integer, Unit>>> elast =
         nth(c.l, length(c.l) - 1).some().x;
-    Code last =
-        codomain(elast.isY() ? relationAt(elast.y(), root).some().x : elast.x());
+    Code last = codomain(resolve(root, elast));
     return mapPaths(
         replaceRelationOrPathAt(root, path,
             x(Relation.composition(new Composition(equal(last, c.o) ? p.y
@@ -414,7 +413,7 @@ public class RelationUtils {
     if (l.isEmpty())
       return pair(ListUtils.<Boolean> nil(), l);
     Either<Relation, List<Either3<Label, Integer, Unit>>> er = l.cons().x;
-    Relation r = er.isY() ? relationAt(er.y(), root).some().x : er.x();
+    Relation r = resolve(root, er);
     Pair<List<Boolean>, List<Either<Relation, List<Either3<Label, Integer, Unit>>>>> p =
         adaptComposition_(root, codomain(r), l.cons().tail);
     return equal(c, domain(r)) ? pair(cons(false, p.x), cons(er, p.y)) : pair(
@@ -532,9 +531,14 @@ public class RelationUtils {
         subRelationOrPath(r, e);
     if (osp.isNothing())
       return nothing();
-    if (osp.some().x.isY())
+    if (osp.some().x.tag == Either.Tag.Y)
       return relationAt(osp.some().x.y(), root);
     return some(osp.some().x.x());
+  }
+
+  public static Relation resolve(Relation root,
+      Either<Relation, List<Either3<Label, Integer, Unit>>> rp) {
+    return rp.tag == rp.tag.X ? rp.x() : relationAt(rp.y(), root).some().x;
   }
 
   public static
@@ -578,7 +582,7 @@ public class RelationUtils {
       mapPaths_(
           final F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>> f,
           Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
-    return er.isY() ? y(f.f(er.y())) : x(mapPaths(er.x(), f));
+    return er.tag == er.tag.Y ? y(f.f(er.y())) : x(mapPaths(er.x(), f));
   }
 
   public static Relation extendComposition(Relation relation,
@@ -587,12 +591,12 @@ public class RelationUtils {
       throw new RuntimeException("index can't be negative");
     Either<Relation, List<Either3<Label, Integer, Unit>>> er =
         relationOrPathAt(path, relation);
-    Relation r1 = er.isY() ? relationAt(er.y(), relation).some().x : er.x();
+    Relation r1 = resolve(relation, er);
     Code d = domain(r1);
     Code c = codomain(r1);
 
     Composition comp;
-    if (!er.isY() && er.x().tag == Relation.Tag.COMPOSITION) {
+    if (er.tag == er.tag.X && er.x().tag == Relation.Tag.COMPOSITION) {
       comp = new Composition(insert(er.x().composition().l, i, x(r2)), d, c);
       return adaptComposition(
           bumpIndexes(
@@ -622,7 +626,7 @@ public class RelationUtils {
       throw new RuntimeException("index can't be negative");
     Either<Relation, List<Either3<Label, Integer, Unit>>> er =
         relationOrPathAt(path, relation);
-    Relation r1 = er.isY() ? relationAt(er.y(), relation).some().x : er.x();
+    Relation r1 = resolve(relation, er);
     Code d = domain(r1);
     Code c = codomain(r1);
     Code d2 = domain(r2);
@@ -649,7 +653,7 @@ public class RelationUtils {
             Relation.composition(new Composition(fromArray(x(r2), x(t)), d, c));
     }
     Union union;
-    if (!er.isY() && er.x().tag == Relation.Tag.UNION) {
+    if (er.tag == er.tag.X && er.x().tag == Relation.Tag.UNION) {
       union =
           new Union(insert(er.x().union().l, i, x(r2)), er.x().union().i, er
               .x().union().o);
@@ -714,7 +718,7 @@ public class RelationUtils {
       List<Either3<Label, Integer, Unit>> path, Relation.Tag t) {
     Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
         relationOrPathAt(path, relation);
-    Relation r = rp.isY() ? relationAt(rp.y(), relation).some().x : rp.x();
+    Relation r = resolve(relation, rp);
     Code d = domain(r);
     Code c = codomain(r);
     Relation r2;
@@ -871,12 +875,18 @@ public class RelationUtils {
       private
           Either<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>>
           f(Either<Relation, List<Either3<Label, Integer, Unit>>> rp) {
-        return rp.isY() ? Either
-            .<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>> y(rp
-                .y())
-            : Either
-                .<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>> x(linkTree(rp
-                    .x()));
+        switch (rp.tag) {
+        case X:
+          return Either
+              .<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>> x(linkTree(rp
+                  .x()));
+        case Y:
+          return Either
+              .<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>> y(rp
+                  .y());
+        default:
+          throw boom();
+        }
       }
 
       public RVertex vertex() {
@@ -968,10 +978,16 @@ public class RelationUtils {
   private static
       Either<Relation, List<Either3<Label, Integer, Unit>>>
       f(Either<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>> e) {
-    return e.isY() ? Either.<Relation, List<Either3<Label, Integer, Unit>>> y(e
-        .y()) : Either
-        .<Relation, List<Either3<Label, Integer, Unit>>> x(linkTreeToRelation(e
-            .x()));
+    switch (e.tag) {
+    case X:
+      return Either
+          .<Relation, List<Either3<Label, Integer, Unit>>> x(linkTreeToRelation(e
+              .x()));
+    case Y:
+      return Either.<Relation, List<Either3<Label, Integer, Unit>>> y(e.y());
+    default:
+      throw boom();
+    }
   }
 
   public static Relation defaultValue(Code i, Code o) {

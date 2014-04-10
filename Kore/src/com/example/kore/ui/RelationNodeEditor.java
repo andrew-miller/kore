@@ -1,8 +1,8 @@
 package com.example.kore.ui;
 
-import static com.example.kore.ui.RelationUtils.relationAt;
 import static com.example.kore.ui.RelationUtils.relationOrPathAt;
 import static com.example.kore.ui.RelationUtils.unit_unit;
+import static com.example.kore.ui.RelationUtils.resolve;
 import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.ListUtils.drop;
 import static com.example.kore.utils.ListUtils.iter;
@@ -80,7 +80,7 @@ public class RelationNodeEditor extends FrameLayout {
     notNull(rootRelation, listener, path, codes, codeLabelAliases, codeAliases);
     Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
         relationOrPathAt(path, rootRelation);
-    Relation r = rp.isY() ? relationAt(rp.y(), rootRelation).some().x : rp.x();
+    Relation r = resolve(rootRelation, rp);
     this.rootRelation = rootRelation;
     this.listener = listener;
     this.path = path;

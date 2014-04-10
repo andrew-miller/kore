@@ -48,7 +48,7 @@ public class LinkTreeUtils {
     g.addVertex(v);
     for (Pair<E, Either<LinkTree<E, V>, List<E>>> e : iter(lt.edges())) {
       Either<LinkTree<E, V>, List<E>> vp = e.y;
-      if (vp.isY())
+      if (vp.tag == vp.tag.Y)
         continue;
       Identity<V> v2 = linkTreeSpanningTreeToGraph(g, vp.x());
       g.addEdge(v, v2, pair(v, e.x));
@@ -60,15 +60,17 @@ public class LinkTreeUtils {
       DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g,
       Identity<V> root, Identity<V> parent) {
     for (Pair<E, Either<LinkTree<E, V>, List<E>>> e : iter(lt.edges())) {
-      Either<LinkTree<E, V>, List<E>> vp = e.y;
-      if (vp.isY()) {
+      switch (e.y.tag) {
+      case Y:
         Identity<V> v = root;
-        for (E e_ : iter(vp.y()))
+        for (E e_ : iter(e.y.y()))
           v = g.getEdgeTarget(pair(v, e_));
         g.addEdge(parent, v, pair(parent, e.x));
-      } else {
-        addLinksToLinkTreeGraph(vp.x(), g, root,
+        break;
+      case X:
+        addLinksToLinkTreeGraph(e.y.x(), g, root,
             g.getEdgeTarget(pair(parent, e.x)));
+        break;
       }
     }
   }
@@ -169,12 +171,15 @@ public class LinkTreeUtils {
    */
   public static <E, V> boolean isReferenced(LinkTree<E, V> lt, List<E> path) {
     for (Pair<E, Either<LinkTree<E, V>, List<E>>> p : iter(lt.edges())) {
-      if (p.y.isY()) {
+      switch (p.y.tag) {
+      case Y:
         if (ListUtils.isSubList(path, p.y.y()))
           return true;
-      } else {
+        break;
+      case X:
         if (isReferenced(p.y.x(), path))
           return true;
+        break;
       }
     }
     return false;
@@ -187,12 +192,15 @@ public class LinkTreeUtils {
   private static <E, V> boolean validLinkTree(LinkTree<E, V> root,
       LinkTree<E, V> lt) {
     for (Pair<E, Either<LinkTree<E, V>, List<E>>> p : iter(lt.edges())) {
-      if (p.y.isY()) {
+      switch (p.y.tag) {
+      case Y:
         if (!validPath(root, p.y.y()))
           return false;
-      } else {
+        break;
+      case X:
         if (!validLinkTree(root, p.y.x()))
           return false;
+        break;
       }
     }
     return true;
@@ -203,7 +211,8 @@ public class LinkTreeUtils {
       return true;
     for (Pair<E, Either<LinkTree<E, V>, List<E>>> p : iter(lt.edges()))
       if (p.x.equals(path.cons().x))
-        return p.y.isY() ? false : validPath(p.y.x(), path.cons().tail);
+        return p.y.tag == p.y.tag.Y ? false : validPath(p.y.x(),
+            path.cons().tail);
     return false;
   }
 

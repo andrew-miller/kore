@@ -4,6 +4,7 @@ import static com.example.kore.ui.RelationUtils.adaptComposition;
 import static com.example.kore.ui.RelationUtils.codomain;
 import static com.example.kore.ui.RelationUtils.domain;
 import static com.example.kore.ui.RelationUtils.relationAt;
+import static com.example.kore.ui.RelationUtils.resolve;
 import static com.example.kore.ui.RelationUtils.relationOrPathAt;
 import static com.example.kore.ui.RelationUtils.replaceRelationOrPathAt;
 import static com.example.kore.utils.CodeUtils.equal;
@@ -113,10 +114,8 @@ public class RelationEditor extends FrameLayout {
               Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
             Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
                 relationOrPathAt(path, relation);
-            Relation r =
-                rp.isY() ? relationAt(rp.y(), relation).some().x : rp.x();
-            Relation r2 =
-                er.isY() ? relationAt(er.y(), relation).some().x : er.x();
+            Relation r = resolve(relation, rp);
+            Relation r2 = resolve(relation, er);
             relation =
                 !equal(domain(r), domain(r2))
                     | !equal(codomain(r), codomain(r2)) ? adaptComposition(

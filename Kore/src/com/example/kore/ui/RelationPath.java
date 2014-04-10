@@ -3,16 +3,16 @@ package com.example.kore.ui;
 import static com.example.kore.ui.RelationUtils.codomain;
 import static com.example.kore.ui.RelationUtils.domain;
 import static com.example.kore.ui.RelationUtils.inAbstraction;
-import static com.example.kore.ui.RelationUtils.relationAt;
-import static com.example.kore.ui.RelationUtils.subRelationOrPath;
 import static com.example.kore.ui.RelationUtils.linkTree;
 import static com.example.kore.ui.RelationUtils.replaceRelationOrPathAt;
+import static com.example.kore.ui.RelationUtils.resolve;
+import static com.example.kore.ui.RelationUtils.subRelationOrPath;
 import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.unit;
+import static com.example.kore.utils.LinkTreeUtils.validLinkTree;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.Unit.unit;
-import static com.example.kore.utils.LinkTreeUtils.validLinkTree;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -75,10 +75,10 @@ public class RelationPath {
       final List<Either3<Label, Integer, Unit>> after,
       final Either<Relation, List<Either3<Label, Integer, Unit>>> rp,
       ViewGroup vg, int referenceColor) {
-    final Relation r = rp.isY() ? relationAt(rp.y(), root).some().x : rp.x();
+    final Relation r = resolve(root, rp);
     final Button b = new Button(context);
-    b.setBackgroundColor(rp.isY() ? referenceColor : rc.m.get(rp.x().tag)
-        .some().x.x);
+    b.setBackgroundColor(rp.tag == rp.tag.Y ? referenceColor : rc.m.get(
+        rp.x().tag).some().x.x);
     b.setWidth(0);
     b.setHeight(LayoutParams.MATCH_PARENT);
     b.setOnClickListener(new OnClickListener() {
@@ -156,7 +156,7 @@ public class RelationPath {
     });
     vg.addView(b);
     Button b2 = new Button(context);
-    if (!rp.isY() & !after.isEmpty()) {
+    if (rp.tag == rp.tag.X & !after.isEmpty()) {
       Either3<Label, Integer, Unit> e = after.cons().x;
       switch (e.tag) {
       case X:

@@ -56,7 +56,8 @@ public final class RelationView {
         RelationUtils.relationOrPathAt(path, root);
     View rv;
     Pair<Integer, Integer> cp;
-    if (er.isY()) {
+    switch (er.tag) {
+    case Y:
       cp = rvc.referenceColors;
       rv = RelationRefView.make(context, er.y(), new F<Unit, Unit>() {
         public Unit f(Unit _) {
@@ -64,7 +65,8 @@ public final class RelationView {
           return unit();
         }
       });
-    } else {
+      break;
+    case X:
       Optional<Abstraction> oea = enclosingAbstraction(path, root);
       Optional<Code> argCode =
           oea.isNothing() ? OptionalUtils.<Code> nothing()
@@ -155,6 +157,9 @@ public final class RelationView {
       default:
         throw boom();
       }
+      break;
+    default:
+      throw boom();
     }
     return DragDropEdges.make(context, dragBro, rv, cp.x, cp.y,
         new F<Pair<Side, Object>, Unit>() {
@@ -164,9 +169,8 @@ public final class RelationView {
             else
               switch (p.x) {
               case BOTTOM:
-                listener.extendUnion(path,
-                    !er.isY() && er.x().tag == Tag.UNION ? length(er.x()
-                        .union().l) : 1);
+                listener.extendUnion(path, er.tag == er.tag.X
+                    && er.x().tag == Tag.UNION ? length(er.x().union().l) : 1);
                 break;
               case TOP:
                 listener.extendUnion(path, 0);
@@ -175,7 +179,7 @@ public final class RelationView {
                 listener.extendComposition(path, 0);
                 break;
               case RIGHT:
-                listener.extendComposition(path, !er.isY()
+                listener.extendComposition(path, er.tag == er.tag.X
                     && er.x().tag == Tag.COMPOSITION ? length(er.x()
                     .composition().l) : 1);
                 break;

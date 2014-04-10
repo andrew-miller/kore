@@ -469,7 +469,7 @@ public final class CodeUtils {
    * map cyclic path over the graph represented by this <tt>Code</tt> (rooted at
    * this <tt>Code</tt>) to a simple path from this <tt>Code</tt> to another
    * <tt>Code</tt>
-   *
+   * 
    * @param Code
    *          a <tt>Code</tt> that <tt>validCode</tt> maps to <tt>true</tt>
    */
@@ -543,10 +543,8 @@ public final class CodeUtils {
     for (Pair<Label, Either<LinkTree<Label, Tag>, List<Label>>> e : iter(lt
         .edges()))
       m =
-          m.put(
-              e.x,
-              e.y.isY() ? CodeOrPath.newPath(e.y.y()) : CodeOrPath
-                  .newCode(linkTreeToCode(e.y.x())));
+          m.put(e.x, e.y.tag == e.y.tag.Y ? CodeOrPath.newPath(e.y.y())
+              : CodeOrPath.newCode(linkTreeToCode(e.y.x())));
     switch (lt.vertex()) {
     case PRODUCT:
       return Code.newProduct(m);
