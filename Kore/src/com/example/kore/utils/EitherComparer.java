@@ -1,8 +1,9 @@
 package com.example.kore.utils;
 
-import com.example.kore.codes.EnumComparer;
 import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.Comparison.EQ;
+
+import com.example.kore.codes.EnumComparer;
 
 public class EitherComparer<X, Y> implements Comparer<Either<X, Y>> {
   private final Comparer<X> xc;

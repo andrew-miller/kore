@@ -1,10 +1,11 @@
 package com.example.kore.codes;
 
-import com.example.kore.utils.Either;
-import com.example.kore.utils.List;
 import static com.example.kore.utils.Null.notNull;
 
 import java.io.Serializable;
+
+import com.example.kore.utils.Either;
+import com.example.kore.utils.List;
 import com.example.kore.utils.Map;
 
 public final class Code implements Serializable {

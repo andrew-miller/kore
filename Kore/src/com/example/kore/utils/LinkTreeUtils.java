@@ -1,6 +1,5 @@
 package com.example.kore.utils;
 
-import com.example.kore.ui.LinkTree;
 import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.cons;
@@ -8,12 +7,16 @@ import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.MapUtils.containsKey;
 import static com.example.kore.utils.Pair.pair;
+
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
 import org.jgrapht.graph.DirectedMultigraph;
+
+import com.example.kore.ui.LinkTree;
 
 public class LinkTreeUtils {
 

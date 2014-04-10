@@ -1,5 +1,6 @@
 package com.example.kore.ui;
 
+import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -10,7 +11,6 @@ import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Unit;
-import static com.example.kore.utils.Unit.unit;
 
 public class RelationRefView {
   public static View make(Context context,

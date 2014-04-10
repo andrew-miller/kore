@@ -1,5 +1,10 @@
 package com.example.kore.ui;
 
+import static com.example.kore.utils.Boom.boom;
+import static com.example.kore.utils.CodeUtils.codeAt;
+import static com.example.kore.utils.CodeUtils.replaceCodeAt;
+import static com.example.kore.utils.CodeUtils.unit;
+import static com.example.kore.utils.CodeUtils.validCode;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.isSubList;
 import static com.example.kore.utils.ListUtils.iter;
@@ -16,12 +21,7 @@ import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
-import static com.example.kore.utils.Boom.boom;
 import com.example.kore.utils.CodeUtils;
-import static com.example.kore.utils.CodeUtils.replaceCodeAt;
-import static com.example.kore.utils.CodeUtils.validCode;
-import static com.example.kore.utils.CodeUtils.codeAt;
-import static com.example.kore.utils.CodeUtils.unit;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;

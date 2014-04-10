@@ -1,8 +1,8 @@
 package com.example.kore.ui;
 
 import static com.example.kore.ui.RelationUtils.relationOrPathAt;
-import static com.example.kore.ui.RelationUtils.unit_unit;
 import static com.example.kore.ui.RelationUtils.resolve;
+import static com.example.kore.ui.RelationUtils.unit_unit;
 import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.ListUtils.drop;
 import static com.example.kore.utils.ListUtils.iter;

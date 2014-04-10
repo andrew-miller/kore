@@ -1,9 +1,10 @@
 package com.example.kore.utils;
 
-import com.example.kore.codes.Label;
 import static com.example.kore.utils.Comparison.EQ;
 import static com.example.kore.utils.Comparison.GT;
 import static com.example.kore.utils.Comparison.LT;
+
+import com.example.kore.codes.Label;
 
 public class LabelComparer implements Comparer<Label> {
   public Comparison compare(Label a, Label b) {

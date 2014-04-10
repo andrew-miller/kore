@@ -1,7 +1,7 @@
 package com.example.kore;
 
-import android.util.Log;
 import junit.framework.TestCase;
+import android.util.Log;
 
 public class StackTest extends TestCase {
   private static int f(int x) {
