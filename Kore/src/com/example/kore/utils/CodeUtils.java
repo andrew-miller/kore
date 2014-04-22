@@ -387,33 +387,6 @@ public final class CodeUtils {
     }
   }
 
-  /** append <tt>p</tt> to all paths */
-  public static Code rebase(List<Label> p, Code c) {
-    Map<Label, Either<Code, List<Label>>> m = Map.empty();
-    for (Pair<Label, Either<Code, List<Label>>> e : iter(c.labels.entrySet())) {
-      Label l = e.x;
-      Either<Code, List<Label>> cp = e.y;
-      switch (cp.tag) {
-      case X:
-        m = m.put(l, Either.<Code, List<Label>> x(rebase(p, cp.x())));
-        break;
-      case Y:
-        m = m.put(l, Either.<Code, List<Label>> y(append(p, cp.y())));
-        break;
-      default:
-        throw boom();
-      }
-    }
-    switch (c.tag) {
-    case PRODUCT:
-      return Code.newProduct(m);
-    case UNION:
-      return Code.newUnion(m);
-    default:
-      throw boom();
-    }
-  }
-
   /** <code>c</code> has no links to links */
   public static boolean validCode(Code c) {
     return validCode(c, c);
@@ -544,7 +517,7 @@ public final class CodeUtils {
     };
   }
 
-  private static Code linkTreeToCode(LinkTree<Label, Tag> lt) {
+  public static Code linkTreeToCode(LinkTree<Label, Tag> lt) {
     Map<Label, Either<Code, List<Label>>> m = Map.empty();
     for (Pair<Label, Either<LinkTree<Label, Tag>, List<Label>>> e : iter(lt
         .edges()))

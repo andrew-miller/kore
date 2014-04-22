@@ -17,12 +17,10 @@ import static com.example.kore.utils.ListUtils.insert;
 import static com.example.kore.utils.ListUtils.isSubList;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.length;
-import static com.example.kore.utils.ListUtils.map;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.ListUtils.nth;
 import static com.example.kore.utils.ListUtils.replace;
 import static com.example.kore.utils.MapUtils.containsKey;
-import static com.example.kore.utils.MapUtils.map;
 import static com.example.kore.utils.OptionalUtils.nothing;
 import static com.example.kore.utils.OptionalUtils.some;
 import static com.example.kore.utils.Pair.pair;
@@ -54,6 +52,7 @@ import com.example.kore.utils.F;
 import com.example.kore.utils.Identity;
 import com.example.kore.utils.IntegerComparer;
 import com.example.kore.utils.LabelComparer;
+import com.example.kore.utils.LinkTreeUtils;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
@@ -545,43 +544,7 @@ public class RelationUtils {
       mapPaths(
           Relation r,
           final F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>> f) {
-    F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Either<Relation, List<Either3<Label, Integer, Unit>>>> ff =
-        new F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Either<Relation, List<Either3<Label, Integer, Unit>>>>() {
-          public Either<Relation, List<Either3<Label, Integer, Unit>>> f(
-              Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
-            return mapPaths_(f, er);
-          }
-        };
-    switch (r.tag) {
-    case ABSTRACTION:
-      Abstraction a = r.abstraction();
-      return Relation.abstraction(new Relation.Abstraction(a.pattern,
-          mapPaths_(f, a.r), a.i, a.o));
-    case COMPOSITION:
-      Composition c = r.composition();
-      return Relation.composition(new Composition(map(ff, c.l), c.i, c.o));
-    case LABEL:
-      Label_ l = r.label();
-      return Relation.label(new Label_(l.label, mapPaths_(f, l.r), l.o));
-    case PRODUCT:
-      Product p = r.product();
-      return Relation.product(new Product(map(ff, p.m), p.o));
-    case PROJECTION:
-      return r;
-    case UNION:
-      Union u = r.union();
-      return Relation.union(new Union(map(ff, u.l), u.i, u.o));
-    default:
-      throw boom();
-    }
-  }
-
-  private static
-      Either<Relation, List<Either3<Label, Integer, Unit>>>
-      mapPaths_(
-          final F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>> f,
-          Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
-    return er.tag == er.tag.Y ? y(f.f(er.y())) : x(mapPaths(er.x(), f));
+    return linkTreeToRelation(LinkTreeUtils.mapPaths(linkTree(r), f));
   }
 
   public static Relation extendComposition(Relation relation,

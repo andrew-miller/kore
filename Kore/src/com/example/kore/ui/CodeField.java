@@ -1,7 +1,9 @@
 package com.example.kore.ui;
 
-import static com.example.kore.utils.CodeUtils.rebase;
+import static com.example.kore.utils.CodeUtils.linkTree;
+import static com.example.kore.utils.CodeUtils.linkTreeToCode;
 import static com.example.kore.utils.CodeUtils.reroot;
+import static com.example.kore.utils.LinkTreeUtils.rebase;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.Null.notNull;
@@ -124,8 +126,9 @@ public class CodeField extends FrameLayout {
           UIUtils.addCodeToMenu(m, c, ListUtils.<Label> nil(),
               codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
                 public Unit f(List<Label> p) {
-                  listener.fieldReplaced(Either.<Code, List<Label>> x(rebase(
-                      append(label, path), reroot(c, p))));
+                  listener.fieldReplaced(Either
+                      .<Code, List<Label>> x(linkTreeToCode(rebase(
+                          append(label, path), linkTree(reroot(c, p))))));
                   return unit();
                 }
               });

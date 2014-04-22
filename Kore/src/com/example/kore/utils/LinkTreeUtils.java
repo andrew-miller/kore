@@ -20,6 +20,46 @@ import com.example.kore.ui.LinkTree;
 
 public class LinkTreeUtils {
 
+  /** prepend <tt>p</tt> to all paths */
+  public static <E, V> LinkTree<E, V> rebase(final List<E> p,
+      final LinkTree<E, V> lt) {
+    return mapPaths(lt, new F<List<E>, List<E>>() {
+      public List<E> f(List<E> p2) {
+        return append(p, p2);
+      }
+    });
+  }
+
+  public static <E, V> LinkTree<E, V> mapPaths(final LinkTree<E, V> lt,
+      final F<List<E>, List<E>> f) {
+    return new LinkTree<E, V>() {
+      public List<Pair<E, Either<LinkTree<E, V>, List<E>>>> edges() {
+        List<Pair<E, Either<LinkTree<E, V>, List<E>>>> l = nil();
+        for (Pair<E, Either<LinkTree<E, V>, List<E>>> e : iter(lt.edges())) {
+          switch (e.y.tag) {
+          case X:
+            l =
+                cons(
+                    pair(e.x, Either.<LinkTree<E, V>, List<E>> x(mapPaths(
+                        e.y.x(), f))), l);
+            break;
+          case Y:
+            l =
+                cons(
+                    pair(e.x, Either.<LinkTree<E, V>, List<E>> y(f.f(e.y.y()))),
+                    l);
+            break;
+          }
+        }
+        return l;
+      }
+
+      public V vertex() {
+        return lt.vertex();
+      }
+    };
+  }
+
   /**
    * @return A pair <code>(g,r)</code> where <code>g</code> is a graph
    *         representing <code>lt</code> where each edge is a pair
