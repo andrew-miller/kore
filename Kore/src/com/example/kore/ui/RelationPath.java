@@ -128,7 +128,7 @@ public class RelationPath {
                       return unit();
                     }
                   });
-            if (!(before.isEmpty() & after.isEmpty())) {
+            if (!before.isEmpty()) {
               m.add("---");
               UIUtils.addRelationToMenu(m, root,
                   ListUtils.<Either3<Label, Integer, Unit>> nil(),
