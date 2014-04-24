@@ -3,11 +3,14 @@ package com.example.kore.ui;
 import static com.example.kore.ui.RelationUtils.adaptComposition;
 import static com.example.kore.ui.RelationUtils.codomain;
 import static com.example.kore.ui.RelationUtils.domain;
+import static com.example.kore.ui.RelationUtils.linkTree;
+import static com.example.kore.ui.RelationUtils.linkTreeToRelation;
 import static com.example.kore.ui.RelationUtils.relationAt;
 import static com.example.kore.ui.RelationUtils.relationOrPathAt;
 import static com.example.kore.ui.RelationUtils.replaceRelationOrPathAt;
 import static com.example.kore.ui.RelationUtils.resolve;
 import static com.example.kore.utils.CodeUtils.equal;
+import static com.example.kore.utils.LinkTreeUtils.rebase;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.Null.notNull;
@@ -116,10 +119,20 @@ public class RelationEditor extends FrameLayout {
             relation =
                 !equal(domain(r), domain(r2))
                     | !equal(codomain(r), codomain(r2)) ? adaptComposition(
-                    replaceRelationOrPathAt(relation, path, x(Relation
-                        .composition(new Composition(fromArray(er), domain(r),
-                            codomain(r))))), path) : replaceRelationOrPathAt(
-                    relation, path, er);
+                    replaceRelationOrPathAt(
+                        relation,
+                        path,
+                        x(Relation
+                            .composition(new Composition(
+                                fromArray(er.tag == er.tag.X ? x(linkTreeToRelation(rebase(
+                                    append(Either3.<Label, Integer, Unit> y(0),
+                                        path), linkTree(er.x())))) : er),
+                                domain(r), codomain(r))))), path)
+                    : replaceRelationOrPathAt(
+                        relation,
+                        path,
+                        er.tag == er.tag.X ? x(linkTreeToRelation(rebase(path,
+                            linkTree(er.x())))) : er);
             initNodeEditor();
             setPath(path);
           }
