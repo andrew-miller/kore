@@ -11,11 +11,8 @@ import static com.example.kore.utils.OptionalUtils.nothing;
 import static com.example.kore.utils.OptionalUtils.some;
 import static com.example.kore.utils.Pair.pair;
 
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.jgrapht.alg.StrongConnectivityInspector;
 import org.jgrapht.graph.DirectedMultigraph;
@@ -346,29 +343,6 @@ public final class CodeUtils {
       return Code.newUnion(lm);
     default:
       throw boom();
-    }
-  }
-
-  private static void buildCanonicalSpanningTreeOfCodeGraph(
-      DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g,
-      Identity<Tag> v, Ref<Map<Identity<Tag>, List<Label>>> m,
-      List<Label> path, Set<Pair<Identity<Code.Tag>, Label>> spanningTreeEdges) {
-    m.set(m.get().put(v, path));
-    SortedMap<Label, Pair<Identity<Tag>, Label>> sm =
-        new TreeMap<Label, Pair<Identity<Tag>, Label>>(new Comparator<Label>() {
-          public int compare(Label a, Label b) {
-            return a.label.compareTo(b.label);
-          };
-        });
-    for (Pair<Identity<Tag>, Label> e : g.outgoingEdgesOf(v))
-      sm.put(e.y, e);
-    for (Pair<Identity<Tag>, Label> e : sm.values()) {
-      Identity<Tag> v2 = g.getEdgeTarget(e);
-      if (!containsKey(m.get(), v2)) {
-        buildCanonicalSpanningTreeOfCodeGraph(g, v2, m, append(e.y, path),
-            spanningTreeEdges);
-        spanningTreeEdges.add(e);
-      }
     }
   }
 
