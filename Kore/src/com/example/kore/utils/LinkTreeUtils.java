@@ -20,6 +20,40 @@ import com.example.kore.ui.LinkTree;
 
 public class LinkTreeUtils {
 
+  /**
+   * a <code>LinkTree</code> representing the same graph as <code>lt</code>, but
+   * rooted at <code>path</code>
+   */
+  public static <E, V> LinkTree<E, V> reroot(LinkTree<E, V> lt, List<E> path) {
+    Pair<DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>>, Identity<V>> p =
+        linkTreeToGraph(lt);
+    DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g = p.x;
+    Identity<V> root = p.y;
+    Set<Pair<Identity<V>, E>> spanningTreeEdges =
+        new HashSet<Pair<Identity<V>, E>>();
+    Ref<Map<Identity<V>, List<E>>> m =
+        new Ref<Map<Identity<V>, List<E>>>(Map.<Identity<V>, List<E>> empty());
+    Identity<V> r = followPath(path, g, root);
+    buildSpanningTreeOfCodeGraph(g, r, m, ListUtils.<E> nil(),
+        spanningTreeEdges);
+    return buildLinkTreeFromSpanningTree(g, m.get(), r, spanningTreeEdges);
+  }
+
+  private static <E, V> void buildSpanningTreeOfCodeGraph(
+      DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g, Identity<V> r,
+      Ref<Map<Identity<V>, List<E>>> m, List<E> list,
+      Set<Pair<Identity<V>, E>> spanningTreeEdges) {
+    m.set(m.get().put(r, list));
+    for (Pair<Identity<V>, E> e : g.outgoingEdgesOf(r)) {
+      Identity<V> v2 = g.getEdgeTarget(e);
+      if (!containsKey(m.get(), v2)) {
+        buildSpanningTreeOfCodeGraph(g, v2, m, append(e.y, list),
+            spanningTreeEdges);
+        spanningTreeEdges.add(e);
+      }
+    }
+  }
+
   /** prepend <tt>p</tt> to all paths */
   public static <E, V> LinkTree<E, V> rebase(final List<E> p,
       final LinkTree<E, V> lt) {

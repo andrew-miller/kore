@@ -32,6 +32,10 @@ public final class CodeUtils {
   public final static Code unit = Code.newProduct(Map
       .<Label, Either<Code, List<Label>>> empty());
 
+  public static Code reroot(Code c, List<Label> p) {
+    return linkTreeToCode(LinkTreeUtils.reroot(linkTree(c), p));
+  }
+
   public static String renderCode(Code c, List<Label> p,
       CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalCode, String> codeAliases, int depth) {
@@ -298,67 +302,6 @@ public final class CodeUtils {
   public static Code canonicalCode(Code c, List<Label> path) {
     return linkTreeToCode(LinkTreeUtils.canonicalLinkTree(linkTree(c), path,
         new LabelComparer()));
-  }
-
-  /**
-   * a <tt>Code</tt> representing the same graph as <tt>c</tt>, but rooted at
-   * <tt>path</tt>
-   */
-  public static Code reroot(Code c, List<Label> path) {
-    Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
-        codeToGraph(c);
-    DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g = p.x;
-    Identity<Tag> root = p.y;
-    Set<Pair<Identity<Tag>, Label>> spanningTreeEdges =
-        new HashSet<Pair<Identity<Tag>, Label>>();
-    Ref<Map<Identity<Tag>, List<Label>>> m =
-        new Ref<Map<Identity<Tag>, List<Label>>>(
-            Map.<Identity<Tag>, List<Label>> empty());
-    Identity<Tag> r = followPath(path, g, root);
-    buildSpanningTreeOfCodeGraph(g, r, m, ListUtils.<Label> nil(),
-        spanningTreeEdges);
-    return buildCodeFromSpanningTree(g, m.get(), r, spanningTreeEdges);
-  }
-
-  private static Code buildCodeFromSpanningTree(
-      DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g,
-      Map<Identity<Tag>, List<Label>> m, Identity<Tag> v,
-      Set<Pair<Identity<Tag>, Label>> spanningTreeEdges) {
-    Map<Label, Either<Code, List<Label>>> lm = Map.empty();
-    for (Pair<Identity<Tag>, Label> e : g.outgoingEdgesOf(v))
-      if (spanningTreeEdges.contains(e))
-        lm =
-            lm.put(
-                e.y,
-                Either.<Code, List<Label>> x(buildCodeFromSpanningTree(g, m,
-                    g.getEdgeTarget(e), spanningTreeEdges)));
-      else
-        lm =
-            lm.put(e.y, Either.<Code, List<Label>> y(m.get(g.getEdgeTarget(e))
-                .some().x));
-    switch (v.t) {
-    case PRODUCT:
-      return Code.newProduct(lm);
-    case UNION:
-      return Code.newUnion(lm);
-    default:
-      throw boom();
-    }
-  }
-
-  private static void buildSpanningTreeOfCodeGraph(
-      DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>> g,
-      Identity<Tag> v, Ref<Map<Identity<Tag>, List<Label>>> m,
-      List<Label> path, Set<Pair<Identity<Code.Tag>, Label>> spanningTreeEdges) {
-    m.set(m.get().put(v, path));
-    for (Pair<Identity<Tag>, Label> e : g.outgoingEdgesOf(v)) {
-      Identity<Tag> v2 = g.getEdgeTarget(e);
-      if (!containsKey(m.get(), v2)) {
-        buildSpanningTreeOfCodeGraph(g, v2, m, append(e.y, path),
-            spanningTreeEdges);
-        spanningTreeEdges.add(e);
-      }
-    }
   }
 
   /** <code>c</code> has no links to links */
