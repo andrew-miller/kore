@@ -4,11 +4,13 @@ import static com.example.kore.ui.RelationUtils.codomain;
 import static com.example.kore.ui.RelationUtils.domain;
 import static com.example.kore.ui.RelationUtils.inAbstraction;
 import static com.example.kore.ui.RelationUtils.linkTree;
+import static com.example.kore.ui.RelationUtils.linkTreeToRelation;
 import static com.example.kore.ui.RelationUtils.replaceRelationOrPathAt;
 import static com.example.kore.ui.RelationUtils.resolve;
 import static com.example.kore.ui.RelationUtils.subRelationOrPath;
 import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.unit;
+import static com.example.kore.utils.LinkTreeUtils.reroot;
 import static com.example.kore.utils.LinkTreeUtils.validLinkTree;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
@@ -130,7 +132,8 @@ public class RelationPath {
                   new F<List<Either3<Label, Integer, Unit>>, Unit>() {
                     public Unit f(List<Either3<Label, Integer, Unit>> p) {
                       listener.replaceRelation(Either
-                          .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
+                          .<Relation, List<Either3<Label, Integer, Unit>>> x(linkTreeToRelation(reroot(
+                              linkTree(r), p))));
                       return unit();
                     }
                   });
