@@ -145,7 +145,10 @@ public class UIUtils {
             return true;
           }
         })
-        .setEnabled(rp.tag == rp.tag.X & !isSubList(invalidPath.some().x, path));
+        .setEnabled(
+            rp.tag == rp.tag.X
+                & (invalidPath.isNothing() || !isSubList(invalidPath.some().x,
+                    path)));
     if (rp.tag == rp.tag.X)
       for (Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(edges(rp
           .x())))
