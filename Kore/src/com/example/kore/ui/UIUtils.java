@@ -6,6 +6,7 @@ import static com.example.kore.ui.RelationUtils.renderPathElement;
 import static com.example.kore.ui.RelationUtils.renderRelation;
 import static com.example.kore.utils.CodeUtils.renderCode;
 import static com.example.kore.utils.ListUtils.append;
+import static com.example.kore.utils.ListUtils.isSubList;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.OptionalUtils.some;
 import android.content.Context;
@@ -105,14 +106,18 @@ public class UIUtils {
       }
   }
 
+  /**
+   * Any path that is prefixed by <code>invalidPath</code> will be disabled.
+   */
   public static void addRelationToMenu(Menu m, final Relation root,
       final List<Either3<Label, Integer, Unit>> path,
       CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalRelation, String> relationAliases,
+      Optional<List<Either3<Label, Integer, Unit>>> invalidPath,
       final F<List<Either3<Label, Integer, Unit>>, Unit> f) {
     addRelationToMenu(m, root, path,
         Either.<Relation, List<Either3<Label, Integer, Unit>>> x(root), "", "",
-        codeLabelAliases, relationAliases, f);
+        codeLabelAliases, relationAliases, invalidPath, f);
   }
 
   private static void addRelationToMenu(Menu m, final Relation root,
@@ -120,6 +125,7 @@ public class UIUtils {
       final Either<Relation, List<Either3<Label, Integer, Unit>>> rp,
       String ls, String space, CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalRelation, String> relationAliases,
+      Optional<List<Either3<Label, Integer, Unit>>> invalidPath,
       final F<List<Either3<Label, Integer, Unit>>, Unit> f) {
     Optional<Abstraction> ea =
         rp.tag == rp.tag.Y ? OptionalUtils.<Abstraction> nothing()
@@ -138,13 +144,13 @@ public class UIUtils {
             f.f(path);
             return true;
           }
-        }).setEnabled(rp.tag == rp.tag.X);
+        })
+        .setEnabled(rp.tag == rp.tag.X & !isSubList(invalidPath.some().x, path));
     if (rp.tag == rp.tag.X)
       for (Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(edges(rp
-          .x()))) {
+          .x())))
         addRelationToMenu(m, root, append(e.x, path), e.y,
             renderPathElement(e.x), space + "  ", codeLabelAliases,
-            relationAliases, f);
-      }
+            relationAliases, invalidPath, f);
   }
 }

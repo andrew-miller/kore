@@ -12,6 +12,7 @@ import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.LinkTreeUtils.validLinkTree;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
+import static com.example.kore.utils.OptionalUtils.some;
 import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -40,6 +41,7 @@ import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
+import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
@@ -118,9 +120,13 @@ public class RelationPath {
               add.f(Pair.pair(".", Tag.PROJECTION));
             m.add("---");
             for (final Relation r : iter(relations))
-              UIUtils.addRelationToMenu(m, r,
+              UIUtils.addRelationToMenu(
+                  m,
+                  r,
                   ListUtils.<Either3<Label, Integer, Unit>> nil(),
-                  codeLabelAliases, relationAliases,
+                  codeLabelAliases,
+                  relationAliases,
+                  OptionalUtils.<List<Either3<Label, Integer, Unit>>> nothing(),
                   new F<List<Either3<Label, Integer, Unit>>, Unit>() {
                     public Unit f(List<Either3<Label, Integer, Unit>> p) {
                       listener.replaceRelation(Either
@@ -132,7 +138,7 @@ public class RelationPath {
               m.add("---");
               UIUtils.addRelationToMenu(m, root,
                   ListUtils.<Either3<Label, Integer, Unit>> nil(),
-                  codeLabelAliases, relationAliases,
+                  codeLabelAliases, relationAliases, some(before),
                   new F<List<Either3<Label, Integer, Unit>>, Unit>() {
                     public Unit f(List<Either3<Label, Integer, Unit>> p) {
                       listener.replaceRelation(Either
