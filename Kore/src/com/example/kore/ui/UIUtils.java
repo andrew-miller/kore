@@ -105,10 +105,6 @@ public class UIUtils {
       }
   }
 
-  /**
-   * filter out relations that don't have the domain/codomain <tt>d</tt>/
-   * <tt>c</tt>
-   */
   public static void addRelationToMenu(Menu m, final Relation root,
       final List<Either3<Label, Integer, Unit>> path,
       CodeLabelAliasMap codeLabelAliases,
