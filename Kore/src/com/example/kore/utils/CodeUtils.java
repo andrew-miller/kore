@@ -213,21 +213,22 @@ public final class CodeUtils {
 
   public static Code replaceCodeAt(Code c, List<Label> p,
       Either<Code, List<Label>> newCode) {
-    return replaceCodeAt_(c, p, newCode).x();
+    return replaceCodeAt_(Either.<Code, List<Label>> x(c), p, newCode).x();
   }
 
-  private static Either<Code, List<Label>> replaceCodeAt_(Code c,
-      List<Label> p, Either<Code, List<Label>> newCode) {
+  private static Either<Code, List<Label>> replaceCodeAt_(
+      Either<Code, List<Label>> c, List<Label> p,
+      Either<Code, List<Label>> newCode) {
     if (p.isEmpty())
       return newCode;
     Label l = p.cons().x;
     Map<Label, Either<Code, List<Label>>> m =
-        c.labels
+        c.x().labels
             .put(
                 l,
-                replaceCodeAt_(c.labels.get(l).some().x.x(), p.cons().tail,
+                replaceCodeAt_(c.x().labels.get(l).some().x, p.cons().tail,
                     newCode));
-    return Either.<Code, List<Label>> x(new Code(c.tag, m));
+    return Either.<Code, List<Label>> x(new Code(c.x().tag, m));
   }
 
   /**
