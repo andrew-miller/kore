@@ -6,17 +6,20 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
-import com.example.kore.codes.Label;
-import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
-import com.example.kore.utils.List;
+import com.example.kore.utils.Optional;
+import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
 public class RelationRefView {
   public static View make(Context context,
-      List<Either3<Label, Integer, Unit>> p, final F<Unit, Unit> selected) {
+      Optional<Pair<Integer, String>> label, final F<Unit, Unit> selected) {
     Button b = new Button(context);
     b.setBackgroundColor(0xFF000000);
+    if (!label.isNothing()) {
+      b.setText(label.some().x.y);
+      b.setTextColor(label.some().x.x);
+    }
     b.setOnClickListener(new OnClickListener() {
       public void onClick(View _) {
         selected.f(unit());

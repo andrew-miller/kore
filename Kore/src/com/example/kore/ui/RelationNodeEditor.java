@@ -21,6 +21,7 @@ import android.widget.PopupMenu;
 
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
+import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
@@ -59,8 +60,9 @@ public class RelationNodeEditor extends FrameLayout {
   private final Listener listener;
   private final List<Either3<Label, Integer, Unit>> path;
   private final LinearLayout fields;
-  private CodeLabelAliasMap codeLabelAliases;
-  private RelationViewColors relationViewColors;
+  private final CodeLabelAliasMap codeLabelAliases;
+  private final Map<CanonicalRelation, String> relationAliases;
+  private final RelationViewColors relationViewColors;
 
   class Move {
     Integer i;
@@ -75,6 +77,7 @@ public class RelationNodeEditor extends FrameLayout {
       final Listener listener, final List<Either3<Label, Integer, Unit>> path,
       final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
       final Map<CanonicalCode, String> codeAliases,
+      Map<CanonicalRelation, String> relationAliases,
       RelationViewColors relationViewColors) {
     super(context);
     notNull(rootRelation, listener, path, codes, codeLabelAliases, codeAliases);
@@ -85,6 +88,7 @@ public class RelationNodeEditor extends FrameLayout {
     this.listener = listener;
     this.path = path;
     this.codeLabelAliases = codeLabelAliases;
+    this.relationAliases = relationAliases;
     this.relationViewColors = relationViewColors;
     View v =
         LayoutInflater.from(context).inflate(R.layout.relation_node_editor,
@@ -173,7 +177,12 @@ public class RelationNodeEditor extends FrameLayout {
               public void selectPath(List<Either3<Label, Integer, Unit>> p) {
                 listener.selectPath(p);
               }
-            }, codeLabelAliases);
+
+              public boolean dontAbbreviate(
+                  List<Either3<Label, Integer, Unit>> p) {
+                return p.equals(path);
+              }
+            }, codeLabelAliases, relationAliases);
     // workaround that you can't drag onto the outer 10 pixels
     FrameLayout f = new FrameLayout(getContext());
     f.setPadding(10, 10, 10, 10);

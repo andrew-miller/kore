@@ -162,7 +162,9 @@ public class RelationEditor extends FrameLayout {
 
   private void initNodeEditor() {
     nodeEditor =
-        new RelationNodeEditor(context, relation,
+        new RelationNodeEditor(
+            context,
+            relation,
             new RelationNodeEditor.Listener() {
               public void selectRelation(List<Either3<Label, Integer, Unit>> p) {
                 RelationEditor.this.selectPath(append(path, p));
@@ -215,7 +217,8 @@ public class RelationEditor extends FrameLayout {
                 RelationEditor.this.selectPath(relationOrPathAt(p, relation)
                     .y());
               }
-            }, path, codes, codeLabelAliases, codeAliases, relationViewColors);
+            }, path, codes, codeLabelAliases, codeAliases, relationAliases,
+            relationViewColors);
     ViewGroup cont = (ViewGroup) findViewById(R.id.container_relation_editor);
     cont.removeAllViews();
     cont.addView(nodeEditor);

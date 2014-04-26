@@ -13,10 +13,12 @@ import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.ListUtils.length;
 import static com.example.kore.utils.OptionalUtils.some;
+import static com.example.kore.utils.Pair.pair;
 import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
 
+import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Pattern;
@@ -30,6 +32,7 @@ import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
+import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Pair;
@@ -46,120 +49,143 @@ public final class RelationView {
     void selectPath(List<Either3<Label, Integer, Unit>> path);
 
     void replaceRelation(List<Either3<Label, Integer, Unit>> path, Relation r);
+
+    boolean dontAbbreviate(List<Either3<Label, Integer, Unit>> path);
   }
 
   public static View make(final Context context, final RelationViewColors rvc,
       final DragBro dragBro, final Relation root,
       final List<Either3<Label, Integer, Unit>> path, final Listener listener,
-      final CodeLabelAliasMap codeLabelAliases) {
+      final CodeLabelAliasMap codeLabelAliases,
+      final Map<CanonicalRelation, String> relationAliases) {
     final Either<Relation, List<Either3<Label, Integer, Unit>>> er =
         RelationUtils.relationOrPathAt(path, root);
     View rv;
     Pair<Integer, Integer> cp;
-    switch (er.tag) {
-    case Y:
-      cp = rvc.referenceColors;
-      rv = RelationRefView.make(context, er.y(), new F<Unit, Unit>() {
-        public Unit f(Unit _) {
-          listener.selectPath(path);
-          return unit();
+    Optional<String> alias =
+        relationAliases.get(new CanonicalRelation(root, path));
+    if (alias.isNothing() | listener.dontAbbreviate(path)) {
+      switch (er.tag) {
+      case Y:
+        cp = rvc.referenceColors;
+        rv =
+            RelationRefView.make(context,
+                OptionalUtils.<Pair<Integer, String>> nothing(),
+                new F<Unit, Unit>() {
+                  public Unit f(Unit _) {
+                    listener.selectPath(path);
+                    return unit();
+                  }
+                });
+        break;
+      case X:
+        Optional<Abstraction> oea = enclosingAbstraction(path, root);
+        Optional<Code> argCode =
+            oea.isNothing() ? OptionalUtils.<Code> nothing()
+                : some(oea.some().x.i);
+        final Relation r = er.x();
+        cp = rvc.relationcolors.m.get(r.tag).some().x;
+        F<Either3<Label, Integer, Unit>, View> make =
+            new F<Either3<Label, Integer, Unit>, View>() {
+              public View f(Either3<Label, Integer, Unit> e) {
+                return make(context, rvc, dragBro, root, append(e, path),
+                    listener, codeLabelAliases, relationAliases);
+              }
+            };
+        switch (r.tag) {
+        case COMPOSITION:
+          rv =
+              CompositionView.make(context, make, dragBro, cp.x, cp.y,
+                  r.composition(), new CompositionView.Listener() {
+                    public void select() {
+                      listener.select(path);
+                    }
+
+                    public void extend(Integer i) {
+                      listener.extendComposition(path, i);
+                    }
+                  });
+          break;
+        case UNION:
+          rv =
+              UnionView.make(context, make, dragBro, cp.x, cp.y, r.union(),
+                  new UnionView.Listener() {
+                    public void select() {
+                      listener.select(path);
+                    }
+
+                    public void insert(Integer i) {
+                      listener.extendUnion(path, i);
+                    }
+                  });
+          break;
+        case LABEL:
+          rv =
+              Label_View.make(context, make, cp.x, rvc.aliasTextColor,
+                  r.label(), codeLabelAliases, new F<Label, Unit>() {
+                    public Unit f(Label l) {
+                      Relation sr =
+                          getRelation(root, r,
+                              Either3.<Label, Integer, Unit> z(unit())).some().x;
+                      listener.replaceRelation(path,
+                          Relation
+                              .label(new Label_(l,
+                                  x(equal(codomain(sr),
+                                      getCode(r.label().o, r.label().o, l)
+                                          .some().x) ? sr : defaultValue(unit,
+                                      reroot(r.label().o, fromArray(l)))), r
+                                      .label().o)));
+                      return unit();
+                    }
+                  });
+          break;
+        case ABSTRACTION:
+          rv =
+              AbstractionView.make(context, make, cp.x, rvc.aliasTextColor,
+                  r.abstraction(), codeLabelAliases, new F<Pattern, Unit>() {
+                    public Unit f(Pattern p) {
+                      listener.replaceRelation(path, Relation
+                          .abstraction(new Abstraction(p, r.abstraction().r, r
+                              .abstraction().i, r.abstraction().o)));
+                      return unit();
+                    }
+                  });
+          break;
+        case PRODUCT:
+          rv =
+              ProductView.make(context, make, cp.x, rvc.aliasTextColor,
+                  r.product(), codeLabelAliases);
+          break;
+        case PROJECTION:
+          rv =
+              ProjectionView.make(context, cp.x, rvc.aliasTextColor,
+                  r.projection(), codeLabelAliases, argCode.some().x,
+                  new F<List<Label>, Unit>() {
+                    public Unit f(List<Label> p) {
+                      listener.replaceRelation(path, Relation
+                          .projection(new Projection(p, r.projection().o)));
+                      return unit();
+                    }
+                  });
+          break;
+        default:
+          throw boom();
         }
-      });
-      break;
-    case X:
-      Optional<Abstraction> oea = enclosingAbstraction(path, root);
-      Optional<Code> argCode =
-          oea.isNothing() ? OptionalUtils.<Code> nothing()
-              : some(oea.some().x.i);
-      final Relation r = er.x();
-      cp = rvc.relationcolors.m.get(r.tag).some().x;
-      F<Either3<Label, Integer, Unit>, View> make =
-          new F<Either3<Label, Integer, Unit>, View>() {
-            public View f(Either3<Label, Integer, Unit> e) {
-              return make(context, rvc, dragBro, root, append(e, path),
-                  listener, codeLabelAliases);
-            }
-          };
-      switch (r.tag) {
-      case COMPOSITION:
-        rv =
-            CompositionView.make(context, make, dragBro, cp.x, cp.y,
-                r.composition(), new CompositionView.Listener() {
-                  public void select() {
-                    listener.select(path);
-                  }
-
-                  public void extend(Integer i) {
-                    listener.extendComposition(path, i);
-                  }
-                });
-        break;
-      case UNION:
-        rv =
-            UnionView.make(context, make, dragBro, cp.x, cp.y, r.union(),
-                new UnionView.Listener() {
-                  public void select() {
-                    listener.select(path);
-                  }
-
-                  public void insert(Integer i) {
-                    listener.extendUnion(path, i);
-                  }
-                });
-        break;
-      case LABEL:
-        rv =
-            Label_View.make(context, make, cp.x, rvc.aliasTextColor, r.label(),
-                codeLabelAliases, new F<Label, Unit>() {
-                  public Unit f(Label l) {
-                    Relation sr =
-                        getRelation(root, r,
-                            Either3.<Label, Integer, Unit> z(unit())).some().x;
-                    listener.replaceRelation(path, Relation.label(new Label_(l,
-                        x(equal(codomain(sr),
-                            getCode(r.label().o, r.label().o, l).some().x) ? sr
-                            : defaultValue(unit,
-                                reroot(r.label().o, fromArray(l)))),
-                        r.label().o)));
-                    return unit();
-                  }
-                });
-        break;
-      case ABSTRACTION:
-        rv =
-            AbstractionView.make(context, make, cp.x, rvc.aliasTextColor,
-                r.abstraction(), codeLabelAliases, new F<Pattern, Unit>() {
-                  public Unit f(Pattern p) {
-                    listener.replaceRelation(path, Relation
-                        .abstraction(new Abstraction(p, r.abstraction().r, r
-                            .abstraction().i, r.abstraction().o)));
-                    return unit();
-                  }
-                });
-        break;
-      case PRODUCT:
-        rv =
-            ProductView.make(context, make, cp.x, rvc.aliasTextColor,
-                r.product(), codeLabelAliases);
-        break;
-      case PROJECTION:
-        rv =
-            ProjectionView.make(context, cp.x, rvc.aliasTextColor,
-                r.projection(), codeLabelAliases, argCode.some().x,
-                new F<List<Label>, Unit>() {
-                  public Unit f(List<Label> p) {
-                    listener.replaceRelation(path, Relation
-                        .projection(new Projection(p, r.projection().o)));
-                    return unit();
-                  }
-                });
         break;
       default:
         throw boom();
       }
-      break;
-    default:
-      throw boom();
+    } else {
+      cp = rvc.referenceColors;
+      rv =
+          RelationRefView.make(context,
+              some(pair(rvc.aliasTextColor, alias.some().x)),
+              new F<Unit, Unit>() {
+                public Unit f(Unit _) {
+                  listener.select(path);
+                  return unit();
+                }
+              });
     }
     return DragDropEdges.make(context, dragBro, rv, cp.x, cp.y,
         new F<Pair<Side, Object>, Unit>() {
