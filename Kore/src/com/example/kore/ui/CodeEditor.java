@@ -18,6 +18,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -40,7 +41,7 @@ public class CodeEditor extends FrameLayout {
   private static final String STATE_PATH = "path";
   private static final String STATE_PATH_SHADOW = "path_shadow";
 
-  private CodeNodeEditor nodeEditor;
+  private View nodeEditor;
   private Code code = unit;
   private List<Label> path;
   private final CodeLabelAliasMap codeLabelAliases;
@@ -165,7 +166,7 @@ public class CodeEditor extends FrameLayout {
 
   private void initNodeEditor(Code c) {
     nodeEditor =
-        new CodeNodeEditor(context, c, code, new CodeNodeEditor.Listener() {
+        CodeNodeEditor.make(context, c, code, new CodeNodeEditor.Listener() {
           public void switchCodeOp() {
             Code c = codeAt(path, code).some().x;
             switch (c.tag) {
