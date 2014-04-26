@@ -2,7 +2,10 @@ package com.example.kore.ui;
 
 import static com.example.kore.utils.CodeUtils.linkTree;
 import static com.example.kore.utils.CodeUtils.linkTreeToCode;
+import static com.example.kore.utils.CodeUtils.renderCode;
+import static com.example.kore.utils.CodeUtils.replaceCodeAt;
 import static com.example.kore.utils.CodeUtils.reroot;
+import static com.example.kore.utils.CodeUtils.validCode;
 import static com.example.kore.utils.LinkTreeUtils.rebase;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
@@ -23,7 +26,6 @@ import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
-import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
@@ -140,15 +142,12 @@ public class CodeField extends FrameLayout {
       private void addRootCodeToMenu(Menu m, Either<Code, List<Label>> cp,
           String ls, String space, final List<Label> path) {
         MenuItem i =
-            m.add(space
-                + ls.substring(0, Math.min(10, ls.length()))
-                + " "
-                + CodeUtils.renderCode(rootCode, path, codeLabelAliases,
-                    codeAliases, 1));
+            m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
+                + renderCode(rootCode, path, codeLabelAliases, codeAliases, 1));
         if (cp.tag == cp.tag.X) {
           i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem i) {
-              if (CodeUtils.validCode(CodeUtils.replaceCodeAt(rootCode,
+              if (validCode(replaceCodeAt(rootCode,
                   append(label, CodeField.this.path),
                   Either.<Code, List<Label>> y(path))))
                 listener.fieldReplaced(Either.<Code, List<Label>> y(path));
@@ -167,7 +166,7 @@ public class CodeField extends FrameLayout {
       }
 
     });
-    codeButton.setText(CodeUtils.renderCode(rootCode, append(label, path),
+    codeButton.setText(renderCode(rootCode, append(label, path),
         codeLabelAliases, codeAliases, 1));
   }
 }
