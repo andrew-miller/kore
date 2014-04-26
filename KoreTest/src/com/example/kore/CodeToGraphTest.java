@@ -2,7 +2,7 @@ package com.example.kore;
 
 import static com.example.kore.utils.CodeUtils.codeToGraph;
 import static com.example.kore.utils.CodeUtils.unit;
-import static com.example.kore.utils.Pair.pair;
+import static com.example.kore.utils.PairUtils.pair;
 import junit.framework.TestCase;
 
 import org.jgrapht.graph.DirectedMultigraph;

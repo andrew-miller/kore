@@ -6,7 +6,7 @@ import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.length;
 import static com.example.kore.utils.OptionalUtils.nothing;
 import static com.example.kore.utils.OptionalUtils.some;
-import static com.example.kore.utils.Pair.pair;
+import static com.example.kore.utils.PairUtils.pair;
 
 import java.io.Serializable;
 

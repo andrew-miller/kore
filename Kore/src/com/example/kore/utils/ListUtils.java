@@ -2,6 +2,7 @@ package com.example.kore.utils;
 
 import static com.example.kore.utils.OptionalUtils.nothing;
 import static com.example.kore.utils.OptionalUtils.some;
+import static com.example.kore.utils.PairUtils.pair;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -192,7 +193,7 @@ public class ListUtils {
       return nil();
     if (!b.hasNext())
       return nil();
-    return cons(Pair.pair(a.next(), b.next()), zip(a, b));
+    return cons(pair(a.next(), b.next()), zip(a, b));
   }
 
   public static <T> List<T> insert(List<T> l, Integer i, T x) {

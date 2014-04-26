@@ -3,7 +3,7 @@ package com.example.kore;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.OptionalUtils.nothing;
-import static com.example.kore.utils.Pair.pair;
+import static com.example.kore.utils.PairUtils.pair;
 import junit.framework.TestCase;
 
 import com.example.kore.utils.List;

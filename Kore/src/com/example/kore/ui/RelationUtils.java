@@ -23,7 +23,7 @@ import static com.example.kore.utils.ListUtils.replace;
 import static com.example.kore.utils.MapUtils.containsKey;
 import static com.example.kore.utils.OptionalUtils.nothing;
 import static com.example.kore.utils.OptionalUtils.some;
-import static com.example.kore.utils.Pair.pair;
+import static com.example.kore.utils.PairUtils.pair;
 import static com.example.kore.utils.Unit.unit;
 
 import java.util.HashSet;
@@ -473,7 +473,7 @@ public class RelationUtils {
       edges(Relation r) {
     switch (r.tag) {
     case ABSTRACTION:
-      return fromArray(Pair.pair(Either3.<Label, Integer, Unit> z(unit()),
+      return fromArray(pair(Either3.<Label, Integer, Unit> z(unit()),
           r.abstraction().r));
     case COMPOSITION: {
       List<Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>>> l =
@@ -481,18 +481,18 @@ public class RelationUtils {
       int i = 0;
       for (Either<Relation, List<Either3<Label, Integer, Unit>>> e : iter(r
           .composition().l))
-        l = append(Pair.pair(Either3.<Label, Integer, Unit> y(i++), e), l);
+        l = append(pair(Either3.<Label, Integer, Unit> y(i++), e), l);
       return l;
     }
     case LABEL:
-      return fromArray(Pair.pair(Either3.<Label, Integer, Unit> z(unit()),
+      return fromArray(pair(Either3.<Label, Integer, Unit> z(unit()),
           r.label().r));
     case PRODUCT: {
       List<Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>>> l =
           nil();
       for (Pair<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(r
           .product().m.entrySet()))
-        l = append(Pair.pair(Either3.<Label, Integer, Unit> x(e.x), e.y), l);
+        l = append(pair(Either3.<Label, Integer, Unit> x(e.x), e.y), l);
       return l;
     }
     case PROJECTION:
@@ -503,7 +503,7 @@ public class RelationUtils {
       int i = 0;
       for (Either<Relation, List<Either3<Label, Integer, Unit>>> e : iter(r
           .union().l))
-        l = append(Pair.pair(Either3.<Label, Integer, Unit> y(i++), e), l);
+        l = append(pair(Either3.<Label, Integer, Unit> y(i++), e), l);
       return l;
     default:
       throw boom();

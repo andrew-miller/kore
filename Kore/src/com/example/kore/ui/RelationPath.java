@@ -15,6 +15,7 @@ import static com.example.kore.utils.LinkTreeUtils.validLinkTree;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.OptionalUtils.some;
+import static com.example.kore.utils.PairUtils.pair;
 import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -108,18 +109,18 @@ public class RelationPath {
                 return null;
               }
             };
-            add.f(Pair.pair("[]", Tag.UNION));
+            add.f(pair("[]", Tag.UNION));
             if (equal(domain(r), unit)) {
               if (codomain(r).tag == Code.Tag.PRODUCT)
-                add.f(Pair.pair("{}", Tag.PRODUCT));
+                add.f(pair("{}", Tag.PRODUCT));
               if (codomain(r).tag == Code.Tag.UNION)
                 if (!codomain(r).labels.entrySet().isEmpty())
-                  add.f(Pair.pair("'", Tag.LABEL));
+                  add.f(pair("'", Tag.LABEL));
             }
-            add.f(Pair.pair("->", Tag.ABSTRACTION));
-            add.f(Pair.pair("|", Tag.COMPOSITION));
+            add.f(pair("->", Tag.ABSTRACTION));
+            add.f(pair("|", Tag.COMPOSITION));
             if (inAbstraction(root, before))
-              add.f(Pair.pair(".", Tag.PROJECTION));
+              add.f(pair(".", Tag.PROJECTION));
             m.add("---");
             for (final Relation r : iter(relations))
               UIUtils.addRelationToMenu(

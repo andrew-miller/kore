@@ -1,6 +1,6 @@
 package com.example.kore.ui;
 
-import static com.example.kore.utils.Pair.pair;
+import static com.example.kore.utils.PairUtils.pair;
 import android.content.Context;
 import android.view.View;
 import android.widget.FrameLayout;

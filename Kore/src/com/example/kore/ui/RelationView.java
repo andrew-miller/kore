@@ -13,7 +13,7 @@ import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.ListUtils.length;
 import static com.example.kore.utils.OptionalUtils.some;
-import static com.example.kore.utils.Pair.pair;
+import static com.example.kore.utils.PairUtils.pair;
 import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;

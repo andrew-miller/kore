@@ -3,7 +3,7 @@ package com.example.kore.ui;
 import static com.example.kore.utils.ListUtils.cons;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
-import static com.example.kore.utils.Pair.pair;
+import static com.example.kore.utils.PairUtils.pair;
 import static com.example.kore.utils.Unit.unit;
 
 import java.util.HashSet;

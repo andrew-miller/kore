@@ -8,14 +8,10 @@ public final class Pair<X, Y> implements Serializable {
   public final X x;
   public final Y y;
 
-  private Pair(X x, Y y) {
+  public Pair(X x, Y y) {
+    notNull(x, y);
     this.x = x;
     this.y = y;
-  }
-
-  public static <X, Y> Pair<X, Y> pair(X x, Y y) {
-    notNull(x, y);
-    return new Pair<X, Y>(x, y);
   }
 
   @Override
