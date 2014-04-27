@@ -214,8 +214,8 @@ public class RelationEditor extends FrameLayout {
               }
 
               public void selectPath(List<Either3<Label, Integer, Unit>> p) {
-                RelationEditor.this.selectPath(relationOrPathAt(p, relation)
-                    .y());
+                RelationEditor.this.selectPath(relationOrPathAt(
+                    append(path, p), relation).y());
               }
             }, path, codes, codeLabelAliases, codeAliases, relationAliases,
             relationViewColors);

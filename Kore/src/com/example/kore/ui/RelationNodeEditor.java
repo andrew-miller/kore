@@ -52,7 +52,7 @@ public class RelationNodeEditor extends FrameLayout {
 
     void replaceRelation(List<Either3<Label, Integer, Unit>> path, Relation r);
 
-    void selectPath(List<Either3<Label, Integer, Unit>> p);
+    void selectPath(List<Either3<Label, Integer, Unit>> path);
 
   }
 
@@ -69,9 +69,10 @@ public class RelationNodeEditor extends FrameLayout {
   }
 
   /**
-   * For <tt>extendComposition</tt>, <tt>selectRelation</tt>,
-   * <tt>extendUnion</tt>, and <tt>replaceRelation</tt>, <tt>path</tt> starts at
-   * the relation which is being edited (not the root)
+   * For <code>extendComposition</code>, <code>selectRelation</code>,
+   * <code>extendUnion</code>, <code>replaceRelation</code>, and
+   * <code>selectPath</code>, <code>path</code> starts at the relation which is
+   * being edited (not the root)
    */
   public RelationNodeEditor(final Context context, final Relation rootRelation,
       final Listener listener, final List<Either3<Label, Integer, Unit>> path,
@@ -175,7 +176,7 @@ public class RelationNodeEditor extends FrameLayout {
               }
 
               public void selectPath(List<Either3<Label, Integer, Unit>> p) {
-                listener.selectPath(p);
+                listener.selectPath(drop(p, length(path)));
               }
 
               public boolean dontAbbreviate(
