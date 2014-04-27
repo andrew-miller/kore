@@ -64,7 +64,7 @@ public class MainActivity extends FragmentActivity {
   private View mainLayout;
   private ViewGroup codeEditorContainer;
   private ViewGroup relationEditorContainer;
-  private CodeEditor codeEditor;
+  private F<Unit, Bundle> getCodeEditorState;
   private RelationEditor relationEditor;
   // if not null, a code editor is open
   private F<Code, Unit> codeEditorDoneListener;
@@ -149,11 +149,12 @@ public class MainActivity extends FragmentActivity {
 
     if (codeEditorState != null) {
       newCodeEditorDoneListener();
-      codeEditor =
-          new CodeEditor(this, codeEditorState, codeLabelAliasMap, codeAliases,
-              recentCodes, codeEditorDoneListener);
+      Pair<View, F<Unit, Bundle>> p =
+          CodeEditor.make(this, codeEditorState, codeLabelAliasMap,
+              codeAliases, recentCodes, codeEditorDoneListener);
+      getCodeEditorState = p.y;
       mainLayout.setVisibility(View.GONE);
-      codeEditorContainer.addView(codeEditor);
+      codeEditorContainer.addView(p.x);
       codeEditorContainer.setVisibility(View.VISIBLE);
     }
 
@@ -179,8 +180,8 @@ public class MainActivity extends FragmentActivity {
     b.putSerializable(STATE_CODE_LABEL_ALIASES, codeLabelAliases);
     b.putSerializable(STATE_CODE_ALIASES, codeAliases);
     b.putSerializable(STATE_RELATION_ALIASES, relationAliases);
-    if (codeEditor != null)
-      b.putBundle(STATE_CODE_EDITOR, codeEditor.getState());
+    if (getCodeEditorState != null)
+      b.putBundle(STATE_CODE_EDITOR, getCodeEditorState.f(unit()));
     if (relationEditor != null)
       b.putBundle(STATE_RELATION_EDITOR, relationEditor.getState());
   }
@@ -244,11 +245,12 @@ public class MainActivity extends FragmentActivity {
     if (codeEditorDoneListener != null | relationEditorDoneListener != null)
       return;
     newCodeEditorDoneListener();
-    codeEditor =
-        new CodeEditor(this, c, codeLabelAliasMap, codeAliases, recentCodes,
+    Pair<View, F<Unit, Bundle>> p =
+        CodeEditor.make(this, c, codeLabelAliasMap, codeAliases, recentCodes,
             codeEditorDoneListener);
+    getCodeEditorState = p.y;
     mainLayout.setVisibility(View.GONE);
-    codeEditorContainer.addView(codeEditor);
+    codeEditorContainer.addView(p.x);
     codeEditorContainer.setVisibility(View.VISIBLE);
   }
 
@@ -273,7 +275,7 @@ public class MainActivity extends FragmentActivity {
           throw new RuntimeException(
               "got \"done editing\" event from non-current code editor");
         notNull(c);
-        codeEditor = null;
+        getCodeEditorState = null;
         codeEditorContainer.removeAllViews();
         codeEditorContainer.setVisibility(View.GONE);
         mainLayout.setVisibility(View.VISIBLE);
