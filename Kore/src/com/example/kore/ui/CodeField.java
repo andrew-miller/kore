@@ -1,5 +1,6 @@
 package com.example.kore.ui;
 
+import static com.example.kore.utils.CodeUtils.directPath;
 import static com.example.kore.utils.CodeUtils.linkTree;
 import static com.example.kore.utils.CodeUtils.linkTreeToCode;
 import static com.example.kore.utils.CodeUtils.renderCode;
@@ -14,8 +15,6 @@ import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -32,7 +31,6 @@ import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
-import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
 public class CodeField extends FrameLayout {
@@ -121,8 +119,17 @@ public class CodeField extends FrameLayout {
       public boolean onLongClick(View v) {
         PopupMenu pm = new PopupMenu(a, v);
         Menu m = pm.getMenu();
-        addRootCodeToMenu(m, Either.<Code, List<Label>> x(rootCode), "", "",
-            ListUtils.<Label> nil());
+        UIUtils.addCodeToMenu(m, rootCode, ListUtils.<Label> nil(),
+            codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
+              public Unit f(List<Label> path) {
+                path = directPath(path, rootCode);
+                if (validCode(replaceCodeAt(rootCode,
+                    append(label, CodeField.this.path),
+                    Either.<Code, List<Label>> y(path))))
+                  listener.fieldReplaced(Either.<Code, List<Label>> y(path));
+                return unit();
+              }
+            });
         m.add("---");
         for (final Code c : iter(codes))
           UIUtils.addCodeToMenu(m, c, ListUtils.<Label> nil(),
@@ -140,33 +147,6 @@ public class CodeField extends FrameLayout {
         pm.show();
         return true;
       }
-
-      private void addRootCodeToMenu(Menu m, Either<Code, List<Label>> cp,
-          String ls, String space, final List<Label> path) {
-        MenuItem i =
-            m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
-                + renderCode(rootCode, path, codeLabelAliases, codeAliases, 1));
-        if (cp.tag == cp.tag.X) {
-          i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
-            public boolean onMenuItemClick(MenuItem i) {
-              if (validCode(replaceCodeAt(rootCode,
-                  append(label, CodeField.this.path),
-                  Either.<Code, List<Label>> y(path))))
-                listener.fieldReplaced(Either.<Code, List<Label>> y(path));
-              return true;
-            }
-          });
-          Map<Label, String> las =
-              codeLabelAliases.getAliases(new CanonicalCode(rootCode, path));
-          for (Pair<Label, Either<Code, List<Label>>> e : iter(cp.x().labels
-              .entrySet())) {
-            Optional<String> ls2 = las.get(e.x);
-            addRootCodeToMenu(m, e.y, ls2.isNothing() ? e.x.label
-                : ls2.some().x, space + "  ", append(e.x, path));
-          }
-        }
-      }
-
     });
     codeButton.setText(renderCode(rootCode, append(label, path),
         codeLabelAliases, codeAliases, 1));
