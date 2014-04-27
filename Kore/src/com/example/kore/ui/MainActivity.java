@@ -227,8 +227,8 @@ public class MainActivity extends FragmentActivity {
         initRecentRelations();
       }
     };
-    RelationList rl =
-        new RelationList(this, rll, recentRelations, codeLabelAliasMap,
+    View rl =
+        RelationList.make(this, rll, recentRelations, codeLabelAliasMap,
             relationAliases);
     ViewGroup v = (ViewGroup) findViewById(R.id.container_recent_relations);
     v.removeAllViews();

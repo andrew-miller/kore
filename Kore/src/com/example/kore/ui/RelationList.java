@@ -5,6 +5,8 @@ import static com.example.kore.utils.Null.notNull;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -24,7 +26,7 @@ import com.example.kore.utils.Optional;
 import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Unit;
 
-public class RelationList extends FrameLayout {
+public class RelationList {
 
   public static interface Listener {
     public void select(Relation r);
@@ -33,14 +35,11 @@ public class RelationList extends FrameLayout {
         List<Either3<Label, Integer, Unit>> path, String alias);
   }
 
-  public RelationList(Context context, final Listener listener,
+  public static View make(final Context context, final Listener listener,
       List<Relation> relations, CodeLabelAliasMap codeLabelAliases,
       Map<CanonicalRelation, String> relationAliases) {
-    super(context);
-    notNull(relations, listener, codeLabelAliases, relationAliases);
-    View v =
-        LayoutInflater.from(context)
-            .inflate(R.layout.relation_list, this, true);
+    notNull(context, relations, listener, codeLabelAliases, relationAliases);
+    View v = LayoutInflater.from(context).inflate(R.layout.relation_list, null);
     LinearLayout relationListLayout =
         (LinearLayout) v.findViewById(R.id.layout_relation_list);
     for (final Relation relation : iter(relations)) {
@@ -64,7 +63,7 @@ public class RelationList extends FrameLayout {
 
       b.setOnLongClickListener(new OnLongClickListener() {
         public boolean onLongClick(final View v) {
-          UIUtils.replaceWithTextEntry(fl, v, getContext(), strRelation,
+          UIUtils.replaceWithTextEntry(fl, v, context, strRelation,
               new F<String, Void>() {
                 public Void f(String s) {
                   listener.changeAlias(relation,
@@ -78,5 +77,6 @@ public class RelationList extends FrameLayout {
 
       relationListLayout.addView(fl);
     }
+    return v;
   }
 }
