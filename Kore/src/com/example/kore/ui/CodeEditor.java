@@ -51,7 +51,7 @@ public class CodeEditor {
     public F<Code, Unit> initNodeEditor;
   }
 
-  public static Pair<View, F<Unit, Bundle>> make(final Context context,
+  private static Pair<View, F<Unit, Bundle>> make(final Context context,
       Code code, final CodeLabelAliasMap codeLabelAliases,
       final Map<CanonicalCode, String> codeAliases, final List<Code> codes,
       List<Label> path, List<Label> pathShadow, final F<Code, Unit> done) {
