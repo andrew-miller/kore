@@ -17,6 +17,7 @@ import static com.example.kore.utils.Null.notNull;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -40,7 +41,7 @@ public class RelationEditor extends FrameLayout {
   private static final String STATE_PATH = "path";
   private static final String STATE_RELATION = "relation";
 
-  private RelationNodeEditor nodeEditor;
+  private View nodeEditor;
   private Relation relation;
   private List<Either3<Label, Integer, Unit>> path;
   private final F<Relation, Unit> done;
@@ -162,7 +163,7 @@ public class RelationEditor extends FrameLayout {
 
   private void initNodeEditor() {
     nodeEditor =
-        new RelationNodeEditor(
+        RelationNodeEditor.make(
             context,
             relation,
             new RelationNodeEditor.Listener() {

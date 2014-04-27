@@ -14,6 +14,9 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.DragShadowBuilder;
+import android.view.View.OnClickListener;
+import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -34,7 +37,7 @@ import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Unit;
 
-public class RelationNodeEditor extends FrameLayout {
+public class RelationNodeEditor {
   interface Listener {
     void selectRelation(List<Either3<Label, Integer, Unit>> path);
 
@@ -56,14 +59,6 @@ public class RelationNodeEditor extends FrameLayout {
 
   }
 
-  private final Relation rootRelation;
-  private final Listener listener;
-  private final List<Either3<Label, Integer, Unit>> path;
-  private final LinearLayout fields;
-  private final CodeLabelAliasMap codeLabelAliases;
-  private final Map<CanonicalRelation, String> relationAliases;
-  private final RelationViewColors relationViewColors;
-
   class Move {
     Integer i;
   }
@@ -74,27 +69,21 @@ public class RelationNodeEditor extends FrameLayout {
    * <code>selectPath</code>, <code>path</code> starts at the relation which is
    * being edited (not the root)
    */
-  public RelationNodeEditor(final Context context, final Relation rootRelation,
+  public static View make(final Context context, final Relation rootRelation,
       final Listener listener, final List<Either3<Label, Integer, Unit>> path,
       final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
       final Map<CanonicalCode, String> codeAliases,
       Map<CanonicalRelation, String> relationAliases,
       RelationViewColors relationViewColors) {
-    super(context);
-    notNull(rootRelation, listener, path, codes, codeLabelAliases, codeAliases);
+    notNull(context, rootRelation, listener, path, codes, codeLabelAliases,
+        codeAliases, relationAliases, relationViewColors);
     Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
         relationOrPathAt(path, rootRelation);
     Relation r = resolve(rootRelation, rp);
-    this.rootRelation = rootRelation;
-    this.listener = listener;
-    this.path = path;
-    this.codeLabelAliases = codeLabelAliases;
-    this.relationAliases = relationAliases;
-    this.relationViewColors = relationViewColors;
     View v =
         LayoutInflater.from(context).inflate(R.layout.relation_node_editor,
-            this, true);
-    fields = (LinearLayout) v.findViewById(R.id.layout_fields);
+            null);
+    LinearLayout fields = (LinearLayout) v.findViewById(R.id.layout_fields);
     v.findViewById(R.id.button_done).setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
         listener.done();
@@ -148,14 +137,11 @@ public class RelationNodeEditor extends FrameLayout {
         pm.show();
       }
     });
-    render();
-  }
 
-  private void render() {
     DragBro dragBro = new DragBro();
     View rv =
-        RelationView.make(getContext(), relationViewColors, dragBro,
-            rootRelation, path, new RelationView.Listener() {
+        RelationView.make(context, relationViewColors, dragBro, rootRelation,
+            path, new RelationView.Listener() {
               public void extendUnion(List<Either3<Label, Integer, Unit>> p,
                   Integer i) {
                 listener.extendUnion(drop(p, length(path)), i, unit_unit);
@@ -185,9 +171,10 @@ public class RelationNodeEditor extends FrameLayout {
               }
             }, codeLabelAliases, relationAliases);
     // workaround that you can't drag onto the outer 10 pixels
-    FrameLayout f = new FrameLayout(getContext());
+    FrameLayout f = new FrameLayout(context);
     f.setPadding(10, 10, 10, 10);
     f.addView(rv);
     fields.addView(f);
+    return v;
   }
 }
