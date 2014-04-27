@@ -128,9 +128,11 @@ public class CodeField extends FrameLayout {
           UIUtils.addCodeToMenu(m, c, ListUtils.<Label> nil(),
               codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
                 public Unit f(List<Label> p) {
-                  listener.fieldReplaced(Either
-                      .<Code, List<Label>> x(linkTreeToCode(rebase(
-                          append(label, path), linkTree(reroot(c, p))))));
+                  Either<Code, List<Label>> n =
+                      Either.<Code, List<Label>> x(linkTreeToCode(rebase(
+                          append(label, path), linkTree(reroot(c, p)))));
+                  if (validCode(replaceCodeAt(rootCode, append(label, path), n)))
+                    listener.fieldReplaced(n);
                   return unit();
                 }
               });
