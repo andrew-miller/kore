@@ -16,9 +16,10 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.PopupMenu;
 
 import com.example.kore.R;
@@ -33,7 +34,7 @@ import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.Unit;
 
-public class CodeField extends FrameLayout {
+public class CodeField {
   public static interface Listener {
     public void codeSelected();
 
@@ -44,46 +45,16 @@ public class CodeField extends FrameLayout {
     public void labelAliasChanged(String alias);
   }
 
-  private final Context a;
-  private final Listener listener;
-  private final Label label;
-  private final Code rootCode;
-  private final boolean selected;
-  private final CodeLabelAliasMap codeLabelAliases;
-  private final Button labelButton;
-  private final Button codeButton;
-  private final Map<CanonicalCode, String> codeAliases;
-  private final List<Code> codes;
-  private final List<Label> path;
-  private final Optional<String> labelAlias;
-
-  public CodeField(Context context, Listener listener, Label label,
-      Either<Code, List<Label>> codeOrPath, Code rootCode, boolean selected,
-      CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalCode, String> codeAliases, List<Code> codes,
-      List<Label> path, Optional<String> labelAlias) {
-    super(context);
-    notNull(listener, label, codeOrPath, rootCode, codeAliases, codes, path,
-        labelAlias);
-    this.listener = listener;
-    this.label = label;
-    this.rootCode = rootCode;
-    this.selected = selected;
-    this.codeLabelAliases = codeLabelAliases;
-    this.codeAliases = codeAliases;
-    this.codes = codes;
-    this.path = path;
-    this.labelAlias = labelAlias;
-    this.a = context;
-    View v =
-        LayoutInflater.from(context).inflate(R.layout.code_field, this, true);
-    labelButton = (Button) v.findViewById(R.id.button_label);
-    initLabelButton();
-    codeButton = (Button) v.findViewById(R.id.button_code);
-    initCodeButton();
-  }
-
-  private void initLabelButton() {
+  public static View make(final Context context, final Listener listener,
+      final Label label, Either<Code, List<Label>> codeOrPath,
+      final Code rootCode, boolean selected,
+      final CodeLabelAliasMap codeLabelAliases,
+      final Map<CanonicalCode, String> codeAliases, final List<Code> codes,
+      final List<Label> path, Optional<String> labelAlias) {
+    notNull(context, listener, label, codeOrPath, rootCode, codeLabelAliases,
+        codeAliases, codes, path, labelAlias);
+    View v = LayoutInflater.from(context).inflate(R.layout.code_field, null);
+    Button labelButton = (Button) v.findViewById(R.id.button_label);
     labelButton.setBackgroundColor((int) Long.parseLong(
         label.label.substring(0, 8), 16));
     labelButton.setText(labelAlias.isNothing() ? label.label : labelAlias
@@ -97,7 +68,7 @@ public class CodeField extends FrameLayout {
     });
     labelButton.setOnLongClickListener(new OnLongClickListener() {
       public boolean onLongClick(final View v) {
-        UIUtils.replaceWithTextEntry((ViewGroup) v.getParent(), v, a,
+        UIUtils.replaceWithTextEntry((ViewGroup) v.getParent(), v, context,
             label.label, new F<String, Void>() {
               public Void f(String s) {
                 listener.labelAliasChanged(s);
@@ -107,9 +78,7 @@ public class CodeField extends FrameLayout {
         return true;
       }
     });
-  }
-
-  private void initCodeButton() {
+    Button codeButton = (Button) v.findViewById(R.id.button_code);
     codeButton.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
         listener.codeSelected();
@@ -117,16 +86,15 @@ public class CodeField extends FrameLayout {
     });
     codeButton.setOnLongClickListener(new OnLongClickListener() {
       public boolean onLongClick(View v) {
-        PopupMenu pm = new PopupMenu(a, v);
+        PopupMenu pm = new PopupMenu(context, v);
         Menu m = pm.getMenu();
         UIUtils.addCodeToMenu(m, rootCode, ListUtils.<Label> nil(),
             codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
-              public Unit f(List<Label> path) {
-                path = directPath(path, rootCode);
-                if (validCode(replaceCodeAt(rootCode,
-                    append(label, CodeField.this.path),
-                    Either.<Code, List<Label>> y(path))))
-                  listener.fieldReplaced(Either.<Code, List<Label>> y(path));
+              public Unit f(List<Label> p) {
+                p = directPath(p, rootCode);
+                if (validCode(replaceCodeAt(rootCode, append(label, path),
+                    Either.<Code, List<Label>> y(p))))
+                  listener.fieldReplaced(Either.<Code, List<Label>> y(p));
                 return unit();
               }
             });
@@ -143,12 +111,13 @@ public class CodeField extends FrameLayout {
                   return unit();
                 }
               });
-
         pm.show();
         return true;
       }
     });
     codeButton.setText(renderCode(rootCode, append(label, path),
         codeLabelAliases, codeAliases, 1));
+    return v;
   }
+
 }

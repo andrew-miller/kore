@@ -123,7 +123,7 @@ public class CodeNodeEditor {
             }
           };
 
-          fields.addView(new CodeField(context, cfl, l, e.y, rootCode, some(l)
+          fields.addView(CodeField.make(context, cfl, l, e.y, rootCode, some(l)
               .equals(selectedLabel.get()), codeLabelAliases, codeAliases,
               codes, path, las.get(l)));
         }
