@@ -65,7 +65,7 @@ public class MainActivity extends FragmentActivity {
   private ViewGroup codeEditorContainer;
   private ViewGroup relationEditorContainer;
   private F<Unit, Bundle> getCodeEditorState;
-  private RelationEditor relationEditor;
+  private F<Unit, Bundle> getRelationEditorState;
   // if not null, a code editor is open
   private F<Code, Unit> codeEditorDoneListener;
   // if not null, a relation editor is open
@@ -160,12 +160,14 @@ public class MainActivity extends FragmentActivity {
 
     if (relationEditorState != null) {
       newRelationEditorDoneListener();
-      relationEditor =
-          new RelationEditor(this, recentCodes, codeLabelAliasMap, codeAliases,
-              relationAliases, recentRelations, relationViewColors,
-              relationEditorState, relationEditorDoneListener);
+      Pair<View, F<Unit, Bundle>> p =
+          RelationEditor.make(this, recentCodes, codeLabelAliasMap,
+              codeAliases, relationAliases, recentRelations,
+              relationViewColors, relationEditorState,
+              relationEditorDoneListener);
+      getRelationEditorState = p.y;
       mainLayout.setVisibility(View.GONE);
-      relationEditorContainer.addView(relationEditor);
+      relationEditorContainer.addView(p.x);
       relationEditorContainer.setVisibility(View.VISIBLE);
     }
   }
@@ -182,8 +184,8 @@ public class MainActivity extends FragmentActivity {
     b.putSerializable(STATE_RELATION_ALIASES, relationAliases);
     if (getCodeEditorState != null)
       b.putBundle(STATE_CODE_EDITOR, getCodeEditorState.f(unit()));
-    if (relationEditor != null)
-      b.putBundle(STATE_RELATION_EDITOR, relationEditor.getState());
+    if (getRelationEditorState != null)
+      b.putBundle(STATE_RELATION_EDITOR, getRelationEditorState.f(unit()));
   }
 
   private void initRecentCodes() {
@@ -259,12 +261,13 @@ public class MainActivity extends FragmentActivity {
     if (relationEditorDoneListener != null | codeEditorDoneListener != null)
       return;
     newRelationEditorDoneListener();
-    relationEditor =
-        new RelationEditor(this, r, recentCodes, codeLabelAliasMap,
+    Pair<View, F<Unit, Bundle>> p =
+        RelationEditor.make(this, r, recentCodes, codeLabelAliasMap,
             codeAliases, relationAliases, recentRelations, relationViewColors,
             relationEditorDoneListener);
+    getRelationEditorState = p.y;
     mainLayout.setVisibility(View.GONE);
-    relationEditorContainer.addView(relationEditor);
+    relationEditorContainer.addView(p.x);
     relationEditorContainer.setVisibility(View.VISIBLE);
   }
 
@@ -296,7 +299,7 @@ public class MainActivity extends FragmentActivity {
           throw new RuntimeException(
               "got \"done editing\" event from non-current relation editor");
         notNull(r);
-        relationEditor = null;
+        getRelationEditorState = null;
         relationEditorContainer.removeAllViews();
         relationEditorContainer.setVisibility(View.GONE);
         mainLayout.setVisibility(View.VISIBLE);
