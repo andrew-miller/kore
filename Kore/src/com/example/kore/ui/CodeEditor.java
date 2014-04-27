@@ -100,7 +100,7 @@ public class CodeEditor extends FrameLayout {
 
   private void setPath(List<Label> path) {
     pathContainer.removeAllViews();
-    pathContainer.addView(new CodePath(context, new F<List<Label>, Unit>() {
+    pathContainer.addView(CodePath.make(context, new F<List<Label>, Unit>() {
       public Unit f(List<Label> p) {
         notNull(p);
         Optional<Code> oc = codeAt(p, code);

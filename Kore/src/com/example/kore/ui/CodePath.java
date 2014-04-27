@@ -6,9 +6,10 @@ import static com.example.kore.utils.Null.notNull;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
-import android.widget.FrameLayout;
 
 import com.example.kore.R;
 import com.example.kore.codes.Code;
@@ -19,12 +20,11 @@ import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.Unit;
 
-public class CodePath extends FrameLayout {
-  public CodePath(Context context, final F<List<Label>, Unit> subpathSelected,
-      Code code, List<Label> path) {
-    super(context);
-    notNull(subpathSelected, code, path);
-    View v = LayoutInflater.from(context).inflate(R.layout.path, this, true);
+public class CodePath {
+  public static View make(Context context,
+      final F<List<Label>, Unit> subpathSelected, Code code, List<Label> path) {
+    notNull(context, subpathSelected, code, path);
+    View v = LayoutInflater.from(context).inflate(R.layout.path, null);
     ViewGroup pathVG = (ViewGroup) v.findViewById(R.id.layout_path);
 
     List<Label> subpath = nil();
@@ -64,5 +64,6 @@ public class CodePath extends FrameLayout {
       b2.setHeight(LayoutParams.MATCH_PARENT);
       pathVG.addView(b2);
     }
+    return v;
   }
 }
