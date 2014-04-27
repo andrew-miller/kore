@@ -202,8 +202,8 @@ public class MainActivity extends FragmentActivity {
         initRecentCodes();
       }
     };
-    CodeList cl =
-        new CodeList(this, cll, recentCodes, codeLabelAliasMap, codeAliases);
+    View cl =
+        CodeList.make(this, cll, recentCodes, codeLabelAliasMap, codeAliases);
     ViewGroup v = (ViewGroup) findViewById(R.id.container_recent_codes);
     v.removeAllViews();
     v.addView(cl);

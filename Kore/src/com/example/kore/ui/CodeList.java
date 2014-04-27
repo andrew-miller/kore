@@ -5,6 +5,8 @@ import static com.example.kore.utils.Null.notNull;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -20,7 +22,7 @@ import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
 
-public class CodeList extends FrameLayout {
+public class CodeList {
 
   public static interface Listener {
     public void select(Code c);
@@ -28,12 +30,11 @@ public class CodeList extends FrameLayout {
     public void changeAlias(Code code, List<Label> path, String alias);
   }
 
-  public CodeList(Context context, final Listener listener, List<Code> codes,
-      CodeLabelAliasMap codeLabelAliases, Map<CanonicalCode, String> codeAliases) {
-    super(context);
-    notNull(codes, listener, codeLabelAliases, codeAliases);
-    View v =
-        LayoutInflater.from(context).inflate(R.layout.code_list, this, true);
+  public static View make(final Context context, final Listener listener,
+      List<Code> codes, CodeLabelAliasMap codeLabelAliases,
+      Map<CanonicalCode, String> codeAliases) {
+    notNull(context, codes, listener, codeLabelAliases, codeAliases);
+    View v = LayoutInflater.from(context).inflate(R.layout.code_list, null);
     LinearLayout codeListLayout =
         (LinearLayout) v.findViewById(R.id.layout_code_list);
     for (final Code code : iter(codes)) {
@@ -55,7 +56,7 @@ public class CodeList extends FrameLayout {
 
       b.setOnLongClickListener(new OnLongClickListener() {
         public boolean onLongClick(final View v) {
-          UIUtils.replaceWithTextEntry(fl, v, getContext(), strCode,
+          UIUtils.replaceWithTextEntry(fl, v, context, strCode,
               new F<String, Void>() {
                 public Void f(String s) {
                   listener.changeAlias(code, ListUtils.<Label> nil(), s);
@@ -68,6 +69,6 @@ public class CodeList extends FrameLayout {
 
       codeListLayout.addView(fl);
     }
+    return v;
   }
-
 }
