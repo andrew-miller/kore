@@ -3,6 +3,8 @@ package com.example.kore.ui;
 import static com.example.kore.utils.ListUtils.cons;
 import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.Null.notNull;
+import static com.example.kore.utils.OptionalUtils.nothing;
+import static com.example.kore.utils.OptionalUtils.some;
 import static com.example.kore.utils.PairUtils.pair;
 import static com.example.kore.utils.Unit.unit;
 
@@ -64,12 +66,9 @@ public class MainActivity extends FragmentActivity {
   private View mainLayout;
   private ViewGroup codeEditorContainer;
   private ViewGroup relationEditorContainer;
-  private F<Unit, Bundle> getCodeEditorState;
-  private F<Unit, Bundle> getRelationEditorState;
-  // if not null, a code editor is open
-  private F<Code, Unit> codeEditorDoneListener;
-  // if not null, a relation editor is open
-  private F<Relation, Unit> relationEditorDoneListener;
+  private Optional<Pair<F<Unit, Bundle>, F<Code, Unit>>> codeEditor = nothing();
+  private Optional<Pair<F<Unit, Bundle>, F<Relation, Unit>>> relationEditor =
+      nothing();
 
   CodeLabelAliasMap codeLabelAliasMap = new CodeLabelAliasMap() {
     public void setAlias(CanonicalCode c, Label l, String alias) {
@@ -148,24 +147,23 @@ public class MainActivity extends FragmentActivity {
     initRecentRelations();
 
     if (codeEditorState != null) {
-      newCodeEditorDoneListener();
+      F<Code, Unit> doneListener = newCodeEditorDoneListener();
       Pair<View, F<Unit, Bundle>> p =
           CodeEditor.make(this, codeEditorState, codeLabelAliasMap,
-              codeAliases, recentCodes, codeEditorDoneListener);
-      getCodeEditorState = p.y;
+              codeAliases, recentCodes, doneListener);
+      codeEditor = some(pair(p.y, doneListener));
       mainLayout.setVisibility(View.GONE);
       codeEditorContainer.addView(p.x);
       codeEditorContainer.setVisibility(View.VISIBLE);
     }
 
     if (relationEditorState != null) {
-      newRelationEditorDoneListener();
+      F<Relation, Unit> doneListener = newRelationEditorDoneListener();
       Pair<View, F<Unit, Bundle>> p =
           RelationEditor.make(this, recentCodes, codeLabelAliasMap,
               codeAliases, relationAliases, recentRelations,
-              relationViewColors, relationEditorState,
-              relationEditorDoneListener);
-      getRelationEditorState = p.y;
+              relationViewColors, relationEditorState, doneListener);
+      relationEditor = some(pair(p.y, doneListener));
       mainLayout.setVisibility(View.GONE);
       relationEditorContainer.addView(p.x);
       relationEditorContainer.setVisibility(View.VISIBLE);
@@ -182,10 +180,10 @@ public class MainActivity extends FragmentActivity {
     b.putSerializable(STATE_CODE_LABEL_ALIASES, codeLabelAliases);
     b.putSerializable(STATE_CODE_ALIASES, codeAliases);
     b.putSerializable(STATE_RELATION_ALIASES, relationAliases);
-    if (getCodeEditorState != null)
-      b.putBundle(STATE_CODE_EDITOR, getCodeEditorState.f(unit()));
-    if (getRelationEditorState != null)
-      b.putBundle(STATE_RELATION_EDITOR, getRelationEditorState.f(unit()));
+    if (!codeEditor.isNothing())
+      b.putBundle(STATE_CODE_EDITOR, codeEditor.some().x.x.f(unit()));
+    if (!relationEditor.isNothing())
+      b.putBundle(STATE_RELATION_EDITOR, relationEditor.some().x.x.f(unit()));
   }
 
   private void initRecentCodes() {
@@ -197,7 +195,7 @@ public class MainActivity extends FragmentActivity {
 
       public void changeAlias(Code code, List<Label> path, String alias) {
         notNull(code, alias);
-        if (codeEditorDoneListener != null)
+        if (!codeEditor.isNothing())
           throw new RuntimeException(
               "code list tried to change alias while code editor was open");
         codeAliases = codeAliases.put(new CanonicalCode(code, path), alias);
@@ -221,7 +219,7 @@ public class MainActivity extends FragmentActivity {
       public void changeAlias(Relation relation,
           List<Either3<Label, Integer, Unit>> path, String alias) {
         notNull(relation, alias);
-        if (relationEditorDoneListener != null)
+        if (!relationEditor.isNothing())
           throw new RuntimeException(
               "relation list tried to change alias while relation editor was open");
         relationAliases =
@@ -244,13 +242,13 @@ public class MainActivity extends FragmentActivity {
      * by pressing on two codes in the recent code list at the same time, or by
      * quickly pressing the "new code" button multiple times.
      */
-    if (codeEditorDoneListener != null | relationEditorDoneListener != null)
+    if (!(codeEditor.isNothing() & relationEditor.isNothing()))
       return;
-    newCodeEditorDoneListener();
+    F<Code, Unit> doneListener = newCodeEditorDoneListener();
     Pair<View, F<Unit, Bundle>> p =
         CodeEditor.make(this, c, codeLabelAliasMap, codeAliases, recentCodes,
-            codeEditorDoneListener);
-    getCodeEditorState = p.y;
+            doneListener);
+    codeEditor = some(pair(p.y, doneListener));
     mainLayout.setVisibility(View.GONE);
     codeEditorContainer.addView(p.x);
     codeEditorContainer.setVisibility(View.VISIBLE);
@@ -258,27 +256,26 @@ public class MainActivity extends FragmentActivity {
 
   private void startRelationEditor(Relation r) {
     // same workaround in startCodeEditor
-    if (relationEditorDoneListener != null | codeEditorDoneListener != null)
+    if (!(relationEditor.isNothing() & codeEditor.isNothing()))
       return;
-    newRelationEditorDoneListener();
+    F<Relation, Unit> doneListener = newRelationEditorDoneListener();
     Pair<View, F<Unit, Bundle>> p =
         RelationEditor.make(this, r, recentCodes, codeLabelAliasMap,
             codeAliases, relationAliases, recentRelations, relationViewColors,
-            relationEditorDoneListener);
-    getRelationEditorState = p.y;
+            doneListener);
+    relationEditor = some(pair(p.y, doneListener));
     mainLayout.setVisibility(View.GONE);
     relationEditorContainer.addView(p.x);
     relationEditorContainer.setVisibility(View.VISIBLE);
   }
 
-  private void newCodeEditorDoneListener() {
-    codeEditorDoneListener = new F<Code, Unit>() {
+  private F<Code, Unit> newCodeEditorDoneListener() {
+    return new F<Code, Unit>() {
       public Unit f(Code c) {
-        if (this != codeEditorDoneListener)
+        if (codeEditor.isNothing() || this != codeEditor.some().x.y)
           throw new RuntimeException(
               "got \"done editing\" event from non-current code editor");
         notNull(c);
-        getCodeEditorState = null;
         codeEditorContainer.removeAllViews();
         codeEditorContainer.setVisibility(View.GONE);
         mainLayout.setVisibility(View.VISIBLE);
@@ -286,20 +283,19 @@ public class MainActivity extends FragmentActivity {
           recentCodes = cons(c, recentCodes);
         codes.add(c);
         initRecentCodes();
-        codeEditorDoneListener = null;
+        codeEditor = nothing();
         return unit();
       }
     };
   }
 
-  private void newRelationEditorDoneListener() {
-    relationEditorDoneListener = new F<Relation, Unit>() {
+  private F<Relation, Unit> newRelationEditorDoneListener() {
+    return new F<Relation, Unit>() {
       public Unit f(Relation r) {
-        if (this != relationEditorDoneListener)
+        if (relationEditor.isNothing() || this != relationEditor.some().x.y)
           throw new RuntimeException(
               "got \"done editing\" event from non-current relation editor");
         notNull(r);
-        getRelationEditorState = null;
         relationEditorContainer.removeAllViews();
         relationEditorContainer.setVisibility(View.GONE);
         mainLayout.setVisibility(View.VISIBLE);
@@ -307,7 +303,7 @@ public class MainActivity extends FragmentActivity {
           recentRelations = cons(r, recentRelations);
         relations.add(r);
         initRecentRelations();
-        relationEditorDoneListener = null;
+        relationEditor = nothing();
         return unit();
       }
     };
