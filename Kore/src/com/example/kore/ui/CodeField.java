@@ -36,13 +36,13 @@ import com.example.kore.utils.Unit;
 
 public class CodeField {
   public static interface Listener {
-    public void codeSelected();
+    public void selectCode();
 
-    public void labelSelected();
+    public void selectLabel();
 
-    public void fieldReplaced(Either<Code, List<Label>> cp);
+    public void replaceField(Either<Code, List<Label>> cp);
 
-    public void labelAliasChanged(String alias);
+    public void changeLabelAlias(String alias);
   }
 
   public static View make(final Context context, final Listener listener,
@@ -63,7 +63,7 @@ public class CodeField {
       labelButton.setText("---");
     labelButton.setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
-        listener.labelSelected();
+        listener.selectLabel();
       }
     });
     labelButton.setOnLongClickListener(new OnLongClickListener() {
@@ -71,7 +71,7 @@ public class CodeField {
         UIUtils.replaceWithTextEntry((ViewGroup) v.getParent(), v, context,
             label.label, new F<String, Void>() {
               public Void f(String s) {
-                listener.labelAliasChanged(s);
+                listener.changeLabelAlias(s);
                 return null;
               }
             });
@@ -81,7 +81,7 @@ public class CodeField {
     Button codeButton = (Button) v.findViewById(R.id.button_code);
     codeButton.setOnClickListener(new View.OnClickListener() {
       public void onClick(View v) {
-        listener.codeSelected();
+        listener.selectCode();
       }
     });
     codeButton.setOnLongClickListener(new OnLongClickListener() {
@@ -94,7 +94,7 @@ public class CodeField {
                 p = directPath(p, rootCode);
                 if (validCode(replaceCodeAt(rootCode, append(label, path),
                     Either.<Code, List<Label>> y(p))))
-                  listener.fieldReplaced(Either.<Code, List<Label>> y(p));
+                  listener.replaceField(Either.<Code, List<Label>> y(p));
                 return unit();
               }
             });
@@ -107,7 +107,7 @@ public class CodeField {
                       Either.<Code, List<Label>> x(linkTreeToCode(rebase(
                           append(label, path), linkTree(reroot(c, p)))));
                   if (validCode(replaceCodeAt(rootCode, append(label, path), n)))
-                    listener.fieldReplaced(n);
+                    listener.replaceField(n);
                   return unit();
                 }
               });

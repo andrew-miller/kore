@@ -98,7 +98,7 @@ public class CodeNodeEditor {
             .entrySet())) {
           final Label l = e.x;
           CodeField.Listener cfl = new CodeField.Listener() {
-            public void labelSelected() {
+            public void selectLabel() {
               notNull(l);
               deleteButton.setVisibility(View.VISIBLE);
               selectedLabel.set(some(l));
@@ -110,15 +110,15 @@ public class CodeNodeEditor {
               f(unit());
             }
 
-            public void codeSelected() {
+            public void selectCode() {
               listener.selectCode(l);
             }
 
-            public void fieldReplaced(Either<Code, List<Label>> cp) {
+            public void replaceField(Either<Code, List<Label>> cp) {
               listener.replaceField(cp, l);
             }
 
-            public void labelAliasChanged(String alias) {
+            public void changeLabelAlias(String alias) {
               listener.changeLabelAlias(l, alias);
             }
           };
