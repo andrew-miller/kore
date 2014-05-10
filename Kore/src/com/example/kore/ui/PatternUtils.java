@@ -67,7 +67,7 @@ public class PatternUtils {
     String s;
     {
       Pair<Label, Pattern> e = es.cons().x;
-      Optional<String> a = codeLabelAliases.getAliases(cc).get(e.x);
+      Optional<String> a = codeLabelAliases.getAliases(cc).xy.get(e.x);
       s =
           start + (a.isNothing() ? e.x : a.some().x) + " "
               + renderPattern(e.y, root, append(e.x, path), codeLabelAliases);
@@ -75,7 +75,7 @@ public class PatternUtils {
     if (es.cons().tail.isEmpty())
       return s + end;
     for (Pair<Label, Pattern> e : iter(es.cons().tail)) {
-      Optional<String> a = codeLabelAliases.getAliases(cc).get(e.x);
+      Optional<String> a = codeLabelAliases.getAliases(cc).xy.get(e.x);
       s +=
           "," + (a.isNothing() ? e.x : a.some().x) + " "
               + renderPattern(e.y, root, append(e.x, path), codeLabelAliases);

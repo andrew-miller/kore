@@ -60,7 +60,8 @@ public class MainActivity extends FragmentActivity {
   private List<Code> recentCodes = nil();
   private HashSet<Relation> relations = new HashSet<Relation>();
   private List<Relation> recentRelations = nil();
-  private Map<CanonicalCode, Map<Label, String>> codeLabelAliases = Map.empty();
+  private Map<CanonicalCode, Bijection<Label, String>> codeLabelAliases = Map
+      .empty();
   private Map<CanonicalCode, String> codeAliases = Map.empty();
   private Map<CanonicalRelation, String> relationAliases = Map.empty();
   private View mainLayout;
@@ -71,32 +72,35 @@ public class MainActivity extends FragmentActivity {
       nothing();
 
   CodeLabelAliasMap codeLabelAliasMap = new CodeLabelAliasMap() {
-    public void setAlias(CanonicalCode c, Label l, String alias) {
-      Optional<Map<Label, String>> o = codeLabelAliases.get(c);
+    public boolean setAlias(CanonicalCode c, Label l, String alias) {
+      Optional<Bijection<Label, String>> o = codeLabelAliases.get(c);
       if (o.isNothing())
         codeLabelAliases =
-            codeLabelAliases.put(c, Map.<Label, String> empty().put(l, alias));
-      else
-        codeLabelAliases = codeLabelAliases.put(c, o.some().x.put(l, alias));
+            codeLabelAliases.put(c,
+                Bijection.<Label, String> empty().putX(l, alias).some().x);
+      else {
+        Optional<Bijection<Label, String>> oo = o.some().x.putX(l, alias);
+        if (oo.isNothing())
+          return false;
+        codeLabelAliases = codeLabelAliases.put(c, oo.some().x);
+      }
+      return true;
     }
 
     public void deleteAlias(CanonicalCode c, Label l) {
-      Optional<Map<Label, String>> o = codeLabelAliases.get(c);
-      if (o.isNothing())
-        codeLabelAliases =
-            codeLabelAliases.put(c, Map.<Label, String> empty().delete(l));
-      else
-        codeLabelAliases = codeLabelAliases.put(c, o.some().x.delete(l));
+      Optional<Bijection<Label, String>> o = codeLabelAliases.get(c);
+      if (!o.isNothing())
+        codeLabelAliases = codeLabelAliases.put(c, o.some().x.deleteX(l));
     }
 
-    public Map<Label, String> getAliases(CanonicalCode c) {
-      Optional<Map<Label, String>> o = codeLabelAliases.get(c);
+    public Bijection<Label, String> getAliases(CanonicalCode c) {
+      Optional<Bijection<Label, String>> o = codeLabelAliases.get(c);
       if (o.isNothing())
-        return Map.empty();
+        return Bijection.empty();
       return o.some().x;
     }
 
-    public void setAliases(CanonicalCode c, Map<Label, String> aliases) {
+    public void setAliases(CanonicalCode c, Bijection<Label, String> aliases) {
       codeLabelAliases = codeLabelAliases.put(c, aliases);
     }
   };
@@ -134,7 +138,7 @@ public class MainActivity extends FragmentActivity {
       relations = (HashSet<Relation>) b.get(STATE_RELATIONS);
       recentRelations = (List<Relation>) b.get(STATE_RECENT_RELATIONS);
       codeLabelAliases =
-          (Map<CanonicalCode, Map<Label, String>>) b
+          (Map<CanonicalCode, Bijection<Label, String>>) b
               .get(STATE_CODE_LABEL_ALIASES);
       codeAliases = (Map<CanonicalCode, String>) b.get(STATE_CODE_ALIASES);
       relationAliases =

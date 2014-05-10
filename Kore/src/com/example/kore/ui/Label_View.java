@@ -26,9 +26,8 @@ public class Label_View {
 
     final View v;
     Optional<String> ola =
-        codeLabelAliases.getAliases(
-            new CanonicalCode(label.o, ListUtils.<Label> nil())).get(
-            label.label);
+        codeLabelAliases.getAliases(new CanonicalCode(label.o, ListUtils
+            .<Label> nil())).xy.get(label.label);
     if (ola.isNothing())
       v = LabelView.make(context, label.label, aliasTextColor);
     else {

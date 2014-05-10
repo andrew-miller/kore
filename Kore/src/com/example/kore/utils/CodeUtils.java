@@ -23,6 +23,7 @@ import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Code.Tag;
 import com.example.kore.codes.Label;
+import com.example.kore.ui.Bijection;
 import com.example.kore.ui.CodeLabelAliasMap;
 import com.example.kore.ui.LinkTree;
 
@@ -71,7 +72,7 @@ public final class CodeUtils {
     default:
       throw Boom.boom();
     }
-    Map<Label, String> labelAliases = codeLabelAliases.getAliases(cc);
+    Bijection<Label, String> labelAliases = codeLabelAliases.getAliases(cc);
     String result = "";
     for (Pair<Label, Either<Code, List<Label>>> e : iter(c.labels.entrySet())) {
       Label l = e.x;
@@ -79,7 +80,7 @@ public final class CodeUtils {
         result = "'";
       else
         result += ", '";
-      Optional<String> la = labelAliases.get(l);
+      Optional<String> la = labelAliases.xy.get(l);
       String ls = la.isNothing() ? l.label : la.some().x;
       result +=
           (ls + " " + renderCode(append(l, path), root, e.y, codeLabelAliases,

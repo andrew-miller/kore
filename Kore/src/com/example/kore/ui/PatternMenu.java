@@ -60,7 +60,7 @@ public class PatternMenu {
       break;
     case UNION:
       for (final Pair<Label, ?> e : iter(code.labels.entrySet())) {
-        Optional<String> a = codeLabelAliases.getAliases(cc).get(e.x);
+        Optional<String> a = codeLabelAliases.getAliases(cc).xy.get(e.x);
         m.add((a.isNothing() ? e.x : a.some().x) + " *")
             .setOnMenuItemClickListener(new OnMenuItemClickListener() {
               public boolean onMenuItemClick(MenuItem _) {

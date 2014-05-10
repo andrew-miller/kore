@@ -54,7 +54,7 @@ public class ProjectionMenu {
         });
     for (final Pair<Label, ?> e : iter(o.labels.entrySet())) {
       Optional<String> a =
-          codeLabelAliases.getAliases(new CanonicalCode(c, proj)).get(e.x);
+          codeLabelAliases.getAliases(new CanonicalCode(c, proj)).xy.get(e.x);
       m.add(a.isNothing() ? e.x.toString() : a.some().x)
           .setOnMenuItemClickListener(new OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem _) {

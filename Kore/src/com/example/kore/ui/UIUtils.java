@@ -94,12 +94,12 @@ public class UIUtils {
         return true;
       }
     });
-    Map<Label, String> las =
+    Bijection<Label, String> las =
         codeLabelAliases.getAliases(new CanonicalCode(root, path));
     if (cp.tag == cp.tag.X)
       for (Pair<Label, Either<Code, List<Label>>> e : iter(cp.x().labels
           .entrySet())) {
-        Optional<String> ls2 = las.get(e.x);
+        Optional<String> ls2 = las.xy.get(e.x);
         addCodeToMenu(m, root, append(e.x, path), e.y,
             ls2.isNothing() ? e.x.label : ls2.some().x, space + "  ",
             codeLabelAliases, codeAliases, f);

@@ -156,8 +156,8 @@ public class CodeEditor {
                     if (!containsKey(c.labels, label))
                       throw new RuntimeException("non-existent label");
                     CanonicalCode cc = new CanonicalCode(s.code, s.path);
-                    codeLabelAliases.setAlias(cc, label, alias);
-                    f(c);
+                    if (codeLabelAliases.setAlias(cc, label, alias))
+                      f(c);
                   }
 
                   public void
@@ -247,16 +247,16 @@ public class CodeEditor {
       CodeLabelAliasMap codeLabelAliases) {
     CanonicalCode cc = new CanonicalCode(cRoot, cPath);
     CanonicalCode cc2 = new CanonicalCode(c2root, c2Path);
-    Map<Label, String> la = codeLabelAliases.getAliases(cc);
-    Map<Label, String> la2 = Map.empty();
+    Bijection<Label, String> la = codeLabelAliases.getAliases(cc);
+    Bijection<Label, String> la2 = Bijection.empty();
     Map<Label, Label> m = i.get(cPath).some().x;
     for (Pair<Label, Either<Code, List<Label>>> e : iter(cNode.labels
         .entrySet())) {
       Label l = e.x;
       Label l2 = m.get(l).some().x;
-      Optional<String> oa = la.get(l);
+      Optional<String> oa = la.xy.get(l);
       if (!oa.isNothing())
-        la2 = la2.put(l2, oa.some().x);
+        la2 = la2.putX(l2, oa.some().x).some().x;
       if (e.y.tag == e.y.tag.X)
         mapAliases(cRoot, append(e.x, cPath), c2root, append(l2, c2Path),
             e.y.x(), i, codeLabelAliases);

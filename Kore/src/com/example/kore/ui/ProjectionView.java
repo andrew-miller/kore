@@ -49,7 +49,8 @@ public class ProjectionView {
     List<Label> path = nil();
     for (Label l : iter(projection.path)) {
       Optional<String> ola =
-          codeLabelAliases.getAliases(new CanonicalCode(argCode, path)).get(l);
+          codeLabelAliases.getAliases(new CanonicalCode(argCode, path)).xy
+              .get(l);
       View v;
       if (ola.isNothing())
         v = LabelView.make(context, l, aliasTextColor);

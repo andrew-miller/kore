@@ -92,7 +92,7 @@ public class CodeNodeEditor {
           throw Boom.boom();
         }
         fields.removeAllViews();
-        Map<Label, String> las =
+        Bijection<Label, String> las =
             codeLabelAliases.getAliases(new CanonicalCode(rootCode, path));
         for (final Pair<Label, Either<Code, List<Label>>> e : iter(code.labels
             .entrySet())) {
@@ -125,7 +125,7 @@ public class CodeNodeEditor {
 
           fields.addView(CodeField.make(context, cfl, l, e.y, rootCode, some(l)
               .equals(selectedLabel.get()), codeLabelAliases, codeAliases,
-              codes, path, las.get(l)));
+              codes, path, las.xy.get(l)));
         }
         return unit();
       }

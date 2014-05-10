@@ -19,7 +19,6 @@ import com.example.kore.codes.Pattern;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
@@ -56,11 +55,11 @@ public class PatternView {
     };
     LinearLayout ll = new LinearLayout(context);
     ll.setOrientation(LinearLayout.VERTICAL);
-    Map<Label, String> las =
+    Bijection<Label, String> las =
         codeLabelAliases.getAliases(new CanonicalCode(rootCode, codePath));
     for (Pair<Label, ?> e : iter(pattern.fields.entrySet())) {
       LinearLayout ll2 = new LinearLayout(context);
-      Optional<String> ola = las.get(e.x);
+      Optional<String> ola = las.xy.get(e.x);
       View v;
       if (ola.isNothing())
         ll2.addView(v = LabelView.make(context, e.x, aliasTextColor));

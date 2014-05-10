@@ -106,21 +106,20 @@ public class RelationUtils {
     }
     case LABEL: {
       Optional<String> alias =
-          codeLabelAliases.getAliases(
-              new CanonicalCode(r.label().o, ListUtils.<Label> nil())).get(
-              r.label().label);
+          codeLabelAliases.getAliases(new CanonicalCode(r.label().o, ListUtils
+              .<Label> nil())).xy.get(r.label().label);
       return "'" + (alias.isNothing() ? r.label().label : alias.some().x) + " "
           + renderRelation(argCode, r.label().r, codeLabelAliases);
     }
     case PRODUCT: {
-      Map<Label, String> las =
+      Bijection<Label, String> las =
           codeLabelAliases.getAliases(new CanonicalCode(r.product().o,
               ListUtils.<Label> nil()));
       List<Pair<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>>> es =
           r.product().m.entrySet();
       if (es.isEmpty())
         return "{}";
-      Optional<String> la = las.get(es.cons().x.x);
+      Optional<String> la = las.xy.get(es.cons().x.x);
       String s =
           "{'" + (la.isNothing() ? es.cons().x.x : la.some().x) + " "
               + renderRelation(argCode, es.cons().x.y, codeLabelAliases);
@@ -128,7 +127,7 @@ public class RelationUtils {
         return s + "}";
       for (Pair<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(es
           .cons().tail)) {
-        la = las.get(e.x);
+        la = las.xy.get(e.x);
         s +=
             "," + (la.isNothing() ? e.x : la.some().x) + " "
                 + renderRelation(argCode, e.y, codeLabelAliases);
@@ -140,9 +139,8 @@ public class RelationUtils {
       List<Label> p = nil();
       for (Label l : iter(r.projection().path)) {
         Optional<String> a =
-            codeLabelAliases.getAliases(
-                new CanonicalCode(argCode.some().x, directPath(p,
-                    argCode.some().x))).get(l);
+            codeLabelAliases.getAliases(new CanonicalCode(argCode.some().x,
+                directPath(p, argCode.some().x))).xy.get(l);
         s += "." + (a.isNothing() ? l.label : a.some().x);
         p = append(l, p);
       }
