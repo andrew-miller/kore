@@ -20,13 +20,17 @@ public class Bijection<X, Y> implements Serializable {
   public Optional<Bijection<X, Y>> putX(X x, Y y) {
     if (!yx.get(y).isNothing())
       return nothing();
-    return some(new Bijection<X, Y>(xy.put(x, y), yx.put(y, x)));
+    Optional<Y> oy = xy.get(x);
+    return some(new Bijection<X, Y>(xy.put(x, y), (oy.isNothing() ? yx
+        : yx.delete(oy.some().x)).put(y, x)));
   }
 
   public Optional<Bijection<X, Y>> putY(Y y, X x) {
     if (!xy.get(x).isNothing())
       return nothing();
-    return some(new Bijection<X, Y>(xy.put(x, y), yx.put(y, x)));
+    Optional<X> ox = yx.get(y);
+    return some(new Bijection<X, Y>((ox.isNothing() ? xy
+        : xy.delete(ox.some().x)).put(x, y), yx.put(y, x)));
   }
 
   public Bijection<X, Y> deleteX(X x) {
