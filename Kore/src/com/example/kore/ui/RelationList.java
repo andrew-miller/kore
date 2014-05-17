@@ -21,7 +21,6 @@ import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Unit;
@@ -31,13 +30,13 @@ public class RelationList {
   public static interface Listener {
     public void select(Relation r);
 
-    public void changeAlias(Relation relation,
+    public boolean changeAlias(Relation relation,
         List<Either3<Label, Integer, Unit>> path, String alias);
   }
 
   public static View make(final Context context, final Listener listener,
       List<Relation> relations, CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalRelation, String> relationAliases) {
+      Bijection<CanonicalRelation, String> relationAliases) {
     notNull(context, relations, listener, codeLabelAliases, relationAliases);
     View v = LayoutInflater.from(context).inflate(R.layout.relation_list, null);
     LinearLayout relationListLayout =
@@ -46,7 +45,7 @@ public class RelationList {
       final FrameLayout fl = new FrameLayout(context);
       Button b = new Button(context);
       Optional<String> relationName =
-          relationAliases.get(new CanonicalRelation(relation, ListUtils
+          relationAliases.xy.get(new CanonicalRelation(relation, ListUtils
               .<Either3<Label, Integer, Unit>> nil()));
       final String strRelation =
           relationName.isNothing() ? RelationUtils.renderRelation(OptionalUtils

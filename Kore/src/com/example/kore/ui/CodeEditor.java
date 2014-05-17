@@ -53,8 +53,9 @@ public class CodeEditor {
 
   private static Pair<View, F<Unit, Bundle>> make(final Context context,
       Code code, final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalCode, String> codeAliases, final List<Code> codes,
-      List<Label> path, List<Label> pathShadow, final F<Code, Unit> done) {
+      final Bijection<CanonicalCode, String> codeAliases,
+      final List<Code> codes, List<Label> path, List<Label> pathShadow,
+      final F<Code, Unit> done) {
     notNull(context, code, codeLabelAliases, codeAliases, codes, path,
         pathShadow, done);
     final View v =
@@ -227,7 +228,7 @@ public class CodeEditor {
 
   public static Pair<View, F<Unit, Bundle>> make(Context context, Code code,
       CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalCode, String> codeAliases, List<Code> codes,
+      Bijection<CanonicalCode, String> codeAliases, List<Code> codes,
       F<Code, Unit> done) {
     return make(context, code, codeLabelAliases, codeAliases, codes,
         ListUtils.<Label> nil(), ListUtils.<Label> nil(), done);
@@ -235,7 +236,7 @@ public class CodeEditor {
 
   public static Pair<View, F<Unit, Bundle>> make(Context context, Bundle b,
       CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalCode, String> codeAliases, List<Code> codes,
+      Bijection<CanonicalCode, String> codeAliases, List<Code> codes,
       F<Code, Unit> done) {
     return make(context, (Code) b.get(STATE_CODE), codeLabelAliases,
         codeAliases, codes, (List<Label>) b.get(STATE_PATH),

@@ -43,7 +43,6 @@ import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-import com.example.kore.utils.Map;
 import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
@@ -61,7 +60,7 @@ public class RelationPath {
   public static View make(final Context context, RelationColors rc,
       Listener listener, Relation root, List<Relation> relations,
       CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalRelation, String> relationAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
       List<Either3<Label, Integer, Unit>> path, int referenceColor) {
     View v = LayoutInflater.from(context).inflate(R.layout.path, null);
     ViewGroup vg = (ViewGroup) v.findViewById(R.id.layout_path);
@@ -75,7 +74,7 @@ public class RelationPath {
   private static void make(final Context context, RelationColors rc,
       final Listener listener, final Relation root,
       final List<Relation> relations, final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalRelation, String> relationAliases,
+      final Bijection<CanonicalRelation, String> relationAliases,
       final List<Either3<Label, Integer, Unit>> before,
       final List<Either3<Label, Integer, Unit>> after,
       final Either<Relation, List<Either3<Label, Integer, Unit>>> rp,

@@ -19,7 +19,6 @@ import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
 
 public class CodeList {
@@ -27,12 +26,12 @@ public class CodeList {
   public static interface Listener {
     public void select(Code c);
 
-    public void changeAlias(Code code, List<Label> path, String alias);
+    public boolean changeAlias(Code code, List<Label> path, String alias);
   }
 
   public static View make(final Context context, final Listener listener,
       List<Code> codes, CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalCode, String> codeAliases) {
+      Bijection<CanonicalCode, String> codeAliases) {
     notNull(context, codes, listener, codeLabelAliases, codeAliases);
     View v = LayoutInflater.from(context).inflate(R.layout.code_list, null);
     LinearLayout codeListLayout =
@@ -41,7 +40,7 @@ public class CodeList {
       final FrameLayout fl = new FrameLayout(context);
       Button b = new Button(context);
       Optional<String> codeName =
-          codeAliases.get(new CanonicalCode(code, ListUtils.<Label> nil()));
+          codeAliases.xy.get(new CanonicalCode(code, ListUtils.<Label> nil()));
       final String strCode =
           codeName.isNothing() ? CodeUtils.renderCode(code,
               ListUtils.<Label> nil(), codeLabelAliases, codeAliases, 1)

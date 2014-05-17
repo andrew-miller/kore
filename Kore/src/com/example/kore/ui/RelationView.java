@@ -32,7 +32,6 @@ import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
-import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Pair;
@@ -57,13 +56,13 @@ public final class RelationView {
       final DragBro dragBro, final Relation root,
       final List<Either3<Label, Integer, Unit>> path, final Listener listener,
       final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalRelation, String> relationAliases) {
+      final Bijection<CanonicalRelation, String> relationAliases) {
     final Either<Relation, List<Either3<Label, Integer, Unit>>> er =
         RelationUtils.relationOrPathAt(path, root);
     View rv;
     Pair<Integer, Integer> cp;
     Optional<String> alias =
-        relationAliases.get(new CanonicalRelation(root, path));
+        relationAliases.xy.get(new CanonicalRelation(root, path));
     if (alias.isNothing() | listener.dontAbbreviate(path)) {
       switch (er.tag) {
       case Y:

@@ -33,7 +33,6 @@ import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
-import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Pair;
@@ -74,17 +73,21 @@ public class UIUtils {
         .showSoftInput(t, 0);
   }
 
-  public static void addCodeToMenu(Menu m, final Code root,
-      final List<Label> path, CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalCode, String> codeAliases, final F<List<Label>, Unit> f) {
+  public static void
+      addCodeToMenu(Menu m, final Code root, final List<Label> path,
+          CodeLabelAliasMap codeLabelAliases,
+          Bijection<CanonicalCode, String> codeAliases,
+          final F<List<Label>, Unit> f) {
     addCodeToMenu(m, root, path, Either.<Code, List<Label>> x(root), "", "",
         codeLabelAliases, codeAliases, f);
   }
 
-  private static void addCodeToMenu(Menu m, final Code root,
-      final List<Label> path, Either<Code, List<Label>> cp, String ls,
-      String space, CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalCode, String> codeAliases, final F<List<Label>, Unit> f) {
+  private static void
+      addCodeToMenu(Menu m, final Code root, final List<Label> path,
+          Either<Code, List<Label>> cp, String ls, String space,
+          CodeLabelAliasMap codeLabelAliases,
+          Bijection<CanonicalCode, String> codeAliases,
+          final F<List<Label>, Unit> f) {
     MenuItem i =
         m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
             + renderCode(root, path, codeLabelAliases, codeAliases, 1));
@@ -112,7 +115,7 @@ public class UIUtils {
   public static void addRelationToMenu(Menu m, final Relation root,
       final List<Either3<Label, Integer, Unit>> path,
       CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalRelation, String> relationAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
       Optional<List<Either3<Label, Integer, Unit>>> invalidPath,
       final F<List<Either3<Label, Integer, Unit>>, Unit> f) {
     addRelationToMenu(m, root, path,
@@ -124,14 +127,14 @@ public class UIUtils {
       final List<Either3<Label, Integer, Unit>> path,
       final Either<Relation, List<Either3<Label, Integer, Unit>>> rp,
       String ls, String space, CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalRelation, String> relationAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
       Optional<List<Either3<Label, Integer, Unit>>> invalidPath,
       final F<List<Either3<Label, Integer, Unit>>, Unit> f) {
     Optional<Abstraction> ea =
         rp.tag == rp.tag.Y ? OptionalUtils.<Abstraction> nothing()
             : enclosingAbstraction(path, root);
     Optional<String> ra =
-        relationAliases.get(new CanonicalRelation(root, path));
+        relationAliases.xy.get(new CanonicalRelation(root, path));
     m.add(
         space
             + ls.substring(0, Math.min(10, ls.length()))

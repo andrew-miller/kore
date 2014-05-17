@@ -34,7 +34,6 @@ import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-import com.example.kore.utils.Map;
 import com.example.kore.utils.Unit;
 
 public class RelationNodeEditor {
@@ -72,8 +71,8 @@ public class RelationNodeEditor {
   public static View make(final Context context, final Relation rootRelation,
       final Listener listener, final List<Either3<Label, Integer, Unit>> path,
       final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalCode, String> codeAliases,
-      Map<CanonicalRelation, String> relationAliases,
+      final Bijection<CanonicalCode, String> codeAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
       RelationViewColors relationViewColors) {
     notNull(context, rootRelation, listener, path, codes, codeLabelAliases,
         codeAliases, relationAliases, relationViewColors);

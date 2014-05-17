@@ -30,7 +30,6 @@ import com.example.kore.utils.Either;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.Unit;
 
@@ -49,8 +48,9 @@ public class CodeField {
       final Label label, Either<Code, List<Label>> codeOrPath,
       final Code rootCode, boolean selected,
       final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalCode, String> codeAliases, final List<Code> codes,
-      final List<Label> path, Optional<String> labelAlias) {
+      final Bijection<CanonicalCode, String> codeAliases,
+      final List<Code> codes, final List<Label> path,
+      Optional<String> labelAlias) {
     notNull(context, listener, label, codeOrPath, rootCode, codeLabelAliases,
         codeAliases, codes, path, labelAlias);
     View v = LayoutInflater.from(context).inflate(R.layout.code_field, null);

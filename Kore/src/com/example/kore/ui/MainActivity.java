@@ -62,8 +62,9 @@ public class MainActivity extends FragmentActivity {
   private List<Relation> recentRelations = nil();
   private Map<CanonicalCode, Bijection<Label, String>> codeLabelAliases = Map
       .empty();
-  private Map<CanonicalCode, String> codeAliases = Map.empty();
-  private Map<CanonicalRelation, String> relationAliases = Map.empty();
+  private Bijection<CanonicalCode, String> codeAliases = Bijection.empty();
+  private Bijection<CanonicalRelation, String> relationAliases = Bijection
+      .empty();
   private View mainLayout;
   private ViewGroup codeEditorContainer;
   private ViewGroup relationEditorContainer;
@@ -140,9 +141,10 @@ public class MainActivity extends FragmentActivity {
       codeLabelAliases =
           (Map<CanonicalCode, Bijection<Label, String>>) b
               .get(STATE_CODE_LABEL_ALIASES);
-      codeAliases = (Map<CanonicalCode, String>) b.get(STATE_CODE_ALIASES);
+      codeAliases =
+          (Bijection<CanonicalCode, String>) b.get(STATE_CODE_ALIASES);
       relationAliases =
-          (Map<CanonicalRelation, String>) b.get(STATE_RELATION_ALIASES);
+          (Bijection<CanonicalRelation, String>) b.get(STATE_RELATION_ALIASES);
       codeEditorState = b.getBundle(STATE_CODE_EDITOR);
       relationEditorState = b.getBundle(STATE_RELATION_EDITOR);
     }
@@ -197,13 +199,18 @@ public class MainActivity extends FragmentActivity {
         startCodeEditor(c);
       }
 
-      public void changeAlias(Code code, List<Label> path, String alias) {
+      public boolean changeAlias(Code code, List<Label> path, String alias) {
         notNull(code, alias);
         if (!codeEditor.isNothing())
           throw new RuntimeException(
               "code list tried to change alias while code editor was open");
-        codeAliases = codeAliases.put(new CanonicalCode(code, path), alias);
+        Optional<Bijection<CanonicalCode, String>> o =
+            codeAliases.putX(new CanonicalCode(code, path), alias);
+        if (o.isNothing())
+          return false;
+        codeAliases = o.some().x;
         initRecentCodes();
+        return true;
       }
     };
     View cl =
@@ -220,15 +227,19 @@ public class MainActivity extends FragmentActivity {
         startRelationEditor(r);
       }
 
-      public void changeAlias(Relation relation,
+      public boolean changeAlias(Relation relation,
           List<Either3<Label, Integer, Unit>> path, String alias) {
         notNull(relation, alias);
         if (!relationEditor.isNothing())
           throw new RuntimeException(
               "relation list tried to change alias while relation editor was open");
-        relationAliases =
-            relationAliases.put(new CanonicalRelation(relation, path), alias);
+        Optional<Bijection<CanonicalRelation, String>> o =
+            relationAliases.putX(new CanonicalRelation(relation, path), alias);
+        if (o.isNothing())
+          return false;
+        relationAliases = o.some().x;
         initRecentRelations();
+        return true;
       }
     };
     View rl =

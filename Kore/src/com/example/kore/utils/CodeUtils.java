@@ -39,20 +39,20 @@ public final class CodeUtils {
 
   public static String renderCode(Code c, List<Label> p,
       CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalCode, String> codeAliases, int depth) {
+      Bijection<CanonicalCode, String> codeAliases, int depth) {
     return renderCode(p, c, codeOrPathAt(p, c), codeLabelAliases, codeAliases,
         depth);
   }
 
   private static String renderCode(List<Label> path, Code root,
       Either<Code, List<Label>> cp, CodeLabelAliasMap codeLabelAliases,
-      Map<CanonicalCode, String> codeAliases, int depth) {
+      Bijection<CanonicalCode, String> codeAliases, int depth) {
     if (depth < 0)
       throw new RuntimeException("negative depth");
     if (depth == 0)
       return "...";
     CanonicalCode cc = new CanonicalCode(root, path);
-    Optional<String> codeAlias = codeAliases.get(cc);
+    Optional<String> codeAlias = codeAliases.xy.get(cc);
     if (!codeAlias.isNothing())
       return codeAlias.some().x;
     if (cp.tag == cp.tag.Y)

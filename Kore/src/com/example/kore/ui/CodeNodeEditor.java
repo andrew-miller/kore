@@ -19,7 +19,6 @@ import com.example.kore.utils.Boom;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
-import com.example.kore.utils.Map;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Pair;
@@ -45,8 +44,9 @@ public class CodeNodeEditor {
 
   public static View make(final Context context, final Code code,
       final Code rootCode, final Listener listener,
-      final Map<CanonicalCode, String> codeAliases, final List<Code> codes,
-      final List<Label> path, final CodeLabelAliasMap codeLabelAliases) {
+      final Bijection<CanonicalCode, String> codeAliases,
+      final List<Code> codes, final List<Label> path,
+      final CodeLabelAliasMap codeLabelAliases) {
     notNull(context, code, rootCode, listener, codeAliases, codes, path,
         codeLabelAliases);
 

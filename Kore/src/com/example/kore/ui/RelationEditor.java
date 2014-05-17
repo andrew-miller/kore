@@ -35,7 +35,6 @@ import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-import com.example.kore.utils.Map;
 import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
@@ -55,8 +54,8 @@ public class RelationEditor {
   private static Pair<View, F<Unit, Bundle>> make(final Context context,
       Relation relation, final List<Code> codes,
       final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalCode, String> codeAliases,
-      final Map<CanonicalRelation, String> relationAliases,
+      final Bijection<CanonicalCode, String> codeAliases,
+      final Bijection<CanonicalRelation, String> relationAliases,
       final List<Relation> relations,
       final RelationViewColors relationViewColors,
       List<Either3<Label, Integer, Unit>> path, final F<Relation, Unit> done) {
@@ -224,8 +223,8 @@ public class RelationEditor {
   public static Pair<View, F<Unit, Bundle>> make(Context context,
       Relation relation, final List<Code> codes,
       final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalCode, String> codeAliases,
-      final Map<CanonicalRelation, String> relationAliases,
+      final Bijection<CanonicalCode, String> codeAliases,
+      final Bijection<CanonicalRelation, String> relationAliases,
       List<Relation> relations, RelationViewColors relationViewColors,
       F<Relation, Unit> done) {
     return make(context, relation, codes, codeLabelAliases, codeAliases,
@@ -235,8 +234,8 @@ public class RelationEditor {
 
   public static Pair<View, F<Unit, Bundle>> make(Context context,
       final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
-      final Map<CanonicalCode, String> codeAliases,
-      final Map<CanonicalRelation, String> relationAliases,
+      final Bijection<CanonicalCode, String> codeAliases,
+      final Bijection<CanonicalRelation, String> relationAliases,
       List<Relation> relations, RelationViewColors relationViewColors,
       Bundle b, F<Relation, Unit> done) {
     return make(context, (Relation) b.getSerializable(STATE_RELATION), codes,
