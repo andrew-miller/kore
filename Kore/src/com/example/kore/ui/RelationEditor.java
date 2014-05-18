@@ -48,7 +48,6 @@ public class RelationEditor {
     private List<Either3<Label, Integer, Unit>> path;
     public F<Unit, Unit> initNodeEditor;
     public F<List<Either3<Label, Integer, Unit>>, Unit> selectPath;
-    public F<Tag, Unit> changeRelationType;
   }
 
   private static Pair<View, F<Unit, Bundle>> make(final Context context,
@@ -184,6 +183,14 @@ public class RelationEditor {
                   public void selectPath(List<Either3<Label, Integer, Unit>> p) {
                     s.selectPath.f(relationOrPathAt(append(s.path, p),
                         s.relation).y());
+                  }
+
+                  public void changeRelationType(
+                      List<Either3<Label, Integer, Unit>> path, Tag t) {
+                    s.relation =
+                        RelationUtils.changeRelationType(s.relation, path, t);
+                    setPath.f(s.path);
+                    f(unit());
                   }
                 }, s.path, codes, codeLabelAliases, codeAliases,
                 relationAliases, relationViewColors);

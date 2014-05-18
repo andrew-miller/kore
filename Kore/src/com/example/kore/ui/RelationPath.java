@@ -1,27 +1,20 @@
 package com.example.kore.ui;
 
-import static com.example.kore.ui.RelationUtils.codomain;
-import static com.example.kore.ui.RelationUtils.domain;
-import static com.example.kore.ui.RelationUtils.inAbstraction;
 import static com.example.kore.ui.RelationUtils.linkTree;
 import static com.example.kore.ui.RelationUtils.linkTreeToRelation;
 import static com.example.kore.ui.RelationUtils.replaceRelationOrPathAt;
 import static com.example.kore.ui.RelationUtils.resolve;
 import static com.example.kore.ui.RelationUtils.subRelationOrPath;
-import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.LinkTreeUtils.reroot;
 import static com.example.kore.utils.LinkTreeUtils.validLinkTree;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.OptionalUtils.some;
-import static com.example.kore.utils.PairUtils.pair;
 import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
@@ -34,7 +27,6 @@ import android.widget.PopupMenu;
 
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalRelation;
-import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Tag;
@@ -44,7 +36,6 @@ import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.OptionalUtils;
-import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
 public class RelationPath {
@@ -96,30 +87,12 @@ public class RelationPath {
                       .dummy(unit, unit)))))) {
             PopupMenu pm = new PopupMenu(context, v);
             final Menu m = pm.getMenu();
-            F<Pair<String, Tag>, Void> add = new F<Pair<String, Tag>, Void>() {
-              public Void f(final Pair<String, Tag> p) {
-                m.add(p.x).setOnMenuItemClickListener(
-                    new OnMenuItemClickListener() {
-                      public boolean onMenuItemClick(MenuItem _) {
-                        listener.changeRelationType(p.y);
-                        return true;
-                      }
-                    });
-                return null;
+            UIUtils.addRelationTypesToMenu(m, new F<Relation.Tag, Unit>() {
+              public Unit f(Tag t) {
+                listener.changeRelationType(t);
+                return unit();
               }
-            };
-            add.f(pair("[]", Tag.UNION));
-            if (equal(domain(r), unit)) {
-              if (codomain(r).tag == Code.Tag.PRODUCT)
-                add.f(pair("{}", Tag.PRODUCT));
-              if (codomain(r).tag == Code.Tag.UNION)
-                if (!codomain(r).labels.entrySet().isEmpty())
-                  add.f(pair("'", Tag.LABEL));
-            }
-            add.f(pair("->", Tag.ABSTRACTION));
-            add.f(pair("|", Tag.COMPOSITION));
-            if (inAbstraction(root, before))
-              add.f(pair(".", Tag.PROJECTION));
+            }, root, before);
             m.add("---");
             for (final Relation r : iter(relations))
               UIUtils.addRelationToMenu(

@@ -1,14 +1,22 @@
 package com.example.kore.ui;
 
+import static com.example.kore.ui.RelationUtils.codomain;
+import static com.example.kore.ui.RelationUtils.domain;
 import static com.example.kore.ui.RelationUtils.edges;
 import static com.example.kore.ui.RelationUtils.enclosingAbstraction;
+import static com.example.kore.ui.RelationUtils.inAbstraction;
+import static com.example.kore.ui.RelationUtils.relationAt;
 import static com.example.kore.ui.RelationUtils.renderPathElement;
 import static com.example.kore.ui.RelationUtils.renderRelation;
+import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.renderCode;
+import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.isSubList;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.OptionalUtils.some;
+import static com.example.kore.utils.PairUtils.pair;
+import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -158,5 +166,36 @@ public class UIUtils {
         addRelationToMenu(m, root, append(e.x, path), e.y,
             renderPathElement(e.x), space + "  ", codeLabelAliases,
             relationAliases, invalidPath, f);
+  }
+
+  public static void addRelationTypesToMenu(final Menu m,
+      final F<Relation.Tag, Unit> f, Relation root,
+      List<Either3<Label, Integer, Unit>> path) {
+    F<Pair<String, Relation.Tag>, Unit> add =
+        new F<Pair<String, Relation.Tag>, Unit>() {
+          public Unit f(final Pair<String, Relation.Tag> p) {
+            m.add(p.x).setOnMenuItemClickListener(
+                new OnMenuItemClickListener() {
+                  public boolean onMenuItemClick(MenuItem _) {
+                    f.f(p.y);
+                    return true;
+                  }
+                });
+            return unit();
+          }
+        };
+    Relation r = relationAt(path, root).some().x;
+    add.f(pair("[]", Relation.Tag.UNION));
+    if (equal(domain(r), unit)) {
+      if (codomain(r).tag == Code.Tag.PRODUCT)
+        add.f(pair("{}", Relation.Tag.PRODUCT));
+      if (codomain(r).tag == Code.Tag.UNION)
+        if (!codomain(r).labels.entrySet().isEmpty())
+          add.f(pair("'", Relation.Tag.LABEL));
+    }
+    add.f(pair("->", Relation.Tag.ABSTRACTION));
+    add.f(pair("|", Relation.Tag.COMPOSITION));
+    if (inAbstraction(root, path))
+      add.f(pair(".", Relation.Tag.PROJECTION));
   }
 }

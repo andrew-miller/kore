@@ -50,6 +50,8 @@ public final class RelationView {
     void replaceRelation(List<Either3<Label, Integer, Unit>> path, Relation r);
 
     boolean dontAbbreviate(List<Either3<Label, Integer, Unit>> path);
+
+    void changeRelationType(List<Either3<Label, Integer, Unit>> path, Tag t);
   }
 
   public static View make(final Context context, final RelationViewColors rvc,
@@ -94,8 +96,8 @@ public final class RelationView {
         switch (r.tag) {
         case COMPOSITION:
           rv =
-              CompositionView.make(context, make, dragBro, cp.x, cp.y,
-                  r.composition(), new CompositionView.Listener() {
+              CompositionView.make(context, make, dragBro, cp.x, cp.y, root,
+                  path, new CompositionView.Listener() {
                     public void select() {
                       listener.select(path);
                     }
@@ -103,11 +105,15 @@ public final class RelationView {
                     public void extend(Integer i) {
                       listener.extendComposition(path, i);
                     }
+
+                    public void changeRelationType(Tag t) {
+                      listener.changeRelationType(path, t);
+                    }
                   });
           break;
         case UNION:
           rv =
-              UnionView.make(context, make, dragBro, cp.x, cp.y, r.union(),
+              UnionView.make(context, make, dragBro, cp.x, cp.y, root, path,
                   new UnionView.Listener() {
                     public void select() {
                       listener.select(path);
@@ -115,6 +121,10 @@ public final class RelationView {
 
                     public void insert(Integer i) {
                       listener.extendUnion(path, i);
+                    }
+
+                    public void changeRelationType(Tag t) {
+                      listener.changeRelationType(path, t);
                     }
                   });
           break;
@@ -152,8 +162,13 @@ public final class RelationView {
           break;
         case PRODUCT:
           rv =
-              ProductView.make(context, make, cp.x, rvc.aliasTextColor,
-                  r.product(), codeLabelAliases);
+              ProductView.make(context, make, cp.x, rvc.aliasTextColor, root,
+                  path, codeLabelAliases, new F<Relation.Tag, Unit>() {
+                    public Unit f(Tag t) {
+                      listener.changeRelationType(path, t);
+                      return unit();
+                    }
+                  });
           break;
         case PROJECTION:
           rv =
