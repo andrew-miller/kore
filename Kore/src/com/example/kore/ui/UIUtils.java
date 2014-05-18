@@ -10,6 +10,7 @@ import static com.example.kore.ui.RelationUtils.renderPathElement;
 import static com.example.kore.ui.RelationUtils.renderRelation;
 import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.renderCode;
+import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
 import static com.example.kore.utils.ListUtils.isSubList;
@@ -28,6 +29,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
@@ -37,10 +39,12 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Abstraction;
+import com.example.kore.codes.Relation.Projection;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
+import com.example.kore.utils.ListUtils;
 import com.example.kore.utils.Optional;
 import com.example.kore.utils.OptionalUtils;
 import com.example.kore.utils.Pair;
@@ -208,6 +212,46 @@ public class UIUtils {
           .setOnMenuItemClickListener(new OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem _) {
               f.f(e.x);
+              return true;
+            }
+          });
+    }
+  }
+
+  /** <tt>c</tt> and <tt>out</tt> are root codes */
+  public static void addProjectionsToMenu(Menu m, Context context, View v,
+      CodeLabelAliasMap codeLabelAliases, Code c, Code out,
+      F<List<Label>, Void> select) {
+    addProjectionsToMenu(m, context, v, codeLabelAliases,
+        ListUtils.<Label> nil(), c, out, select);
+  }
+
+  private static void addProjectionsToMenu(Menu m, final Context context,
+      final View v, final CodeLabelAliasMap codeLabelAliases,
+      final List<Label> proj, final Code c, final Code out,
+      final F<List<Label>, Void> select) {
+    Code o = reroot(c, proj);
+    m.add(
+        renderRelation(some(c), Either
+            .<Relation, List<Either3<Label, Integer, Unit>>> x(Relation
+                .projection(new Projection(proj, o))), codeLabelAliases))
+        .setEnabled(equal(o, out))
+        .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+          public boolean onMenuItemClick(MenuItem _) {
+            select.f(proj);
+            return true;
+          }
+        });
+    for (final Pair<Label, ?> e : iter(o.labels.entrySet())) {
+      Optional<String> a =
+          codeLabelAliases.getAliases(new CanonicalCode(c, proj)).xy.get(e.x);
+      m.add(a.isNothing() ? e.x.toString() : a.some().x)
+          .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem _) {
+              PopupMenu pm = new PopupMenu(context, v);
+              addProjectionsToMenu(pm.getMenu(), context, v, codeLabelAliases,
+                  append(e.x, proj), c, out, select);
+              pm.show();
               return true;
             }
           });

@@ -176,13 +176,16 @@ public final class RelationView {
           break;
         case PROJECTION:
           rv =
-              ProjectionView.make(context, cp.x, rvc.aliasTextColor,
-                  r.projection(), codeLabelAliases, argCode.some().x,
-                  new F<List<Label>, Unit>() {
-                    public Unit f(List<Label> p) {
+              ProjectionView.make(context, cp.x, rvc.aliasTextColor, root,
+                  path, codeLabelAliases, argCode.some().x,
+                  new ProjectionView.Listener() {
+                    public void replace(List<Label> p) {
                       listener.replaceRelation(path, Relation
                           .projection(new Projection(p, r.projection().o)));
-                      return unit();
+                    }
+
+                    public void changeRelationType(Tag t) {
+                      listener.changeRelationType(path, t);
                     }
                   });
           break;
