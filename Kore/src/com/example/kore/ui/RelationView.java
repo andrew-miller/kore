@@ -155,12 +155,15 @@ public final class RelationView {
         case ABSTRACTION:
           rv =
               AbstractionView.make(context, make, cp.x, rvc.aliasTextColor,
-                  r.abstraction(), codeLabelAliases, new F<Pattern, Unit>() {
-                    public Unit f(Pattern p) {
+                  root, path, codeLabelAliases, new AbstractionView.Listener() {
+                    public void replace(Pattern p) {
                       listener.replaceRelation(path, Relation
                           .abstraction(new Abstraction(p, r.abstraction().r, r
                               .abstraction().i, r.abstraction().o)));
-                      return unit();
+                    }
+
+                    public void changeRelationType(Tag t) {
+                      listener.changeRelationType(path, t);
                     }
                   });
           break;
