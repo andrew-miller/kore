@@ -198,4 +198,19 @@ public class UIUtils {
     if (inAbstraction(root, path))
       add.f(pair(".", Relation.Tag.PROJECTION));
   }
+
+  public static void addRelationLabelsToMenu(Menu m, Context context, View v,
+      CodeLabelAliasMap codeLabelAliases, CanonicalCode cc,
+      final F<Label, Void> f) {
+    for (final Pair<Label, ?> e : iter(cc.code.labels.entrySet())) {
+      Optional<String> a = codeLabelAliases.getAliases(cc).xy.get(e.x);
+      m.add(a.isNothing() ? e.x.toString() : a.some().x)
+          .setOnMenuItemClickListener(new OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem _) {
+              f.f(e.x);
+              return true;
+            }
+          });
+    }
+  }
 }

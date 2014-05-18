@@ -130,9 +130,10 @@ public final class RelationView {
           break;
         case LABEL:
           rv =
-              Label_View.make(context, make, cp.x, rvc.aliasTextColor,
-                  r.label(), codeLabelAliases, new F<Label, Unit>() {
-                    public Unit f(Label l) {
+              Label_View.make(context, make, cp.x, root, path,
+                  rvc.aliasTextColor, codeLabelAliases,
+                  new Label_View.Listener() {
+                    public void replace(Label l) {
                       Relation sr =
                           getRelation(root, r,
                               Either3.<Label, Integer, Unit> z(unit())).some().x;
@@ -144,7 +145,10 @@ public final class RelationView {
                                           .some().x) ? sr : defaultValue(unit,
                                       reroot(r.label().o, fromArray(l)))), r
                                       .label().o)));
-                      return unit();
+                    }
+
+                    public void changeRelationType(Tag t) {
+                      listener.changeRelationType(path, t);
                     }
                   });
           break;
