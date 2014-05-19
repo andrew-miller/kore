@@ -5,9 +5,10 @@ import static com.example.kore.ui.RelationUtils.domain;
 import static com.example.kore.ui.RelationUtils.edges;
 import static com.example.kore.ui.RelationUtils.enclosingAbstraction;
 import static com.example.kore.ui.RelationUtils.inAbstraction;
-import static com.example.kore.ui.RelationUtils.relationAt;
+import static com.example.kore.ui.RelationUtils.relationOrPathAt;
 import static com.example.kore.ui.RelationUtils.renderPathElement;
 import static com.example.kore.ui.RelationUtils.renderRelation;
+import static com.example.kore.ui.RelationUtils.resolve;
 import static com.example.kore.utils.CodeUtils.equal;
 import static com.example.kore.utils.CodeUtils.renderCode;
 import static com.example.kore.utils.CodeUtils.reroot;
@@ -188,7 +189,7 @@ public class UIUtils {
             return unit();
           }
         };
-    Relation r = relationAt(path, root).some().x;
+    Relation r = resolve(root, relationOrPathAt(path, root));
     add.f(pair("[]", Relation.Tag.UNION));
     if (equal(domain(r), unit)) {
       if (codomain(r).tag == Code.Tag.PRODUCT)
