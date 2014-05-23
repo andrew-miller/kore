@@ -356,10 +356,18 @@ public class RelationUtils {
       Optional<Abstraction> a) {
     if (path.isEmpty())
       return a;
-    return enclosingAbstraction(path.cons().tail,
-        subRelation(relation, path.cons().x).some().x,
+    Either<Relation, List<Either3<Label, Integer, Unit>>> srop =
+        subRelationOrPath(relation, path.cons().x).some().x;
+    Optional<Abstraction> a2 =
         relation.tag == Relation.Tag.ABSTRACTION ? some(relation.abstraction())
-            : a);
+            : a;
+    switch (srop.tag) {
+    case X:
+      return enclosingAbstraction(path.cons().tail, srop.x(), a2);
+    case Y:
+      return a2;
+    }
+    throw boom();
   }
 
   /**
