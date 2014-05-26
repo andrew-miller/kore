@@ -960,27 +960,48 @@ public class RelationUtils {
 
   public static Relation defaultValue(Code i, Code o) {
     if (equal(i, unit)) {
-      switch (o.tag) {
-      case PRODUCT:
-        Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> fields =
-            Map.empty();
-        for (Pair<Label, ?> e : iter(o.labels.entrySet()))
-          fields =
-              fields.put(e.x, x(defaultValue(unit, reroot(o, fromArray(e.x)))));
-        return Relation.product(new Product(fields, o));
-      case UNION:
-        List<Pair<Label, Either<Code, List<Label>>>> es = o.labels.entrySet();
-        if (!es.isEmpty() && es.cons().tail.isEmpty()) {
-          Label l = es.cons().x.x;
-          return Relation
-              .product(new Product(
-                  Map.<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> empty()
-                      .put(l, x(defaultValue(unit, reroot(o, fromArray(l))))),
-                  o));
-        }
-      }
+      Optional<Relation> od =
+          defaultValue(new CanonicalCode(o, ListUtils.<Label> nil()).code);
+      return od.isNothing() ? dummy(i, o) : od.some().x;
     }
     return dummy(i, o);
   }
 
+  /** if <code>c</code> has only one possible value, return that value */
+  public static Optional<Relation> defaultValue(Code c) {
+    switch (c.tag) {
+    case PRODUCT:
+      Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> fields =
+          Map.empty();
+      for (Pair<Label, Either<Code, List<Label>>> e : iter(c.labels.entrySet()))
+        switch (e.y.tag) {
+        case X:
+          Optional<Relation> od = defaultValue(e.y.x());
+          if (od.isNothing())
+            return nothing();
+          fields = fields.put(e.x, x(od.some().x));
+          break;
+        case Y:
+          return nothing();
+        }
+      return some(Relation.product(new Product(fields, c)));
+    case UNION:
+      List<Pair<Label, Either<Code, List<Label>>>> es = c.labels.entrySet();
+      if (!es.isEmpty() && es.cons().tail.isEmpty()) {
+        Pair<Label, Either<Code, List<Label>>> e = es.cons().x;
+        switch (e.y.tag) {
+        case X:
+          Optional<Relation> od = defaultValue(e.y.x());
+          if (od.isNothing())
+            return nothing();
+          return some(Relation.label(new Label_(e.x, x(od.some().x), c)));
+        case Y:
+          return nothing();
+        }
+      }
+      return nothing();
+    default:
+      throw boom();
+    }
+  }
 }

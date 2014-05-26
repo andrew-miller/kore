@@ -139,7 +139,7 @@ public class LinkTreeUtils {
       case Y:
         Identity<V> v = root;
         for (E e_ : iter(e.y.y()))
-          v = g.getEdgeTarget(pair(v, e_));
+          v = g.getEdgeTarget(pair(v, e_)); // NPE in getEdgeTarget
         g.addEdge(parent, v, pair(parent, e.x));
         break;
       case X:
