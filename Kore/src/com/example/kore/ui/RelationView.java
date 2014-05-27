@@ -6,7 +6,6 @@ import static com.example.kore.ui.RelationUtils.enclosingAbstraction;
 import static com.example.kore.ui.RelationUtils.getRelation;
 import static com.example.kore.utils.Boom.boom;
 import static com.example.kore.utils.CodeUtils.equal;
-import static com.example.kore.utils.CodeUtils.getCode;
 import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
@@ -137,14 +136,10 @@ public final class RelationView {
                       Relation sr =
                           getRelation(root, r,
                               Either3.<Label, Integer, Unit> z(unit())).some().x;
-                      listener.replaceRelation(path,
-                          Relation
-                              .label(new Label_(l,
-                                  x(equal(codomain(sr),
-                                      getCode(r.label().o, r.label().o, l)
-                                          .some().x) ? sr : defaultValue(unit,
-                                      reroot(r.label().o, fromArray(l)))), r
-                                      .label().o)));
+                      Code o = reroot(r.label().o, fromArray(l));
+                      listener.replaceRelation(path, Relation.label(new Label_(
+                          l, x(equal(codomain(sr), o) ? sr : defaultValue(unit,
+                              o)), r.label().o)));
                     }
 
                     public void changeRelationType(Tag t) {
