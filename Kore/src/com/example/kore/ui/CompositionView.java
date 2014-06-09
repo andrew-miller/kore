@@ -4,12 +4,12 @@ import static com.example.kore.ui.RelationUtils.relationAt;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.PopupMenu;
+import android.widget.PopupWindow;
 
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
@@ -17,6 +17,7 @@ import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
+import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
 public class CompositionView {
@@ -31,7 +32,8 @@ public class CompositionView {
   public static View make(final Context context,
       F<Either3<Label, Integer, Unit>, View> make, DragBro dragBro,
       Integer color, Integer highlightColor, final Relation relation,
-      final List<Either3<Label, Integer, Unit>> path, final Listener listener) {
+      final List<Either3<Label, Integer, Unit>> path,
+      final RelationViewColors relationViewColors, final Listener listener) {
     Relation r = relationAt(path, relation).some().x;
     LinearLayout ll = new LinearLayout(context);
     ll.setBackgroundColor(color);
@@ -63,15 +65,15 @@ public class CompositionView {
       final Button b = new Button(context);
       b.setOnClickListener(new OnClickListener() {
         public void onClick(View _) {
-          PopupMenu pm = new PopupMenu(context, b);
-          Menu m = pm.getMenu();
-          UIUtils.addRelationTypesToMenu(m, new F<Relation.Tag, Unit>() {
-            public Unit f(Tag t) {
-              listener.changeRelationType(t);
-              return unit();
-            }
-          }, relation, path);
-          pm.show();
+          Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
+          p.x.showAsDropDown(b);
+          UIUtils.addRelationTypesToMenu(context, relationViewColors, p.y,
+              new F<Relation.Tag, Unit>() {
+                public Unit f(Tag t) {
+                  listener.changeRelationType(t);
+                  return unit();
+                }
+              }, relation, path);
         }
       });
       ll.addView(b);

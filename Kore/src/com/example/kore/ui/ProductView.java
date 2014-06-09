@@ -4,12 +4,12 @@ import static com.example.kore.ui.RelationUtils.relationAt;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.PopupMenu;
+import android.widget.PopupWindow;
 
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.Label;
@@ -29,6 +29,7 @@ public class ProductView {
       Integer aliasTextColor, final Relation relation,
       final List<Either3<Label, Integer, Unit>> path,
       CodeLabelAliasMap codeLabelAliases,
+      final RelationViewColors relationViewColors,
       final F<Relation.Tag, Unit> changeRelationType) {
     Relation r = relationAt(path, relation).some().x;
     LinearLayout ll = new LinearLayout(context);
@@ -54,15 +55,15 @@ public class ProductView {
       final Button b = new Button(context);
       b.setOnClickListener(new OnClickListener() {
         public void onClick(View _) {
-          PopupMenu pm = new PopupMenu(context, b);
-          Menu m = pm.getMenu();
-          UIUtils.addRelationTypesToMenu(m, new F<Relation.Tag, Unit>() {
-            public Unit f(Tag t) {
-              changeRelationType.f(t);
-              return unit();
-            }
-          }, relation, path);
-          pm.show();
+          Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
+          p.x.showAsDropDown(b);
+          UIUtils.addRelationTypesToMenu(context, relationViewColors, p.y,
+              new F<Relation.Tag, Unit>() {
+                public Unit f(Tag t) {
+                  changeRelationType.f(t);
+                  return unit();
+                }
+              }, relation, path);
         }
       });
       ll.addView(b);

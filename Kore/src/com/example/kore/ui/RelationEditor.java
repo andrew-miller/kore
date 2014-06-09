@@ -116,7 +116,7 @@ public class RelationEditor {
                     s.initNodeEditor.f(unit());
                   }
                 }, s.relation, relations, codeLabelAliases, relationAliases, p,
-                relationViewColors.referenceColors.x));
+                relationViewColors.referenceColors.x, relationViewColors));
             return unit();
           }
         };

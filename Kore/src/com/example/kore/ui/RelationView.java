@@ -96,7 +96,7 @@ public final class RelationView {
         case COMPOSITION:
           rv =
               CompositionView.make(context, make, dragBro, cp.x, cp.y, root,
-                  path, new CompositionView.Listener() {
+                  path, rvc, new CompositionView.Listener() {
                     public void select() {
                       listener.select(path);
                     }
@@ -113,7 +113,7 @@ public final class RelationView {
         case UNION:
           rv =
               UnionView.make(context, make, dragBro, cp.x, cp.y, root, path,
-                  new UnionView.Listener() {
+                  rvc, new UnionView.Listener() {
                     public void select() {
                       listener.select(path);
                     }
@@ -130,7 +130,7 @@ public final class RelationView {
         case LABEL:
           rv =
               Label_View.make(context, make, cp.x, root, path,
-                  rvc.aliasTextColor, codeLabelAliases,
+                  rvc.aliasTextColor, codeLabelAliases, rvc,
                   new Label_View.Listener() {
                     public void replace(Label l) {
                       Relation sr =
@@ -150,7 +150,8 @@ public final class RelationView {
         case ABSTRACTION:
           rv =
               AbstractionView.make(context, make, cp.x, rvc.aliasTextColor,
-                  root, path, codeLabelAliases, new AbstractionView.Listener() {
+                  root, path, codeLabelAliases, rvc, relationAliases,
+                  new AbstractionView.Listener() {
                     public void replace(Pattern p) {
                       listener.replaceRelation(path, Relation
                           .abstraction(new Abstraction(p, r.abstraction().r, r
@@ -165,7 +166,7 @@ public final class RelationView {
         case PRODUCT:
           rv =
               ProductView.make(context, make, cp.x, rvc.aliasTextColor, root,
-                  path, codeLabelAliases, new F<Relation.Tag, Unit>() {
+                  path, codeLabelAliases, rvc, new F<Relation.Tag, Unit>() {
                     public Unit f(Tag t) {
                       listener.changeRelationType(path, t);
                       return unit();
@@ -175,7 +176,7 @@ public final class RelationView {
         case PROJECTION:
           rv =
               ProjectionView.make(context, cp.x, rvc.aliasTextColor, root,
-                  path, codeLabelAliases, argCode.some().x,
+                  path, codeLabelAliases, argCode.some().x, rvc,
                   new ProjectionView.Listener() {
                     public void replace(List<Label> p) {
                       listener.replaceRelation(path, Relation

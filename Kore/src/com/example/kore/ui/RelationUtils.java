@@ -1004,4 +1004,34 @@ public class RelationUtils {
       throw boom();
     }
   }
+
+  public static final RelationView.Listener emptyRelationViewListener =
+      new RelationView.Listener() {
+        public void selectPath(List<Either3<Label, Integer, Unit>> path) {
+        }
+
+        public void select(List<Either3<Label, Integer, Unit>> path) {
+        }
+
+        public void replaceRelation(List<Either3<Label, Integer, Unit>> path,
+            Relation r) {
+        }
+
+        public void extendUnion(List<Either3<Label, Integer, Unit>> path,
+            Integer i) {
+        }
+
+        public void extendComposition(List<Either3<Label, Integer, Unit>> path,
+            Integer i) {
+        }
+
+        public boolean dontAbbreviate(List<Either3<Label, Integer, Unit>> path) {
+          return false;
+        }
+
+        public void changeRelationType(
+            List<Either3<Label, Integer, Unit>> path,
+            com.example.kore.codes.Relation.Tag t) {
+        }
+      };
 }

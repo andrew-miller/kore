@@ -244,7 +244,7 @@ public class MainActivity extends FragmentActivity {
     };
     View rl =
         RelationList.make(this, rll, recentRelations, codeLabelAliasMap,
-            relationAliases);
+            relationAliases, relationViewColors);
     ViewGroup v = (ViewGroup) findViewById(R.id.container_recent_relations);
     v.removeAllViews();
     v.addView(rl);
