@@ -1,6 +1,13 @@
 package com.example.kore.ui;
 
+import static com.example.kore.ui.RelationUtils.codomain;
+import static com.example.kore.ui.RelationUtils.defaultValue;
+import static com.example.kore.ui.RelationUtils.getRelation;
 import static com.example.kore.ui.RelationUtils.relationAt;
+import static com.example.kore.utils.CodeUtils.equal;
+import static com.example.kore.utils.CodeUtils.reroot;
+import static com.example.kore.utils.CodeUtils.unit;
+import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
@@ -12,8 +19,11 @@ import android.widget.PopupWindow;
 
 import com.example.kore.codes.CanonicalCode;
 import com.example.kore.codes.CanonicalRelation;
+import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
+import com.example.kore.codes.Relation.Label_;
+import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
@@ -51,22 +61,29 @@ public class Label_View {
     }
     v.setOnClickListener(new OnClickListener() {
       public void onClick(View _) {
-        final Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
+        Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
         p.x.showAsDropDown(v);
         UIUtils.addRelationLabelsToMenu(p.y, context, v, codeLabelAliases,
             new CanonicalCode(r.label().o, ListUtils.<Label> nil()),
             new F<Label, Void>() {
               public Void f(Label l) {
-                p.x.dismiss();
-                listener.replace(Relation.label(new Relation.Label_(l, r
-                    .label().r, r.label().o)));
+                Relation sr =
+                    getRelation(relation, r,
+                        Either3.<Label, Integer, Unit> z(unit())).some().x;
+                Code o = reroot(r.label().o, fromArray(l));
+                listener.replace(Relation.label(new Label_(l, x(equal(
+                    codomain(sr), o) ? sr : defaultValue(unit, o)), r.label().o)));
                 return null;
+              }
+
+              private Either<Relation, List<Either3<Label, Integer, Unit>>> x(
+                  Relation relation) {
+                return Either.x(relation);
               }
             });
         UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y,
             new F<Relation, Unit>() {
               public Unit f(Relation r) {
-                p.x.dismiss();
                 listener.replace(r);
                 return unit();
               }
