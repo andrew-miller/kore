@@ -435,11 +435,6 @@ public class RelationUtils {
     return Either.x(r);
   }
 
-  private static Either<Relation, List<Either3<Label, Integer, Unit>>> y(
-      List<Either3<Label, Integer, Unit>> x) {
-    return Either.y(x);
-  }
-
   public static Optional<Projection> projection(Code i, Code o) {
     Pair<DirectedMultigraph<Identity<Code.Tag>, Pair<Identity<Code.Tag>, Label>>, Identity<Code.Tag>> p =
         codeToGraph(i);
@@ -682,23 +677,17 @@ public class RelationUtils {
         });
   }
 
-  public static Relation changeRelationType(Relation relation,
-      List<Either3<Label, Integer, Unit>> path, Relation.Tag t) {
-    Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
-        relationOrPathAt(path, relation);
-    Relation r = resolve(relation, rp);
-    Code d = domain(r);
-    Code c = codomain(r);
-    Relation r2;
+  /**
+   * <code>d</code> is the argument code when <code>t</code> is
+   * <code>Projection</code>
+   */
+  public static Relation emptyRelation(Code d, Code c, Relation.Tag t) {
     switch (t) {
     case ABSTRACTION:
-      r2 =
-          Relation.abstraction(new Abstraction(emptyPattern, x(defaultValue(
-              unit, c)), d, c));
-      break;
+      return Relation.abstraction(new Abstraction(emptyPattern, x(defaultValue(
+          unit, c)), d, c));
     case COMPOSITION:
-      r2 = Relation.composition(new Composition(nil, d, c));
-      break;
+      return Relation.composition(new Composition(nil, d, c));
     case PRODUCT:
       if (!equal(d, unit))
         throw new RuntimeException("cannot make product with non-unit domain");
@@ -706,39 +695,23 @@ public class RelationUtils {
           Map.empty();
       for (Pair<Label, ?> e : iter(c.labels.entrySet()))
         m = m.put(e.x, x(defaultValue(unit, reroot(c, fromArray(e.x)))));
-      r2 = Relation.product(new Product(m, c));
-      break;
+      return Relation.product(new Product(m, c));
     case LABEL:
       if (!equal(d, unit))
         throw new RuntimeException("cannot make label with non-unit domain");
-      notEmpty: {
-        for (Pair<Label, ?> e : iter(c.labels.entrySet())) {
-          r2 =
-              Relation.label(new Label_(e.x, x(defaultValue(unit,
-                  reroot(c, fromArray(e.x)))), c));
-          break notEmpty;
-        }
-        r2 = defaultValue(d, c);
-      }
-      break;
+      for (Pair<Label, ?> e : iter(c.labels.entrySet()))
+        return Relation.label(new Label_(e.x, x(defaultValue(unit,
+            reroot(c, fromArray(e.x)))), c));
+      return defaultValue(d, c);
     case PROJECTION:
-      Optional<Abstraction> oa = enclosingAbstraction(path, relation);
-      if (oa.isNothing())
-        throw new RuntimeException(
-            "attempt to make projection that isn't contained within an abstraction");
-      Code arg = oa.some().x.i;
-      Optional<Projection> or2 = projection(arg, c);
-      r2 =
-          or2.isNothing() ? defaultValue(d, c) : Relation
-              .projection(or2.some().x);
-      break;
+      Optional<Projection> or2 = projection(d, c);
+      return or2.isNothing() ? defaultValue(d, c) : Relation.projection(or2
+          .some().x);
     case UNION:
-      r2 = dummy(d, c);
-      break;
+      return dummy(d, c);
     default:
       throw boom();
     }
-    return replaceRelationOrPathAt(relation, path, x(r2));
   }
 
   private static List<Either<Relation, List<Either3<Label, Integer, Unit>>>> nil =
@@ -1027,11 +1000,6 @@ public class RelationUtils {
 
         public boolean dontAbbreviate(List<Either3<Label, Integer, Unit>> path) {
           return false;
-        }
-
-        public void changeRelationType(
-            List<Either3<Label, Integer, Unit>> path,
-            com.example.kore.codes.Relation.Tag t) {
         }
       };
 }

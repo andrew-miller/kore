@@ -29,7 +29,6 @@ import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Composition;
-import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
@@ -108,13 +107,6 @@ public class RelationEditor {
                     s.initNodeEditor.f(unit());
                     f(s.path);
                   }
-
-                  public void changeRelationType(Tag t) {
-                    s.relation =
-                        RelationUtils.changeRelationType(s.relation, s.path, t);
-                    f(s.path);
-                    s.initNodeEditor.f(unit());
-                  }
                 }, s.relation, relations, codeLabelAliases, relationAliases, p,
                 relationViewColors.referenceColors.x, relationViewColors));
             return unit();
@@ -183,14 +175,6 @@ public class RelationEditor {
                   public void selectPath(List<Either3<Label, Integer, Unit>> p) {
                     s.selectPath.f(relationOrPathAt(append(s.path, p),
                         s.relation).y());
-                  }
-
-                  public void changeRelationType(
-                      List<Either3<Label, Integer, Unit>> path, Tag t) {
-                    s.relation =
-                        RelationUtils.changeRelationType(s.relation, path, t);
-                    setPath.f(s.path);
-                    f(unit());
                   }
                 }, s.path, codes, codeLabelAliases, codeAliases,
                 relationAliases, relationViewColors);

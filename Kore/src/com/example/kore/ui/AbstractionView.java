@@ -13,7 +13,7 @@ import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Pattern;
 import com.example.kore.codes.Relation;
-import com.example.kore.codes.Relation.Tag;
+import com.example.kore.codes.Relation.Abstraction;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
@@ -23,9 +23,7 @@ import com.example.kore.utils.Unit;
 
 public class AbstractionView {
   interface Listener {
-    void replace(Pattern p);
-
-    void changeRelationType(Tag t);
+    void replace(Relation r);
   }
 
   public static View make(final Context context,
@@ -36,14 +34,15 @@ public class AbstractionView {
       final RelationViewColors relationViewColors,
       final Bijection<CanonicalRelation, String> relationAliases,
       final Listener listener) {
-    Relation r = relationAt(path, relation).some().x;
+    final Relation r = relationAt(path, relation).some().x;
     final LinearLayout ll = new LinearLayout(context);
     ll.setBackgroundColor(color);
     ll.addView(PatternView.make(context, aliasTextColor,
         r.abstraction().pattern, r.abstraction().i, ListUtils.<Label> nil(),
         codeLabelAliases, new F<Pattern, Unit>() {
           public Unit f(Pattern p) {
-            listener.replace(p);
+            listener.replace(Relation.abstraction(new Abstraction(p, r
+                .abstraction().r, r.abstraction().i, r.abstraction().o)));
             return unit();
           }
         }));
@@ -52,13 +51,13 @@ public class AbstractionView {
       public void onClick(View _) {
         Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
         p.x.showAsDropDown(ll);
-        UIUtils.addRelationTypesToMenu(context, relationViewColors, p.y,
-            new F<Relation.Tag, Unit>() {
-              public Unit f(Tag t) {
-                listener.changeRelationType(t);
+        UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y,
+            new F<Relation, Unit>() {
+              public Unit f(Relation r) {
+                listener.replace(r);
                 return unit();
               }
-            }, relation, path);
+            }, relation, path, codeLabelAliases, relationAliases);
       }
     });
     ll.addView(make.f(Either3.<Label, Integer, Unit> z(unit())));

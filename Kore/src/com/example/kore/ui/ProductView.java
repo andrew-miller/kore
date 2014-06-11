@@ -12,9 +12,9 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 import com.example.kore.codes.CanonicalCode;
+import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
-import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
@@ -28,9 +28,10 @@ public class ProductView {
       F<Either3<Label, Integer, Unit>, View> make, Integer color,
       Integer aliasTextColor, final Relation relation,
       final List<Either3<Label, Integer, Unit>> path,
-      CodeLabelAliasMap codeLabelAliases,
+      final CodeLabelAliasMap codeLabelAliases,
+      final Bijection<CanonicalRelation, String> relationAliases,
       final RelationViewColors relationViewColors,
-      final F<Relation.Tag, Unit> changeRelationType) {
+      final F<Relation, Unit> replace) {
     Relation r = relationAt(path, relation).some().x;
     LinearLayout ll = new LinearLayout(context);
     ll.setOrientation(LinearLayout.VERTICAL);
@@ -57,13 +58,13 @@ public class ProductView {
         public void onClick(View _) {
           Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
           p.x.showAsDropDown(b);
-          UIUtils.addRelationTypesToMenu(context, relationViewColors, p.y,
-              new F<Relation.Tag, Unit>() {
-                public Unit f(Tag t) {
-                  changeRelationType.f(t);
+          UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y,
+              new F<Relation, Unit>() {
+                public Unit f(Relation r) {
+                  replace.f(r);
                   return unit();
                 }
-              }, relation, path);
+              }, relation, path, codeLabelAliases, relationAliases);
         }
       });
       ll.addView(b);

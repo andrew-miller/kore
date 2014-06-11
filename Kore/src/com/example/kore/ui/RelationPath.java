@@ -27,7 +27,6 @@ import com.example.kore.R;
 import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
-import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
@@ -40,8 +39,6 @@ import com.example.kore.utils.Unit;
 public class RelationPath {
   interface Listener {
     void selectPath(List<Either3<Label, Integer, Unit>> p);
-
-    void changeRelationType(Tag y);
 
     void replaceRelation(
         Either<Relation, List<Either3<Label, Integer, Unit>>> er);
@@ -86,13 +83,14 @@ public class RelationPath {
                   .<Relation, List<Either3<Label, Integer, Unit>>> x(RelationUtils
                       .dummy(unit, unit)))))) {
             Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
-            UIUtils.addRelationTypesToMenu(context, rvc, p.y,
-                new F<Relation.Tag, Unit>() {
-                  public Unit f(Tag t) {
-                    listener.changeRelationType(t);
+            UIUtils.addEmptyRelationsToMenu(context, rvc, p.y,
+                new F<Relation, Unit>() {
+                  public Unit f(Relation r) {
+                    listener.replaceRelation(Either
+                        .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
                     return unit();
                   }
-                }, root, before);
+                }, root, before, codeLabelAliases, relationAliases);
             Space s = new Space(context);
             s.setMinimumHeight(1);
             p.y.addView(s);

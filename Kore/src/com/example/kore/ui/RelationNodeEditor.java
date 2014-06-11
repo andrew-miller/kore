@@ -28,7 +28,6 @@ import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
-import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.CodeUtils;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
@@ -56,8 +55,6 @@ public class RelationNodeEditor {
     void replaceRelation(List<Either3<Label, Integer, Unit>> path, Relation r);
 
     void selectPath(List<Either3<Label, Integer, Unit>> path);
-
-    void changeRelationType(List<Either3<Label, Integer, Unit>> path, Tag t);
   }
 
   class Move {
@@ -169,11 +166,6 @@ public class RelationNodeEditor {
               public boolean dontAbbreviate(
                   List<Either3<Label, Integer, Unit>> p) {
                 return p.equals(path);
-              }
-
-              public void changeRelationType(
-                  List<Either3<Label, Integer, Unit>> path, Tag t) {
-                listener.changeRelationType(path, t);
               }
             }, codeLabelAliases, relationAliases);
     // workaround that you can't drag onto the outer 10 pixels

@@ -11,9 +11,9 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 import com.example.kore.codes.CanonicalCode;
+import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
-import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
@@ -24,16 +24,16 @@ import com.example.kore.utils.Unit;
 
 public class Label_View {
   interface Listener {
-    void replace(Label l);
-
-    void changeRelationType(Tag t);
+    void replace(Relation r);
   }
 
   public static View make(final Context context,
       F<Either3<Label, Integer, Unit>, View> make, Integer color,
       final Relation relation, final List<Either3<Label, Integer, Unit>> path,
       Integer aliasTextColor, final CodeLabelAliasMap codeLabelAliases,
-      final RelationViewColors relationViewColors, final Listener listener) {
+      final RelationViewColors relationViewColors,
+      final Bijection<CanonicalRelation, String> relationAliases,
+      final Listener listener) {
     final Relation r = relationAt(path, relation).some().x;
     LinearLayout ll = new LinearLayout(context);
     ll.setBackgroundColor(color);
@@ -57,17 +57,18 @@ public class Label_View {
             new CanonicalCode(r.label().o, ListUtils.<Label> nil()),
             new F<Label, Void>() {
               public Void f(Label l) {
-                listener.replace(l);
+                listener.replace(Relation.label(new Relation.Label_(l, r
+                    .label().r, r.label().o)));
                 return null;
               }
             });
-        UIUtils.addRelationTypesToMenu(context, relationViewColors, p.y,
-            new F<Relation.Tag, Unit>() {
-              public Unit f(Tag t) {
-                listener.changeRelationType(t);
+        UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y,
+            new F<Relation, Unit>() {
+              public Unit f(Relation r) {
+                listener.replace(r);
                 return unit();
               }
-            }, relation, path);
+            }, relation, path, codeLabelAliases, relationAliases);
       }
     });
 

@@ -1,15 +1,8 @@
 package com.example.kore.ui;
 
-import static com.example.kore.ui.RelationUtils.codomain;
-import static com.example.kore.ui.RelationUtils.defaultValue;
 import static com.example.kore.ui.RelationUtils.enclosingAbstraction;
-import static com.example.kore.ui.RelationUtils.getRelation;
 import static com.example.kore.utils.Boom.boom;
-import static com.example.kore.utils.CodeUtils.equal;
-import static com.example.kore.utils.CodeUtils.reroot;
-import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
-import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.ListUtils.length;
 import static com.example.kore.utils.OptionalUtils.some;
 import static com.example.kore.utils.PairUtils.pair;
@@ -20,11 +13,8 @@ import android.view.View;
 import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
-import com.example.kore.codes.Pattern;
 import com.example.kore.codes.Relation;
 import com.example.kore.codes.Relation.Abstraction;
-import com.example.kore.codes.Relation.Label_;
-import com.example.kore.codes.Relation.Projection;
 import com.example.kore.codes.Relation.Tag;
 import com.example.kore.ui.DragDropEdges.Side;
 import com.example.kore.utils.Either;
@@ -49,8 +39,6 @@ public final class RelationView {
     void replaceRelation(List<Either3<Label, Integer, Unit>> path, Relation r);
 
     boolean dontAbbreviate(List<Either3<Label, Integer, Unit>> path);
-
-    void changeRelationType(List<Either3<Label, Integer, Unit>> path, Tag t);
   }
 
   public static View make(final Context context, final RelationViewColors rvc,
@@ -96,7 +84,8 @@ public final class RelationView {
         case COMPOSITION:
           rv =
               CompositionView.make(context, make, dragBro, cp.x, cp.y, root,
-                  path, rvc, new CompositionView.Listener() {
+                  path, rvc, codeLabelAliases, relationAliases,
+                  new CompositionView.Listener() {
                     public void select() {
                       listener.select(path);
                     }
@@ -105,15 +94,16 @@ public final class RelationView {
                       listener.extendComposition(path, i);
                     }
 
-                    public void changeRelationType(Tag t) {
-                      listener.changeRelationType(path, t);
+                    public void replace(Relation r) {
+                      listener.replaceRelation(path, r);
                     }
                   });
           break;
         case UNION:
           rv =
               UnionView.make(context, make, dragBro, cp.x, cp.y, root, path,
-                  rvc, new UnionView.Listener() {
+                  rvc, relationAliases, codeLabelAliases,
+                  new UnionView.Listener() {
                     public void select() {
                       listener.select(path);
                     }
@@ -122,28 +112,18 @@ public final class RelationView {
                       listener.extendUnion(path, i);
                     }
 
-                    public void changeRelationType(Tag t) {
-                      listener.changeRelationType(path, t);
+                    public void replace(Relation r) {
+                      listener.replaceRelation(path, r);
                     }
                   });
           break;
         case LABEL:
           rv =
               Label_View.make(context, make, cp.x, root, path,
-                  rvc.aliasTextColor, codeLabelAliases, rvc,
+                  rvc.aliasTextColor, codeLabelAliases, rvc, relationAliases,
                   new Label_View.Listener() {
-                    public void replace(Label l) {
-                      Relation sr =
-                          getRelation(root, r,
-                              Either3.<Label, Integer, Unit> z(unit())).some().x;
-                      Code o = reroot(r.label().o, fromArray(l));
-                      listener.replaceRelation(path, Relation.label(new Label_(
-                          l, x(equal(codomain(sr), o) ? sr : defaultValue(unit,
-                              o)), r.label().o)));
-                    }
-
-                    public void changeRelationType(Tag t) {
-                      listener.changeRelationType(path, t);
+                    public void replace(Relation r) {
+                      listener.replaceRelation(path, r);
                     }
                   });
           break;
@@ -152,23 +132,18 @@ public final class RelationView {
               AbstractionView.make(context, make, cp.x, rvc.aliasTextColor,
                   root, path, codeLabelAliases, rvc, relationAliases,
                   new AbstractionView.Listener() {
-                    public void replace(Pattern p) {
-                      listener.replaceRelation(path, Relation
-                          .abstraction(new Abstraction(p, r.abstraction().r, r
-                              .abstraction().i, r.abstraction().o)));
-                    }
-
-                    public void changeRelationType(Tag t) {
-                      listener.changeRelationType(path, t);
+                    public void replace(Relation r) {
+                      listener.replaceRelation(path, r);
                     }
                   });
           break;
         case PRODUCT:
           rv =
               ProductView.make(context, make, cp.x, rvc.aliasTextColor, root,
-                  path, codeLabelAliases, rvc, new F<Relation.Tag, Unit>() {
-                    public Unit f(Tag t) {
-                      listener.changeRelationType(path, t);
+                  path, codeLabelAliases, relationAliases, rvc,
+                  new F<Relation, Unit>() {
+                    public Unit f(Relation r) {
+                      listener.replaceRelation(path, r);
                       return unit();
                     }
                   });
@@ -176,15 +151,10 @@ public final class RelationView {
         case PROJECTION:
           rv =
               ProjectionView.make(context, cp.x, rvc.aliasTextColor, root,
-                  path, codeLabelAliases, argCode.some().x, rvc,
-                  new ProjectionView.Listener() {
-                    public void replace(List<Label> p) {
-                      listener.replaceRelation(path, Relation
-                          .projection(new Projection(p, r.projection().o)));
-                    }
-
-                    public void changeRelationType(Tag t) {
-                      listener.changeRelationType(path, t);
+                  path, codeLabelAliases, relationAliases, argCode.some().x,
+                  rvc, new ProjectionView.Listener() {
+                    public void replace(Relation r) {
+                      listener.replaceRelation(path, r);
                     }
                   });
           break;
@@ -237,10 +207,5 @@ public final class RelationView {
             return o instanceof SelectRelation | o instanceof ExtendRelation;
           }
         });
-  }
-
-  private static Either<Relation, List<Either3<Label, Integer, Unit>>> x(
-      Relation r) {
-    return Either.x(r);
   }
 }

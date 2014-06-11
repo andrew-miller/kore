@@ -15,10 +15,10 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 import com.example.kore.codes.CanonicalCode;
+import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
-import com.example.kore.codes.Relation.Tag;
 import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
@@ -28,16 +28,16 @@ import com.example.kore.utils.Unit;
 
 public class ProjectionView {
   interface Listener {
-    void replace(List<Label> p);
-
-    void changeRelationType(Tag t);
+    void replace(Relation r);
   }
 
   public static View make(final Context context, Integer color,
       Integer aliasTextColor, final Relation relation,
       final List<Either3<Label, Integer, Unit>> path,
-      final CodeLabelAliasMap codeLabelAliases, final Code argCode,
-      final RelationViewColors relationViewColors, final Listener listener) {
+      final CodeLabelAliasMap codeLabelAliases,
+      final Bijection<CanonicalRelation, String> relationAliases,
+      final Code argCode, final RelationViewColors relationViewColors,
+      final Listener listener) {
     final Relation r = relationAt(path, relation).some().x;
     LinearLayout ll = new LinearLayout(context);
     ll.setBackgroundColor(color);
@@ -52,17 +52,18 @@ public class ProjectionView {
                 argCode, reroot(argCode, r.projection().path),
                 new F<List<Label>, Void>() {
                   public Void f(List<Label> p) {
-                    listener.replace(p);
+                    listener.replace(Relation
+                        .projection(new Relation.Projection(p, r.projection().o)));
                     return null;
                   }
                 });
-            UIUtils.addRelationTypesToMenu(context, relationViewColors, p.y,
-                new F<Relation.Tag, Unit>() {
-                  public Unit f(Tag t) {
-                    listener.changeRelationType(t);
+            UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y,
+                new F<Relation, Unit>() {
+                  public Unit f(Relation r) {
+                    listener.replace(r);
                     return unit();
                   }
-                }, relation, path);
+                }, relation, path, codeLabelAliases, relationAliases);
           }
         });
         return unit();

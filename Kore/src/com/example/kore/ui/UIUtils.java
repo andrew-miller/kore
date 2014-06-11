@@ -1,8 +1,10 @@
 package com.example.kore.ui;
 
+import static com.example.kore.ui.PatternUtils.emptyPattern;
 import static com.example.kore.ui.RelationUtils.codomain;
 import static com.example.kore.ui.RelationUtils.domain;
-import static com.example.kore.ui.RelationUtils.inAbstraction;
+import static com.example.kore.ui.RelationUtils.emptyRelationViewListener;
+import static com.example.kore.ui.RelationUtils.enclosingAbstraction;
 import static com.example.kore.ui.RelationUtils.relationOrPathAt;
 import static com.example.kore.ui.RelationUtils.renderRelation;
 import static com.example.kore.ui.RelationUtils.resolve;
@@ -11,7 +13,9 @@ import static com.example.kore.utils.CodeUtils.renderCode;
 import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
+import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.ListUtils.iter;
+import static com.example.kore.utils.ListUtils.nil;
 import static com.example.kore.utils.OptionalUtils.some;
 import static com.example.kore.utils.PairUtils.pair;
 import static com.example.kore.utils.Unit.unit;
@@ -34,13 +38,16 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.ScrollView;
+import android.widget.Space;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import com.example.kore.codes.CanonicalCode;
+import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Code;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
+import com.example.kore.codes.Relation.Abstraction;
 import com.example.kore.codes.Relation.Projection;
 import com.example.kore.utils.Either;
 import com.example.kore.utils.Either3;
@@ -122,39 +129,80 @@ public class UIUtils {
       }
   }
 
-  public static void addRelationTypesToMenu(final Context context,
+  public static void addEmptyRelationsToMenu(final Context context,
       final RelationViewColors rvc, final ViewGroup vg,
-      final F<Relation.Tag, Unit> f, Relation root,
-      List<Either3<Label, Integer, Unit>> path) {
-    F<Relation.Tag, Unit> add = new F<Relation.Tag, Unit>() {
-      public Unit f(final Relation.Tag t) {
-        Button b = new Button(context);
-        b.setBackgroundColor(rvc.relationcolors.m.get(t).some().x.x);
-        vg.addView(Overlay.make(context, b, new Overlay.Listener() {
+      final F<Relation, Unit> f, Relation root,
+      List<Either3<Label, Integer, Unit>> path,
+      final CodeLabelAliasMap codeLabelAliases,
+      final Bijection<CanonicalRelation, String> relationAliases) {
+    F<Unit, Unit> addSpace = new F<Unit, Unit>() {
+      public Unit f(Unit x) {
+        Space s = new Space(context);
+        s.setMinimumHeight(1);
+        vg.addView(s);
+        return unit();
+      }
+    };
+    F<Relation, Unit> add = new F<Relation, Unit>() {
+      public Unit f(final Relation r) {
+        List<Either3<Label, Integer, Unit>> n = nil();
+        vg.addView(Overlay.make(context, RelationView.make(context, rvc,
+            new DragBro(), r, n, emptyRelationViewListener, codeLabelAliases,
+            relationAliases), new Overlay.Listener() {
           public boolean onLongClick() {
             return false;
           }
 
           public void onClick() {
-            f.f(t);
+            f.f(r);
           }
         }));
         return unit();
       }
     };
     Relation r = resolve(root, relationOrPathAt(path, root));
-    add.f(Relation.Tag.UNION);
+    Code d = domain(r);
+    Code c = codomain(r);
+    add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.UNION));
+    addSpace.f(unit());
     if (equal(domain(r), unit)) {
-      if (codomain(r).tag == Code.Tag.PRODUCT)
-        add.f(Relation.Tag.PRODUCT);
+      if (codomain(r).tag == Code.Tag.PRODUCT) {
+        add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.PRODUCT));
+        addSpace.f(unit());
+      }
       if (codomain(r).tag == Code.Tag.UNION)
-        if (!codomain(r).labels.entrySet().isEmpty())
-          add.f(Relation.Tag.LABEL);
+        if (!codomain(r).labels.entrySet().isEmpty()) {
+          add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.LABEL));
+          addSpace.f(unit());
+        }
     }
-    add.f(Relation.Tag.ABSTRACTION);
-    add.f(Relation.Tag.COMPOSITION);
-    if (inAbstraction(root, path))
-      add.f(Relation.Tag.PROJECTION);
+    add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.ABSTRACTION));
+    addSpace.f(unit());
+    add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.COMPOSITION));
+    Optional<Abstraction> oea = enclosingAbstraction(path, root);
+    if (!oea.isNothing()) {
+      addSpace.f(unit());
+      final Relation p =
+          RelationUtils.emptyRelation(oea.some().x.i, c,
+              Relation.Tag.PROJECTION);
+      Relation a =
+          Relation.abstraction(new Abstraction(emptyPattern, Either
+              .<Relation, List<Either3<Label, Integer, Unit>>> x(p),
+              oea.some().x.i, c));
+      vg.addView(Overlay.make(context, RelationView.make(context, rvc,
+          new DragBro(), a,
+          fromArray(Either3.<Label, Integer, Unit> z(unit())),
+          emptyRelationViewListener, codeLabelAliases, relationAliases),
+          new Overlay.Listener() {
+            public boolean onLongClick() {
+              return false;
+            }
+
+            public void onClick() {
+              f.f(p);
+            }
+          }));
+    }
   }
 
   public static void addRelationLabelsToMenu(ViewGroup vg, Context context,
