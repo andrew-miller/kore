@@ -270,6 +270,8 @@ public class UIUtils {
     ll.setOrientation(LinearLayout.VERTICAL);
     ll.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,
         LayoutParams.WRAP_CONTENT));
+    ll.setBackgroundColor(0xffffffff);
+    ll.setPadding(1, 1, 1, 1);
     ScrollView sv = new ScrollView(context);
     sv.addView(ll);
     PopupWindow pw = new PopupWindow(sv);
