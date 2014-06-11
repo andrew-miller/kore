@@ -299,6 +299,7 @@ public class MainActivity extends FragmentActivity {
         codes.add(c);
         initRecentCodes();
         codeEditor = nothing();
+        initRecentRelations();
         return unit();
       }
     };
@@ -319,6 +320,7 @@ public class MainActivity extends FragmentActivity {
         relations.add(r);
         initRecentRelations();
         relationEditor = nothing();
+        initRecentCodes();
         return unit();
       }
     };
