@@ -21,7 +21,6 @@ import static com.example.kore.utils.PairUtils.pair;
 import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -242,7 +241,6 @@ public class UIUtils {
             .projection(new Projection(proj, o))), codeLabelAliases));
     b.setOnClickListener(new OnClickListener() {
       public void onClick(View _) {
-        Log.e("WAT", "WAT");
         select.f(proj);
       }
     });
