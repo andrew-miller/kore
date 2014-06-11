@@ -51,12 +51,13 @@ public class Label_View {
     }
     v.setOnClickListener(new OnClickListener() {
       public void onClick(View _) {
-        Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
+        final Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
         p.x.showAsDropDown(v);
         UIUtils.addRelationLabelsToMenu(p.y, context, v, codeLabelAliases,
             new CanonicalCode(r.label().o, ListUtils.<Label> nil()),
             new F<Label, Void>() {
               public Void f(Label l) {
+                p.x.dismiss();
                 listener.replace(Relation.label(new Relation.Label_(l, r
                     .label().r, r.label().o)));
                 return null;
@@ -65,6 +66,7 @@ public class Label_View {
         UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y,
             new F<Relation, Unit>() {
               public Unit f(Relation r) {
+                p.x.dismiss();
                 listener.replace(r);
                 return unit();
               }

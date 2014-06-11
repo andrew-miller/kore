@@ -241,6 +241,7 @@ public class UIUtils {
             .projection(new Projection(proj, o))), codeLabelAliases));
     b.setOnClickListener(new OnClickListener() {
       public void onClick(View _) {
+        p.x.dismiss();
         select.f(proj);
       }
     });

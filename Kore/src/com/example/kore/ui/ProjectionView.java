@@ -46,20 +46,24 @@ public class ProjectionView {
       public Unit f(final View v) {
         v.setOnClickListener(new OnClickListener() {
           public void onClick(View _) {
-            Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
+            final Pair<PopupWindow, ViewGroup> p =
+                UIUtils.makePopupWindow(context);
             p.x.showAsDropDown(v);
             UIUtils.addProjectionsToMenu(p, context, v, codeLabelAliases,
                 argCode, reroot(argCode, r.projection().path),
                 new F<List<Label>, Void>() {
-                  public Void f(List<Label> p) {
+                  public Void f(List<Label> path) {
+                    p.x.dismiss();
                     listener.replace(Relation
-                        .projection(new Relation.Projection(p, r.projection().o)));
+                        .projection(new Relation.Projection(path, r
+                            .projection().o)));
                     return null;
                   }
                 });
             UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y,
                 new F<Relation, Unit>() {
                   public Unit f(Relation r) {
+                    p.x.dismiss();
                     listener.replace(r);
                     return unit();
                   }

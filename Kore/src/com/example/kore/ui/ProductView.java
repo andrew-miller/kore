@@ -56,11 +56,13 @@ public class ProductView {
       final Button b = new Button(context);
       b.setOnClickListener(new OnClickListener() {
         public void onClick(View _) {
-          Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
+          final Pair<PopupWindow, ViewGroup> p =
+              UIUtils.makePopupWindow(context);
           p.x.showAsDropDown(b);
           UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y,
               new F<Relation, Unit>() {
                 public Unit f(Relation r) {
+                  p.x.dismiss();
                   replace.f(r);
                   return unit();
                 }

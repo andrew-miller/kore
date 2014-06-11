@@ -82,10 +82,12 @@ public class RelationPath {
               Either
                   .<Relation, List<Either3<Label, Integer, Unit>>> x(RelationUtils
                       .dummy(unit, unit)))))) {
-            Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
+            final Pair<PopupWindow, ViewGroup> p =
+                UIUtils.makePopupWindow(context);
             UIUtils.addEmptyRelationsToMenu(context, rvc, p.y,
                 new F<Relation, Unit>() {
                   public Unit f(Relation r) {
+                    p.x.dismiss();
                     listener.replaceRelation(Either
                         .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
                     return unit();
@@ -112,6 +114,7 @@ public class RelationPath {
                     }
 
                     public void onClick() {
+                      p.x.dismiss();
                       listener.replaceRelation(Either
                           .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
                     }
@@ -125,6 +128,7 @@ public class RelationPath {
                   OptionalUtils.<Pair<Integer, String>> nothing(),
                   new F<Unit, Unit>() {
                     public Unit f(Unit x) {
+                      p.x.dismiss();
                       listener.replaceRelation(Either
                           .<Relation, List<Either3<Label, Integer, Unit>>> y(ListUtils
                               .<Either3<Label, Integer, Unit>> nil()));
