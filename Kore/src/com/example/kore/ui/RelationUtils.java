@@ -986,10 +986,6 @@ public class RelationUtils {
         public void select(List<Either3<Label, Integer, Unit>> path) {
         }
 
-        public void replaceRelation(List<Either3<Label, Integer, Unit>> path,
-            Relation r) {
-        }
-
         public void extendUnion(List<Either3<Label, Integer, Unit>> path,
             Integer i) {
         }
@@ -1000,6 +996,10 @@ public class RelationUtils {
 
         public boolean dontAbbreviate(List<Either3<Label, Integer, Unit>> path) {
           return false;
+        }
+
+        public void replaceRelation(List<Either3<Label, Integer, Unit>> path,
+            Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
         }
       };
 }

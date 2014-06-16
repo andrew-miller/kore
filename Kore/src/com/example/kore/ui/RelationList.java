@@ -51,24 +51,24 @@ public class RelationList {
       overlay.set(Overlay.make(context, RelationView.make(context, rvc,
           new DragBro(), relation,
           ListUtils.<Either3<Label, Integer, Unit>> nil(),
-          emptyRelationViewListener, codeLabelAliases, relationAliases),
-          new Overlay.Listener() {
-            public boolean onLongClick() {
-              UIUtils.replaceWithTextEntry(fl, overlay.get(), context, "",
-                  new F<String, Void>() {
-                    public Void f(String s) {
-                      listener.changeAlias(relation,
-                          ListUtils.<Either3<Label, Integer, Unit>> nil(), s);
-                      return null;
-                    }
-                  });
-              return true;
-            }
+          emptyRelationViewListener, codeLabelAliases, relationAliases,
+          relations), new Overlay.Listener() {
+        public boolean onLongClick() {
+          UIUtils.replaceWithTextEntry(fl, overlay.get(), context, "",
+              new F<String, Void>() {
+                public Void f(String s) {
+                  listener.changeAlias(relation,
+                      ListUtils.<Either3<Label, Integer, Unit>> nil(), s);
+                  return null;
+                }
+              });
+          return true;
+        }
 
-            public void onClick() {
-              listener.select(relation);
-            }
-          }));
+        public void onClick() {
+          listener.select(relation);
+        }
+      }));
       fl.addView(overlay.get());
       relationListLayout.addView(fl);
     }

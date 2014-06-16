@@ -2,17 +2,13 @@ package com.example.kore.ui;
 
 import static com.example.kore.ui.RelationUtils.relationAt;
 import static com.example.kore.utils.ListUtils.iter;
-import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 
 import com.example.kore.codes.CanonicalCode;
-import com.example.kore.codes.CanonicalRelation;
 import com.example.kore.codes.Label;
 import com.example.kore.codes.Relation;
 import com.example.kore.utils.Either3;
@@ -28,10 +24,7 @@ public class ProductView {
       F<Either3<Label, Integer, Unit>, View> make, Integer color,
       Integer aliasTextColor, final Relation relation,
       final List<Either3<Label, Integer, Unit>> path,
-      final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalRelation, String> relationAliases,
-      final RelationViewColors relationViewColors,
-      final F<Relation, Unit> replace) {
+      final CodeLabelAliasMap codeLabelAliases, final F<View, Unit> select) {
     Relation r = relationAt(path, relation).some().x;
     LinearLayout ll = new LinearLayout(context);
     ll.setOrientation(LinearLayout.VERTICAL);
@@ -56,17 +49,7 @@ public class ProductView {
       final Button b = new Button(context);
       b.setOnClickListener(new OnClickListener() {
         public void onClick(View _) {
-          final Pair<PopupWindow, ViewGroup> p =
-              UIUtils.makePopupWindow(context);
-          p.x.showAsDropDown(b);
-          UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y,
-              new F<Relation, Unit>() {
-                public Unit f(Relation r) {
-                  p.x.dismiss();
-                  replace.f(r);
-                  return unit();
-                }
-              }, relation, path, codeLabelAliases, relationAliases);
+          select.f(b);
         }
       });
       ll.addView(b);

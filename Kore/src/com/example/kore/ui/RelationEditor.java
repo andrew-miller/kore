@@ -5,7 +5,6 @@ import static com.example.kore.ui.RelationUtils.codomain;
 import static com.example.kore.ui.RelationUtils.domain;
 import static com.example.kore.ui.RelationUtils.linkTree;
 import static com.example.kore.ui.RelationUtils.linkTreeToRelation;
-import static com.example.kore.ui.RelationUtils.relationAt;
 import static com.example.kore.ui.RelationUtils.relationOrPathAt;
 import static com.example.kore.ui.RelationUtils.replaceRelationOrPathAt;
 import static com.example.kore.ui.RelationUtils.resolve;
@@ -49,6 +48,26 @@ public class RelationEditor {
     public F<List<Either3<Label, Integer, Unit>>, Unit> selectPath;
   }
 
+  private static Relation replaceRelation(Relation relation,
+      List<Either3<Label, Integer, Unit>> path,
+      Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+    Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
+        relationOrPathAt(path, relation);
+    Relation r = resolve(relation, rp);
+    Relation r2 = resolve(relation, er);
+    return !equal(domain(r), domain(r2)) | !equal(codomain(r), codomain(r2)) ? adaptComposition(
+        replaceRelationOrPathAt(relation, path,
+            x(Relation.composition(new Composition(
+                fromArray(er.tag == er.tag.X ? x(linkTreeToRelation(rebase(
+                    append(Either3.<Label, Integer, Unit> y(0), path),
+                    linkTree(er.x())))) : er), domain(r), codomain(r))))), path)
+        : replaceRelationOrPathAt(
+            relation,
+            path,
+            er.tag == er.tag.X ? x(linkTreeToRelation(rebase(path,
+                linkTree(er.x())))) : er);
+  }
+
   private static Pair<View, F<Unit, Bundle>> make(final Context context,
       Relation relation, final List<Code> codes,
       final CodeLabelAliasMap codeLabelAliases,
@@ -81,29 +100,8 @@ public class RelationEditor {
 
                   public void replaceRelation(
                       Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
-                    Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
-                        relationOrPathAt(s.path, s.relation);
-                    Relation r = resolve(s.relation, rp);
-                    Relation r2 = resolve(s.relation, er);
                     s.relation =
-                        !equal(domain(r), domain(r2))
-                            | !equal(codomain(r), codomain(r2)) ? adaptComposition(
-                            replaceRelationOrPathAt(
-                                s.relation,
-                                s.path,
-                                x(Relation
-                                    .composition(new Composition(
-                                        fromArray(er.tag == er.tag.X ? x(linkTreeToRelation(rebase(
-                                            append(Either3
-                                                .<Label, Integer, Unit> y(0),
-                                                s.path), linkTree(er.x()))))
-                                            : er), domain(r), codomain(r))))),
-                            s.path)
-                            : replaceRelationOrPathAt(
-                                s.relation,
-                                s.path,
-                                er.tag == er.tag.X ? x(linkTreeToRelation(rebase(
-                                    s.path, linkTree(er.x())))) : er);
+                        RelationEditor.replaceRelation(s.relation, s.path, er);
                     s.initNodeEditor.f(unit());
                     f(s.path);
                   }
@@ -123,15 +121,6 @@ public class RelationEditor {
                   public void selectRelation(
                       List<Either3<Label, Integer, Unit>> p) {
                     s.selectPath.f(append(s.path, p));
-                  }
-
-                  public void replaceRelation(
-                      List<Either3<Label, Integer, Unit>> p, Relation r2) {
-                    p = append(s.path, p);
-                    Relation r = relationAt(p, s.relation).some().x;
-                    s.relation = replaceRelationOrPathAt(s.relation, p, x(r2));
-                    f(unit());
-                    setPath.f(s.path);
                   }
 
                   public void done() {
@@ -176,8 +165,18 @@ public class RelationEditor {
                     s.selectPath.f(relationOrPathAt(append(s.path, p),
                         s.relation).y());
                   }
+
+                  public void replaceRelation(
+                      List<Either3<Label, Integer, Unit>> p,
+                      Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+                    s.relation =
+                        RelationEditor.replaceRelation(s.relation,
+                            append(s.path, p), er);
+                    f(unit());
+                    setPath.f(s.path);
+                  }
                 }, s.path, codes, codeLabelAliases, codeAliases,
-                relationAliases, relationViewColors);
+                relationAliases, relationViewColors, relations);
         ViewGroup cont =
             (ViewGroup) v.findViewById(R.id.container_relation_editor);
         cont.removeAllViews();

@@ -13,6 +13,7 @@ import static com.example.kore.utils.CodeUtils.renderCode;
 import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.ListUtils.append;
+import static com.example.kore.utils.ListUtils.cons;
 import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.nil;
@@ -133,7 +134,8 @@ public class UIUtils {
       final F<Relation, Unit> f, Relation root,
       List<Either3<Label, Integer, Unit>> path,
       final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalRelation, String> relationAliases) {
+      final Bijection<CanonicalRelation, String> relationAliases,
+      final List<Relation> relations) {
     F<Unit, Unit> addSpace = new F<Unit, Unit>() {
       public Unit f(Unit x) {
         Space s = new Space(context);
@@ -147,7 +149,7 @@ public class UIUtils {
         List<Either3<Label, Integer, Unit>> n = nil();
         vg.addView(Overlay.make(context, RelationView.make(context, rvc,
             new DragBro(), r, n, emptyRelationViewListener, codeLabelAliases,
-            relationAliases), new Overlay.Listener() {
+            relationAliases, relations), new Overlay.Listener() {
           public boolean onLongClick() {
             return false;
           }
@@ -191,22 +193,23 @@ public class UIUtils {
       vg.addView(Overlay.make(context, RelationView.make(context, rvc,
           new DragBro(), a,
           fromArray(Either3.<Label, Integer, Unit> z(unit())),
-          emptyRelationViewListener, codeLabelAliases, relationAliases),
-          new Overlay.Listener() {
-            public boolean onLongClick() {
-              return false;
-            }
+          emptyRelationViewListener, codeLabelAliases, relationAliases,
+          relations), new Overlay.Listener() {
+        public boolean onLongClick() {
+          return false;
+        }
 
-            public void onClick() {
-              f.f(p);
-            }
-          }));
+        public void onClick() {
+          f.f(p);
+        }
+      }));
     }
   }
 
-  public static void addRelationLabelsToMenu(ViewGroup vg, Context context,
+  public static List<View> relationLabels(ViewGroup vg, Context context,
       View v, CodeLabelAliasMap codeLabelAliases, CanonicalCode cc,
-      final F<Label, Void> f) {
+      final F<Label, Unit> f) {
+    List<View> l = nil();
     for (final Pair<Label, ?> e : iter(cc.code.labels.entrySet())) {
       Optional<String> a = codeLabelAliases.getAliases(cc).xy.get(e.x);
       Button b = new Button(context);
@@ -216,14 +219,15 @@ public class UIUtils {
           f.f(e.x);
         }
       });
-      vg.addView(b);
+      l = cons(b, l);
     }
+    return l;
   }
 
   /** <tt>c</tt> and <tt>out</tt> are root codes */
   public static void addProjectionsToMenu(Pair<PopupWindow, ViewGroup> p,
       Context context, View v, CodeLabelAliasMap codeLabelAliases, Code c,
-      Code out, F<List<Label>, Void> select) {
+      Code out, F<List<Label>, Unit> select) {
     addProjectionsToMenu(p, context, v, codeLabelAliases,
         ListUtils.<Label> nil(), c, out, select);
   }
@@ -232,10 +236,11 @@ public class UIUtils {
       final Pair<PopupWindow, ViewGroup> p, final Context context,
       final View v, final CodeLabelAliasMap codeLabelAliases,
       final List<Label> proj, final Code c, final Code out,
-      final F<List<Label>, Void> select) {
+      final F<List<Label>, Unit> select) {
     Code o = reroot(c, proj);
     Button b = new Button(context);
-    p.y.addView(b);
+    int i = 0;
+    p.y.addView(b, i++);
     b.setText(renderRelation(some(c), Either
         .<Relation, List<Either3<Label, Integer, Unit>>> x(Relation
             .projection(new Projection(proj, o))), codeLabelAliases));
@@ -260,7 +265,7 @@ public class UIUtils {
               append(e.x, proj), c, out, select);
         }
       });
-      p.y.addView(b2);
+      p.y.addView(b2, i++);
     }
   }
 

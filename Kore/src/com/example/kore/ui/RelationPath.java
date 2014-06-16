@@ -92,7 +92,7 @@ public class RelationPath {
                         .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
                     return unit();
                   }
-                }, root, before, codeLabelAliases, relationAliases);
+                }, root, before, codeLabelAliases, relationAliases, relations);
             Space s = new Space(context);
             s.setMinimumHeight(1);
             p.y.addView(s);
@@ -104,21 +104,21 @@ public class RelationPath {
                 p.y.addView(s2);
               }
               first = false;
-              p.y.addView(Overlay.make(context,
-                  RelationView.make(context, rvc, new DragBro(), r,
-                      ListUtils.<Either3<Label, Integer, Unit>> nil(),
-                      emptyRelationViewListener, codeLabelAliases,
-                      relationAliases), new Overlay.Listener() {
-                    public boolean onLongClick() {
-                      return false;
-                    }
+              p.y.addView(Overlay.make(context, RelationView.make(context, rvc,
+                  new DragBro(), r,
+                  ListUtils.<Either3<Label, Integer, Unit>> nil(),
+                  emptyRelationViewListener, codeLabelAliases, relationAliases,
+                  relations), new Overlay.Listener() {
+                public boolean onLongClick() {
+                  return false;
+                }
 
-                    public void onClick() {
-                      p.x.dismiss();
-                      listener.replaceRelation(Either
-                          .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
-                    }
-                  }));
+                public void onClick() {
+                  p.x.dismiss();
+                  listener.replaceRelation(Either
+                      .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
+                }
+              }));
             }
             if (!before.isEmpty()) {
               Space s3 = new Space(context);

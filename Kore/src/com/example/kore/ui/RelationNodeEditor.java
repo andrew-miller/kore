@@ -52,7 +52,8 @@ public class RelationNodeEditor {
     void extendUnion(List<Either3<Label, Integer, Unit>> path, Integer i,
         Relation r);
 
-    void replaceRelation(List<Either3<Label, Integer, Unit>> path, Relation r);
+    void replaceRelation(List<Either3<Label, Integer, Unit>> path,
+        Either<Relation, List<Either3<Label, Integer, Unit>>> er);
 
     void selectPath(List<Either3<Label, Integer, Unit>> path);
   }
@@ -72,7 +73,7 @@ public class RelationNodeEditor {
       final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
       final Bijection<CanonicalCode, String> codeAliases,
       Bijection<CanonicalRelation, String> relationAliases,
-      RelationViewColors relationViewColors) {
+      RelationViewColors relationViewColors, List<Relation> relations) {
     notNull(context, rootRelation, listener, path, codes, codeLabelAliases,
         codeAliases, relationAliases, relationViewColors);
     Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
@@ -154,11 +155,6 @@ public class RelationNodeEditor {
                 listener.selectRelation(drop(p, length(path)));
               }
 
-              public void replaceRelation(
-                  List<Either3<Label, Integer, Unit>> p, Relation r) {
-                listener.replaceRelation(drop(p, length(path)), r);
-              }
-
               public void selectPath(List<Either3<Label, Integer, Unit>> p) {
                 listener.selectPath(drop(p, length(path)));
               }
@@ -167,7 +163,13 @@ public class RelationNodeEditor {
                   List<Either3<Label, Integer, Unit>> p) {
                 return p.equals(path);
               }
-            }, codeLabelAliases, relationAliases);
+
+              public void replaceRelation(
+                  List<Either3<Label, Integer, Unit>> p,
+                  Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+                listener.replaceRelation(drop(p, length(path)), er);
+              }
+            }, codeLabelAliases, relationAliases, relations);
     // workaround that you can't drag onto the outer 10 pixels
     FrameLayout f = new FrameLayout(context);
     f.setPadding(10, 10, 10, 10);
