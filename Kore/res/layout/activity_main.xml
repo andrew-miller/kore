@@ -26,36 +26,51 @@
 	    android:layout_height="match_parent"
 	    android:orientation="vertical" >
 
-	    <LinearLayout
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content" >
+		<LinearLayout
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content" >
 
-	        <Button
-	            android:id="@+id/button_new_code"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:text="@string/button_new_code" />
+		    <Button
+		        android:id="@+id/button_new_code"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="@string/button_new_code" />
 
-	        <Button
-	            android:id="@+id/button_new_relation"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:text="@string/button_new_relation" />
+		    <Button
+		        android:id="@+id/button_new_relation"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="@string/button_new_relation" />
 
-	    </LinearLayout>
+		    <ToggleButton
+		        android:id="@+id/recent_switch"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="ToggleButton"
+		        android:textOff="@string/relations"
+		        android:textOn="@string/codes" />
+		</LinearLayout>
 
-	    <FrameLayout
-	        android:id="@+id/container_recent_codes"
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content" >
-	    </FrameLayout>
+		<LinearLayout
+		    android:layout_width="match_parent"
+		    android:layout_height="wrap_content"
+		    android:orientation="vertical" >
 
-	    <FrameLayout
-	        android:id="@+id/container_recent_relations"
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content" >
+			<FrameLayout
+			    android:id="@+id/container_recent_codes"
+			    android:layout_width="match_parent"
+			    android:layout_height="wrap_content" >
 
-	    </FrameLayout>
+			</FrameLayout>
+
+			<FrameLayout
+			    android:id="@+id/container_recent_relations"
+			    android:layout_width="match_parent"
+			    android:layout_height="wrap_content" >
+
+			</FrameLayout>
+
+		</LinearLayout>
 
 	</LinearLayout>
 

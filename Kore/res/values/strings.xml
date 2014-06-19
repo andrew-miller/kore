@@ -13,5 +13,7 @@
     <string name="button_extend_composition_first">* |</string>
     <string name="button_extend_union_first">[*...]</string>
     <string name="button_extend_union_last">[...*]</string>
+    <string name="codes">C</string>
+    <string name="relations">R</string>
 
 </resources>

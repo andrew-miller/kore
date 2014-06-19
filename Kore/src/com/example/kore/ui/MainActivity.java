@@ -15,6 +15,7 @@ import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ToggleButton;
 
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalCode;
@@ -43,6 +44,8 @@ public class MainActivity extends FragmentActivity {
   private static final String STATE_RELATION_ALIASES = "relation_aliases";
   private static final String STATE_CODE_EDITOR = "code_editor";
   private static final String STATE_RELATION_EDITOR = "relation_editor";
+  private static final String STATE_RECENT_CODES_VISIBLE =
+      "recent_codes_visible";
 
   private final static RelationColors relationColors = new RelationColors(Map
       .<Tag, Pair<Integer, Integer>> empty()
@@ -71,6 +74,7 @@ public class MainActivity extends FragmentActivity {
   private Optional<Pair<F<Unit, Bundle>, F<Code, Unit>>> codeEditor = nothing();
   private Optional<Pair<F<Unit, Bundle>, F<Relation, Unit>>> relationEditor =
       nothing();
+  private boolean recentCodesVisible;
 
   CodeLabelAliasMap codeLabelAliasMap = new CodeLabelAliasMap() {
     public boolean setAlias(CanonicalCode c, Label l, String alias) {
@@ -147,10 +151,20 @@ public class MainActivity extends FragmentActivity {
           (Bijection<CanonicalRelation, String>) b.get(STATE_RELATION_ALIASES);
       codeEditorState = b.getBundle(STATE_CODE_EDITOR);
       relationEditorState = b.getBundle(STATE_RELATION_EDITOR);
+      recentCodesVisible = b.getBoolean(STATE_RECENT_CODES_VISIBLE);
     }
 
     initRecentCodes();
     initRecentRelations();
+    switchRecent();
+
+    ToggleButton recentSwitch = (ToggleButton) findViewById(R.id.recent_switch);
+    recentSwitch.setOnClickListener(new OnClickListener() {
+      public void onClick(View _) {
+        recentCodesVisible = !recentCodesVisible;
+        switchRecent();
+      }
+    });
 
     if (codeEditorState != null) {
       F<Code, Unit> doneListener = newCodeEditorDoneListener();
@@ -190,6 +204,21 @@ public class MainActivity extends FragmentActivity {
       b.putBundle(STATE_CODE_EDITOR, codeEditor.some().x.x.f(unit()));
     if (!relationEditor.isNothing())
       b.putBundle(STATE_RELATION_EDITOR, relationEditor.some().x.x.f(unit()));
+    b.putBoolean(STATE_RECENT_CODES_VISIBLE, recentCodesVisible);
+  }
+
+  private void switchRecent() {
+    if (recentCodesVisible) {
+      ((ViewGroup) findViewById(R.id.container_recent_relations))
+          .setVisibility(View.GONE);
+      ((ViewGroup) findViewById(R.id.container_recent_codes))
+          .setVisibility(View.VISIBLE);
+    } else {
+      ((ViewGroup) findViewById(R.id.container_recent_codes))
+          .setVisibility(View.GONE);
+      ((ViewGroup) findViewById(R.id.container_recent_relations))
+          .setVisibility(View.VISIBLE);
+    }
   }
 
   private void initRecentCodes() {
