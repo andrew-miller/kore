@@ -132,7 +132,7 @@ public class RelationEditor {
                       Either<Relation, List<Either3<Label, Integer, Unit>>> r2) {
                     s.relation =
                         RelationUtils.extendUnion(s.relation,
-                            append(s.path, p), i, r2.x());
+                            append(s.path, p), i, r2);
                     f(unit());
                     setPath.f(s.path);
                   }
@@ -142,7 +142,7 @@ public class RelationEditor {
                       Either<Relation, List<Either3<Label, Integer, Unit>>> r2) {
                     s.relation =
                         RelationUtils.extendComposition(s.relation,
-                            append(s.path, p), i, r2.x());
+                            append(s.path, p), i, r2);
                     f(unit());
                     setPath.f(s.path);
                   }

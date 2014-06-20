@@ -549,7 +549,8 @@ public class RelationUtils {
   }
 
   public static Relation extendComposition(Relation relation,
-      List<Either3<Label, Integer, Unit>> path, final Integer i, Relation r2) {
+      List<Either3<Label, Integer, Unit>> path, final Integer i,
+      Either<Relation, List<Either3<Label, Integer, Unit>>> r2) {
     if (i < 0)
       throw new RuntimeException("index can't be negative");
     Either<Relation, List<Either3<Label, Integer, Unit>>> er =
@@ -560,7 +561,7 @@ public class RelationUtils {
 
     Composition comp;
     if (er.tag == er.tag.X && er.x().tag == Relation.Tag.COMPOSITION) {
-      comp = new Composition(insert(er.x().composition().l, i, x(r2)), d, c);
+      comp = new Composition(insert(er.x().composition().l, i, r2), d, c);
       return adaptComposition(
           bumpIndexes(
               replaceRelationOrPathAt(relation, path,
@@ -568,10 +569,10 @@ public class RelationUtils {
     } else {
       switch (i) {
       case 0:
-        comp = new Composition(fromArray(x(r2), er), d, c);
+        comp = new Composition(fromArray(r2, er), d, c);
         break;
       case 1:
-        comp = new Composition(fromArray(er, x(r2)), d, c);
+        comp = new Composition(fromArray(er, r2), d, c);
         break;
       default:
         throw new RuntimeException("invalid index");
@@ -584,7 +585,8 @@ public class RelationUtils {
   }
 
   public static Relation extendUnion(Relation relation,
-      List<Either3<Label, Integer, Unit>> path, final Integer i, Relation r2) {
+      List<Either3<Label, Integer, Unit>> path, final Integer i,
+      Either<Relation, List<Either3<Label, Integer, Unit>>> er2) {
     if (i < 0)
       throw new RuntimeException("index can't be negative");
     Either<Relation, List<Either3<Label, Integer, Unit>>> er =
@@ -592,44 +594,45 @@ public class RelationUtils {
     Relation r1 = resolve(relation, er);
     Code d = domain(r1);
     Code c = codomain(r1);
+    Relation r2 = resolve(relation, er2);
     Code d2 = domain(r2);
     Code c2 = codomain(r2);
     if (!equal(d, d2)) {
       Relation t = defaultValue(d, d2);
-      if (r2.tag == Relation.Tag.COMPOSITION)
-        r2 =
-            Relation.composition(new Composition(
-                cons(x(t), r2.composition().l), d, c2));
+      if (er2.tag == er2.tag.X && er2.x().tag == Relation.Tag.COMPOSITION)
+        er2 =
+            x(Relation.composition(new Composition(cons(x(t), er2.x()
+                .composition().l), d, c2)));
       else
-        r2 =
-            Relation
-                .composition(new Composition(fromArray(x(t), x(r2)), d, c2));
+        er2 =
+            x(Relation
+                .composition(new Composition(fromArray(x(t), er2), d, c2)));
     }
     if (!equal(c, c2)) {
       Relation t = defaultValue(c2, c);
-      if (r2.tag == Relation.Tag.COMPOSITION)
-        r2 =
-            Relation.composition(new Composition(append(x(t),
-                r2.composition().l), d, c));
+      if (er2.tag == er2.tag.X && er2.x().tag == Relation.Tag.COMPOSITION)
+        er2 =
+            x(Relation.composition(new Composition(append(x(t), er2.x()
+                .composition().l), d, c)));
       else
-        r2 =
-            Relation.composition(new Composition(fromArray(x(r2), x(t)), d, c));
+        er2 =
+            x(Relation.composition(new Composition(fromArray(er2, x(t)), d, c)));
     }
     Union union;
     if (er.tag == er.tag.X && er.x().tag == Relation.Tag.UNION) {
       union =
-          new Union(insert(er.x().union().l, i, x(r2)), er.x().union().i, er
-              .x().union().o);
+          new Union(insert(er.x().union().l, i, er2), er.x().union().i, er.x()
+              .union().o);
       return bumpIndexes(
           replaceRelationOrPathAt(relation, path, x(Relation.union(union))), i,
           path);
     } else {
       switch (i) {
       case 0:
-        union = new Union(fromArray(x(r2), er), d, c);
+        union = new Union(fromArray(er2, er), d, c);
         break;
       case 1:
-        union = new Union(fromArray(er, x(r2)), d, c);
+        union = new Union(fromArray(er, er2), d, c);
         break;
       default:
         throw new RuntimeException("invalid index");
