@@ -2,7 +2,6 @@ package com.example.kore.ui;
 
 import static com.example.kore.ui.RelationUtils.relationOrPathAt;
 import static com.example.kore.ui.RelationUtils.resolve;
-import static com.example.kore.ui.RelationUtils.unit_unit;
 import static com.example.kore.utils.CodeUtils.reroot;
 import static com.example.kore.utils.ListUtils.drop;
 import static com.example.kore.utils.ListUtils.iter;
@@ -47,10 +46,10 @@ public class RelationNodeEditor {
     void changeDomain(Code c);
 
     void extendComposition(List<Either3<Label, Integer, Unit>> path, Integer i,
-        Relation unitUnit);
+        Either<Relation, List<Either3<Label, Integer, Unit>>> er);
 
     void extendUnion(List<Either3<Label, Integer, Unit>> path, Integer i,
-        Relation r);
+        Either<Relation, List<Either3<Label, Integer, Unit>>> er);
 
     void replaceRelation(List<Either3<Label, Integer, Unit>> path,
         Either<Relation, List<Either3<Label, Integer, Unit>>> er);
@@ -142,13 +141,15 @@ public class RelationNodeEditor {
         RelationView.make(context, relationViewColors, dragBro, rootRelation,
             path, new RelationView.Listener() {
               public void extendUnion(List<Either3<Label, Integer, Unit>> p,
-                  Integer i) {
-                listener.extendUnion(drop(p, length(path)), i, unit_unit);
+                  Integer i,
+                  Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+                listener.extendUnion(drop(p, length(path)), i, er);
               }
 
               public void extendComposition(
-                  List<Either3<Label, Integer, Unit>> p, Integer i) {
-                listener.extendComposition(drop(p, length(path)), i, unit_unit);
+                  List<Either3<Label, Integer, Unit>> p, Integer i,
+                  Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+                listener.extendComposition(drop(p, length(path)), i, er);
               }
 
               public void select(List<Either3<Label, Integer, Unit>> p) {

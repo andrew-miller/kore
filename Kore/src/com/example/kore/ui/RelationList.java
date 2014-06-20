@@ -18,7 +18,7 @@ import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-import com.example.kore.utils.Ref;
+import com.example.kore.utils.SARef;
 import com.example.kore.utils.Unit;
 
 public class RelationList {
@@ -47,7 +47,7 @@ public class RelationList {
       }
       first = false;
       final FrameLayout fl = new FrameLayout(context);
-      final Ref<View> overlay = new Ref<View>(new View(context));
+      final SARef<View> overlay = new SARef<View>();
       overlay.set(Overlay.make(context, RelationView.make(context, rvc,
           new DragBro(), relation,
           ListUtils.<Either3<Label, Integer, Unit>> nil(),

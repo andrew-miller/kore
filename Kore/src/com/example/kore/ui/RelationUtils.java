@@ -986,12 +986,15 @@ public class RelationUtils {
         public void select(List<Either3<Label, Integer, Unit>> path) {
         }
 
-        public void extendUnion(List<Either3<Label, Integer, Unit>> path,
-            Integer i) {
+        public void
+            extendUnion(List<Either3<Label, Integer, Unit>> path, Integer i,
+                Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
         }
 
-        public void extendComposition(List<Either3<Label, Integer, Unit>> path,
-            Integer i) {
+        public void
+            extendComposition(List<Either3<Label, Integer, Unit>> path,
+                Integer i,
+                Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
         }
 
         public boolean dontAbbreviate(List<Either3<Label, Integer, Unit>> path) {

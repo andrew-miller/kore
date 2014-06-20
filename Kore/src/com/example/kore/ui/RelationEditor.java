@@ -128,21 +128,21 @@ public class RelationEditor {
                   }
 
                   public void extendUnion(
-                      List<Either3<Label, Integer, Unit>> p, final Integer i,
-                      Relation r2) {
+                      List<Either3<Label, Integer, Unit>> p, Integer i,
+                      Either<Relation, List<Either3<Label, Integer, Unit>>> r2) {
                     s.relation =
                         RelationUtils.extendUnion(s.relation,
-                            append(s.path, p), i, r2);
+                            append(s.path, p), i, r2.x());
                     f(unit());
                     setPath.f(s.path);
                   }
 
                   public void extendComposition(
                       List<Either3<Label, Integer, Unit>> p, Integer i,
-                      Relation r2) {
+                      Either<Relation, List<Either3<Label, Integer, Unit>>> r2) {
                     s.relation =
                         RelationUtils.extendComposition(s.relation,
-                            append(s.path, p), i, r2);
+                            append(s.path, p), i, r2.x());
                     f(unit());
                     setPath.f(s.path);
                   }
