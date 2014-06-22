@@ -70,15 +70,15 @@ public final class RelationView {
     Pair<Integer, Integer> cp;
     Optional<String> alias =
         relationAliases.xy.get(new CanonicalRelation(root, path));
-    final F<Pair<View, F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>>, Pair<PopupWindow, ViewGroup>> makeMenu =
-        new F<Pair<View, F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>>, Pair<PopupWindow, ViewGroup>>() {
+    final F<Pair<Pair<Boolean, View>, F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>>, Pair<PopupWindow, ViewGroup>> makeMenu =
+        new F<Pair<Pair<Boolean, View>, F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>>, Pair<PopupWindow, ViewGroup>>() {
           public
               Pair<PopupWindow, ViewGroup>
-              f(Pair<View, F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>> x) {
+              f(Pair<Pair<Boolean, View>, F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>> x) {
             final SARef<Pair<PopupWindow, ViewGroup>> p =
                 new SARef<Pair<PopupWindow, ViewGroup>>();
-            p.set(RelationMenu.make(context, root, path, x.x, rvc,
-                codeLabelAliases, relationAliases, relations, x.y));
+            p.set(RelationMenu.make(context, root, path, x.x.y, rvc,
+                codeLabelAliases, relationAliases, relations, x.x.x, x.y));
             return p.get();
           }
         };
@@ -96,7 +96,7 @@ public final class RelationView {
                     return unit();
                   }
                 };
-            p.set(makeMenu.f(pair(v, f)));
+            p.set(makeMenu.f(pair(pair(!path.isEmpty(), v), f)));
             return p.get();
           }
         };
@@ -151,7 +151,7 @@ public final class RelationView {
                               return unit();
                             }
                           };
-                      p.set(makeMenu.f(pair(rvr.get(), f)));
+                      p.set(makeMenu.f(pair(pair(true, rvr.get()), f)));
                     }
 
                     public void select(View v) {
@@ -182,7 +182,7 @@ public final class RelationView {
                               return unit();
                             }
                           };
-                      p.set(makeMenu.f(pair(rvr.get(), f)));
+                      p.set(makeMenu.f(pair(pair(true, rvr.get()), f)));
                     }
 
                     public void replace(Relation r) {
@@ -333,7 +333,7 @@ public final class RelationView {
                         return unit();
                       }
                     };
-                p2.set(makeMenu.f(pair(rv, f)));
+                p2.set(makeMenu.f(pair(pair(true, rv), f)));
                 break;
               }
               case LEFT:
@@ -359,7 +359,7 @@ public final class RelationView {
                         return unit();
                       }
                     };
-                p2.set(makeMenu.f(pair(rv, f)));
+                p2.set(makeMenu.f(pair(pair(true, rv), f)));
                 break;
               }
             return unit();

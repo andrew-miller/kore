@@ -34,10 +34,11 @@ public class RelationMenu {
           CodeLabelAliasMap relationAliases,
           Bijection<CanonicalRelation, String> codeLabelAliases,
           List<Relation> relations,
+          boolean ref,
           final F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> select) {
     final Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
     p.x.showAsDropDown(v);
-    if (!path.isEmpty()) {
+    if (ref) {
       p.y.addView(RelationRefView.make(context,
           OptionalUtils.<Pair<Integer, String>> nothing(), new F<Unit, Unit>() {
             public Unit f(Unit x) {
