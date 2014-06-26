@@ -1,6 +1,5 @@
 package com.example.kore.ui;
 
-import static com.example.kore.ui.RelationUtils.emptyRelationViewListener;
 import static com.example.kore.ui.RelationUtils.linkTree;
 import static com.example.kore.ui.RelationUtils.replaceRelationOrPathAt;
 import static com.example.kore.ui.RelationUtils.resolve;
@@ -8,7 +7,6 @@ import static com.example.kore.ui.RelationUtils.subRelationOrPath;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.LinkTreeUtils.validLinkTree;
 import static com.example.kore.utils.ListUtils.append;
-import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -20,8 +18,6 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
-import android.widget.PopupWindow;
-import android.widget.Space;
 
 import com.example.kore.R;
 import com.example.kore.codes.CanonicalRelation;
@@ -32,8 +28,6 @@ import com.example.kore.utils.Either3;
 import com.example.kore.utils.F;
 import com.example.kore.utils.List;
 import com.example.kore.utils.ListUtils;
-import com.example.kore.utils.OptionalUtils;
-import com.example.kore.utils.Pair;
 import com.example.kore.utils.Unit;
 
 public class RelationPath {
@@ -82,61 +76,23 @@ public class RelationPath {
               Either
                   .<Relation, List<Either3<Label, Integer, Unit>>> x(RelationUtils
                       .dummy(unit, unit)))))) {
-            final Pair<PopupWindow, ViewGroup> p =
-                UIUtils.makePopupWindow(context);
-            UIUtils.addEmptyRelationsToMenu(context, rvc, p.y,
-                new F<Relation, Unit>() {
-                  public Unit f(Relation r) {
-                    p.x.dismiss();
-                    listener.replaceRelation(Either
-                        .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
+            RelationMenu.make(
+                context,
+                root,
+                before,
+                v,
+                rvc,
+                codeLabelAliases,
+                relationAliases,
+                relations,
+                !before.isEmpty(),
+                new F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>() {
+                  public Unit f(
+                      Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+                    listener.replaceRelation(er);
                     return unit();
                   }
-                }, root, before, codeLabelAliases, relationAliases, relations);
-            Space s = new Space(context);
-            s.setMinimumHeight(1);
-            p.y.addView(s);
-            boolean first = true;
-            for (final Relation r : iter(relations)) {
-              if (!first) {
-                Space s2 = new Space(context);
-                s2.setMinimumHeight(1);
-                p.y.addView(s2);
-              }
-              first = false;
-              p.y.addView(Overlay.make(context, RelationView.make(context, rvc,
-                  new DragBro(), r,
-                  ListUtils.<Either3<Label, Integer, Unit>> nil(),
-                  emptyRelationViewListener, codeLabelAliases, relationAliases,
-                  relations), new Overlay.Listener() {
-                public boolean onLongClick() {
-                  return false;
-                }
-
-                public void onClick() {
-                  p.x.dismiss();
-                  listener.replaceRelation(Either
-                      .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
-                }
-              }));
-            }
-            if (!before.isEmpty()) {
-              Space s3 = new Space(context);
-              s3.setMinimumHeight(1);
-              p.y.addView(s3);
-              p.y.addView(RelationRefView.make(context,
-                  OptionalUtils.<Pair<Integer, String>> nothing(),
-                  new F<Unit, Unit>() {
-                    public Unit f(Unit x) {
-                      p.x.dismiss();
-                      listener.replaceRelation(Either
-                          .<Relation, List<Either3<Label, Integer, Unit>>> y(ListUtils
-                              .<Either3<Label, Integer, Unit>> nil()));
-                      return unit();
-                    }
-                  }));
-            }
-            p.x.showAsDropDown(v);
+                });
           }
         } else
           listener.selectPath(before);
