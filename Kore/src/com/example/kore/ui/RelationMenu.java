@@ -56,6 +56,7 @@ public class RelationMenu {
     UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y,
         new F<Relation, Unit>() {
           public Unit f(Relation r) {
+            p.x.dismiss();
             select.f(Either
                 .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
             return unit();
@@ -83,6 +84,7 @@ public class RelationMenu {
         }
 
         public void onClick() {
+          p.x.dismiss();
           select.f(Either.<Relation, List<Either3<Label, Integer, Unit>>> x(r));
         }
       }));

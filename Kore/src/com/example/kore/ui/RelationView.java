@@ -75,29 +75,22 @@ public final class RelationView {
           public
               Pair<PopupWindow, ViewGroup>
               f(Pair<Pair<Boolean, View>, F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>> x) {
-            final SARef<Pair<PopupWindow, ViewGroup>> p =
-                new SARef<Pair<PopupWindow, ViewGroup>>();
-            p.set(RelationMenu.make(context, root, path, x.x.y, rvc,
-                codeLabelAliases, relationAliases, relations, x.x.x, x.y));
-            return p.get();
+            return RelationMenu.make(context, root, path, x.x.y, rvc,
+                codeLabelAliases, relationAliases, relations, x.x.x, x.y);
           }
         };
     final F<View, Pair<PopupWindow, ViewGroup>> makeReplacementMenu =
         new F<View, Pair<PopupWindow, ViewGroup>>() {
           public Pair<PopupWindow, ViewGroup> f(View v) {
-            final SARef<Pair<PopupWindow, ViewGroup>> p =
-                new SARef<Pair<PopupWindow, ViewGroup>>();
             F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
                 new F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>() {
                   public Unit f(
                       Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
-                    p.get().x.dismiss();
                     listener.replaceRelation(path, er);
                     return unit();
                   }
                 };
-            p.set(makeMenu.f(pair(pair(!path.isEmpty(), v), f)));
-            return p.get();
+            return makeMenu.f(pair(pair(!path.isEmpty(), v), f));
           }
         };
     if (alias.isNothing() | listener.dontAbbreviate(path)) {
