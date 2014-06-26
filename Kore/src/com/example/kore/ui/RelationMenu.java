@@ -31,8 +31,8 @@ public class RelationMenu {
           List<Either3<Label, Integer, Unit>> path,
           View v,
           RelationViewColors relationViewColors,
-          CodeLabelAliasMap relationAliases,
-          Bijection<CanonicalRelation, String> codeLabelAliases,
+          CodeLabelAliasMap codeLabelAliases,
+          Bijection<CanonicalRelation, String> relationAliases,
           List<Relation> relations,
           boolean ref,
           final F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> select) {
@@ -62,7 +62,7 @@ public class RelationMenu {
             return unit();
           }
 
-        }, relation, path, relationAliases, codeLabelAliases, relations);
+        }, relation, path, codeLabelAliases, relationAliases, relations);
     Space s = new Space(context);
     s.setMinimumHeight(1);
     p.y.addView(s);
@@ -77,7 +77,7 @@ public class RelationMenu {
       p.y.addView(Overlay.make(context, RelationView.make(context,
           relationViewColors, new DragBro(), r,
           ListUtils.<Either3<Label, Integer, Unit>> nil(),
-          emptyRelationViewListener, relationAliases, codeLabelAliases,
+          emptyRelationViewListener, codeLabelAliases, relationAliases,
           relations), new Overlay.Listener() {
         public boolean onLongClick() {
           return false;
