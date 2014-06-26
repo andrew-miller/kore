@@ -247,7 +247,7 @@ public class LinkTreeUtils {
     for (Pair<E, Either<LinkTree<E, V>, List<E>>> p : iter(lt.edges())) {
       switch (p.y.tag) {
       case Y:
-        if (ListUtils.isSubList(path, p.y.y()))
+        if (ListUtils.isPrefix(path, p.y.y()))
           return true;
         break;
       case X:

@@ -9,7 +9,7 @@ import static com.example.kore.utils.CodeUtils.replaceCodeAt;
 import static com.example.kore.utils.CodeUtils.unit;
 import static com.example.kore.utils.CodeUtils.validCode;
 import static com.example.kore.utils.ListUtils.append;
-import static com.example.kore.utils.ListUtils.isSubList;
+import static com.example.kore.utils.ListUtils.isPrefix;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.MapUtils.containsKey;
 import static com.example.kore.utils.Null.notNull;
@@ -78,7 +78,7 @@ public class CodeEditor {
                 Optional<Code> oc = codeAt(p, s.code);
                 if (oc.isNothing())
                   throw new RuntimeException("invalid path");
-                if (!isSubList(p, s.pathShadow)) {
+                if (!isPrefix(p, s.pathShadow)) {
                   s.pathShadow = p;
                   f(s.pathShadow);
                 }
@@ -197,7 +197,7 @@ public class CodeEditor {
                     default:
                       throw boom();
                     }
-                    if (!isSubList(s.path, s.pathShadow)) {
+                    if (!isPrefix(s.path, s.pathShadow)) {
                       s.pathShadow = s.path;
                       setPath.f(s.pathShadow);
                     }

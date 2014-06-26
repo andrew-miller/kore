@@ -30,7 +30,7 @@ public class ListUtils {
     return l1.isEmpty() ? l2 : cons(l1.cons().x, append(l1.cons().tail, l2));
   }
 
-  public static <T> boolean isSubList(List<T> xs, List<T> ys) {
+  public static <T> boolean isPrefix(List<T> xs, List<T> ys) {
     while (!xs.isEmpty()) {
       if (ys.isEmpty())
         return false;

@@ -14,7 +14,7 @@ import static com.example.kore.utils.ListUtils.cons;
 import static com.example.kore.utils.ListUtils.drop;
 import static com.example.kore.utils.ListUtils.fromArray;
 import static com.example.kore.utils.ListUtils.insert;
-import static com.example.kore.utils.ListUtils.isSubList;
+import static com.example.kore.utils.ListUtils.isPrefix;
 import static com.example.kore.utils.ListUtils.iter;
 import static com.example.kore.utils.ListUtils.length;
 import static com.example.kore.utils.ListUtils.nil;
@@ -392,7 +392,7 @@ public class RelationUtils {
         new F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>>() {
           public List<Either3<Label, Integer, Unit>> f(
               List<Either3<Label, Integer, Unit>> p2) {
-            if (isSubList(path, p2)) {
+            if (isPrefix(path, p2)) {
               List<Either3<Label, Integer, Unit>> l = drop(p2, length(path));
               if (!l.isEmpty()) {
                 Integer o = 0;
@@ -650,7 +650,7 @@ public class RelationUtils {
         new F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>>() {
           public List<Either3<Label, Integer, Unit>> f(
               List<Either3<Label, Integer, Unit>> p) {
-            if (isSubList(path, p)) {
+            if (isPrefix(path, p)) {
               List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
               if (!l.isEmpty() && l.cons().x.y() >= i)
                 return append(
@@ -670,7 +670,7 @@ public class RelationUtils {
         new F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>>() {
           public List<Either3<Label, Integer, Unit>> f(
               List<Either3<Label, Integer, Unit>> p) {
-            if (isSubList(path, p)) {
+            if (isPrefix(path, p)) {
               List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
               return append(path,
                   cons(Either3.<Label, Integer, Unit> y((i + 1) % 2), l));
