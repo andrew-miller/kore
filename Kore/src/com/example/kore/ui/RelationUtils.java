@@ -723,51 +723,52 @@ public class RelationUtils {
   public static Relation changeCodomain(Relation relation,
       List<Either3<Label, Integer, Unit>> path, Code c2) {
     Relation r = relationAt(path, relation).some().x;
-    Composition comp;
     Code d = domain(r);
     Code c = codomain(r);
     Relation t = defaultValue(c, c2);
     switch (r.tag) {
     case COMPOSITION:
-      comp = new Composition(append(x(t), r.composition().l), d, c2);
-      break;
+      return replaceRelationOrPathAt(relation, path,
+          x(Relation.composition(new Composition(
+              append(x(t), r.composition().l), d, c2))));
     case ABSTRACTION:
     case LABEL:
     case PRODUCT:
     case PROJECTION:
     case UNION:
-      comp = new Composition(cons(x(r), cons(x(t), nil)), d, c2);
-      break;
+      return insertIndexes(
+          replaceRelationOrPathAt(relation, path,
+              x(Relation.composition(new Composition(fromArray(x(r), x(t)), d,
+                  c2)))), 1, path);
     default:
       throw boom();
     }
-    return replaceRelationOrPathAt(relation, path,
-        x(Relation.composition(comp)));
   }
 
   public static Relation changeDomain(Relation relation,
       List<Either3<Label, Integer, Unit>> path, Code d2) {
     Relation r = relationAt(path, relation).some().x;
-    Composition comp;
     Code d = domain(r);
     Code c = codomain(r);
     Relation t = defaultValue(d2, d);
     switch (r.tag) {
     case COMPOSITION:
-      comp = new Composition(cons(x(t), r.composition().l), d2, c);
-      break;
+      return bumpIndexes(
+          replaceRelationOrPathAt(relation, path,
+              x(Relation.composition(new Composition(cons(x(t),
+                  r.composition().l), d2, c)))), 0, path);
     case ABSTRACTION:
     case LABEL:
     case PRODUCT:
     case PROJECTION:
     case UNION:
-      comp = new Composition(cons(x(t), cons(x(r), nil)), d2, c);
-      break;
+      return insertIndexes(
+          replaceRelationOrPathAt(relation, path,
+              x(Relation.composition(new Composition(fromArray(x(t), x(r)), d2,
+                  c)))), 0, path);
     default:
       throw boom();
     }
-    return replaceRelationOrPathAt(relation, path,
-        x(Relation.composition(comp)));
   }
 
   public static LinkTree<Either3<Label, Integer, Unit>, RVertex> linkTree(
