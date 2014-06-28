@@ -548,6 +548,64 @@ public class RelationUtils {
     return linkTreeToRelation(LinkTreeUtils.mapPaths(linkTree(r), f));
   }
 
+  public static
+      Either<Relation, List<Either3<Label, Integer, Unit>>>
+      map_(
+          Either<Relation, List<Either3<Label, Integer, Unit>>> r,
+          F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Either<Relation, List<Either3<Label, Integer, Unit>>>> f) {
+    switch (r.tag) {
+    case X:
+      return map(r.x(), f);
+    case Y:
+      return f.f(r);
+    default:
+      throw boom();
+    }
+  }
+
+  public static
+      Either<Relation, List<Either3<Label, Integer, Unit>>>
+      map(Relation r,
+          F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Either<Relation, List<Either3<Label, Integer, Unit>>>> f) {
+    switch (r.tag) {
+    case ABSTRACTION:
+      Abstraction a = r.abstraction();
+      return f.f(x(Relation.abstraction(new Abstraction(a.pattern,
+          map_(a.r, f), a.i, a.o))));
+    case COMPOSITION: {
+      Composition c = r.composition();
+      List<Either<Relation, List<Either3<Label, Integer, Unit>>>> l = nil();
+      for (Either<Relation, List<Either3<Label, Integer, Unit>>> er : iter(c.l))
+        l = append(map_(er, f), l);
+      return f.f(x(Relation.composition(new Composition(l, c.i, c.o))));
+    }
+    case LABEL: {
+      Label_ l = r.label();
+      return f.f(x(Relation.label(new Label_(l.label, map_(l.r, f), l.o))));
+    }
+    case PRODUCT: {
+      Product p = r.product();
+      Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> m =
+          Map.empty();
+      for (Pair<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(p.m
+          .entrySet()))
+        m = m.put(e.x, map_(e.y, f));
+      return f.f(x(Relation.product(new Product(m, p.o))));
+    }
+    case PROJECTION:
+      Projection p = r.projection();
+      return f.f(x(Relation.projection(new Projection(p.path, p.o))));
+    case UNION:
+      Union u = r.union();
+      List<Either<Relation, List<Either3<Label, Integer, Unit>>>> l = nil();
+      for (Either<Relation, List<Either3<Label, Integer, Unit>>> er : iter(u.l))
+        l = append(map_(er, f), l);
+      return f.f(x(Relation.union(new Union(l, u.i, u.o))));
+    default:
+      throw boom();
+    }
+  }
+
   public static Relation extendComposition(Relation relation,
       List<Either3<Label, Integer, Unit>> path, final Integer i,
       Either<Relation, List<Either3<Label, Integer, Unit>>> r2) {
@@ -720,6 +778,40 @@ public class RelationUtils {
   private static List<Either<Relation, List<Either3<Label, Integer, Unit>>>> nil =
       nil();
 
+  private static Relation adaptReferences(final Relation relation,
+      final List<Either3<Label, Integer, Unit>> path, final Code o,
+      final Either<Code, Code> dc) {
+    F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Either<Relation, List<Either3<Label, Integer, Unit>>>> f =
+        new F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Either<Relation, List<Either3<Label, Integer, Unit>>>>() {
+          public Either<Relation, List<Either3<Label, Integer, Unit>>> f(
+              Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+            switch (er.tag) {
+            case X:
+              return er;
+            case Y:
+              if (!er.y().equals(path))
+                return er;
+              Relation r = relationAt(er.y(), relation).some().x;
+              Code d = domain(r);
+              Code c = codomain(r);
+              switch (dc.tag) {
+              case X:
+                return x(Relation.composition(new Composition(fromArray(
+                    x(defaultValue(o, dc.x())), er), o, c)));
+              case Y:
+                return x(Relation.composition(new Composition(fromArray(er,
+                    x(defaultValue(dc.y(), o))), d, o)));
+              default:
+                throw boom();
+              }
+            default:
+              throw boom();
+            }
+          }
+        };
+    return map(relation, f).x();
+  }
+
   public static Relation changeCodomain(Relation relation,
       List<Either3<Label, Integer, Unit>> path, Code c2) {
     Relation r = relationAt(path, relation).some().x;
@@ -728,9 +820,13 @@ public class RelationUtils {
     Relation t = defaultValue(c, c2);
     switch (r.tag) {
     case COMPOSITION:
-      return replaceRelationOrPathAt(relation, path,
-          x(Relation.composition(new Composition(
-              append(x(t), r.composition().l), d, c2))));
+      return adaptReferences(
+          replaceRelationOrPathAt(
+              relation,
+              path,
+              x(Relation.composition(new Composition(append(x(t),
+                  r.composition().l), d, c2)))), path, c,
+          Either.<Code, Code> y(c2));
     case ABSTRACTION:
     case LABEL:
     case PRODUCT:
@@ -753,10 +849,14 @@ public class RelationUtils {
     Relation t = defaultValue(d2, d);
     switch (r.tag) {
     case COMPOSITION:
-      return bumpIndexes(
-          replaceRelationOrPathAt(relation, path,
-              x(Relation.composition(new Composition(cons(x(t),
-                  r.composition().l), d2, c)))), 0, path);
+      return adaptReferences(
+          bumpIndexes(
+              replaceRelationOrPathAt(
+                  relation,
+                  path,
+                  x(Relation.composition(new Composition(cons(x(t),
+                      r.composition().l), d2, c)))), 0, path), path, d,
+          Either.<Code, Code> x(d2));
     case ABSTRACTION:
     case LABEL:
     case PRODUCT:
