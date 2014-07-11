@@ -28,10 +28,10 @@ public final class LGraph<V, L> {
   public LGraph(V node, Map<L, LGraph<V, L>> edges, List<L> order) {
     this.node = node;
     this.edges = edges;
-    if (order != null && edges.keySet().equals(new HashSet<L>(order))) {
+    if (order != null && edges.keySet().equals(new HashSet<>(order))) {
       this.order = order;
     } else {
-      this.order = new ArrayList<L>(edges.keySet());
+      this.order = new ArrayList<>(edges.keySet());
     }
   }
 

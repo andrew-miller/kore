@@ -21,7 +21,7 @@ public class Bijection<X, Y> implements Serializable {
     if (!yx.get(y).isNothing())
       return nothing();
     Optional<Y> oy = xy.get(x);
-    return some(new Bijection<X, Y>(xy.put(x, y), (oy.isNothing() ? yx
+    return some(new Bijection<>(xy.put(x, y), (oy.isNothing() ? yx
         : yx.delete(oy.some().x)).put(y, x)));
   }
 
@@ -29,26 +29,26 @@ public class Bijection<X, Y> implements Serializable {
     if (!xy.get(x).isNothing())
       return nothing();
     Optional<X> ox = yx.get(y);
-    return some(new Bijection<X, Y>((ox.isNothing() ? xy
-        : xy.delete(ox.some().x)).put(x, y), yx.put(y, x)));
+    return some(new Bijection<>(
+        (ox.isNothing() ? xy : xy.delete(ox.some().x)).put(x, y), yx.put(y, x)));
   }
 
   public Bijection<X, Y> deleteX(X x) {
     Map<X, Y> xy2 = xy.delete(x);
     Optional<Y> oy = xy.get(x);
     Map<Y, X> yx2 = oy.isNothing() ? yx : yx.delete(oy.some().x);
-    return new Bijection<X, Y>(xy2, yx2);
+    return new Bijection<>(xy2, yx2);
   }
 
   public Bijection<X, Y> deleteY(Y y) {
     Map<Y, X> yx2 = yx.delete(y);
     Optional<X> oy = yx.get(y);
     Map<X, Y> xy2 = oy.isNothing() ? xy : xy.delete(oy.some().x);
-    return new Bijection<X, Y>(xy2, yx2);
+    return new Bijection<>(xy2, yx2);
   }
 
   public static <X, Y> Bijection<X, Y> empty() {
-    return new Bijection<X, Y>(Map.<X, Y> empty(), Map.<Y, X> empty());
+    return new Bijection<>(Map.<X, Y> empty(), Map.<Y, X> empty());
   }
 
   @Override

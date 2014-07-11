@@ -9,7 +9,7 @@ import android.view.View.OnDragListener;
 /** Signals drag and drop, but only on the top View that this is tracking */
 public class DragBro {
   private final IdentityHashMap<View, Listener> active =
-      new IdentityHashMap<View, Listener>();
+      new IdentityHashMap<>();
   private boolean current = false;
 
   public interface Listener {

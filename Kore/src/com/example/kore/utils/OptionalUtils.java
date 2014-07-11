@@ -9,7 +9,7 @@ public class OptionalUtils {
   }
 
   public static <T> Optional<T> some(T x) {
-    return Optional.some(new Some<T>(x));
+    return Optional.some(new Some<>(x));
   }
 
   public static <T> Optional<T> fromObject(T x) {

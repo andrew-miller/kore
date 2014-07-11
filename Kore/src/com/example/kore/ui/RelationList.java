@@ -47,7 +47,7 @@ public class RelationList {
       }
       first = false;
       final FrameLayout fl = new FrameLayout(context);
-      final SARef<View> overlay = new SARef<View>();
+      final SARef<View> overlay = new SARef<>();
       overlay.set(Overlay.make(context, RelationView.make(context, rvc,
           new DragBro(), relation,
           ListUtils.<Either3<Label, Integer, Unit>> nil(),

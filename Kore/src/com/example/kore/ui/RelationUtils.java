@@ -438,7 +438,7 @@ public class RelationUtils {
   public static Optional<Projection> projection(Code i, Code o) {
     Pair<DirectedMultigraph<Identity<Code.Tag>, Pair<Identity<Code.Tag>, Label>>, Identity<Code.Tag>> p =
         codeToGraph(i);
-    Set<Identity<Code.Tag>> vs = new HashSet<Identity<Code.Tag>>();
+    Set<Identity<Code.Tag>> vs = new HashSet<>();
     return projection(ListUtils.<Label> nil(), p.x, p.y, i, o, vs);
   }
 
@@ -465,8 +465,8 @@ public class RelationUtils {
   public static Relation canonicalRelation(Relation r,
       List<Either3<Label, Integer, Unit>> path) {
     return linkTreeToRelation(canonicalLinkTree(linkTree(r), path,
-        new Either3Comparer<Label, Integer, Unit>(new LabelComparer(),
-            new IntegerComparer(), new UnitComparer())));
+        new Either3Comparer<>(new LabelComparer(), new IntegerComparer(),
+            new UnitComparer())));
   }
 
   public static
@@ -971,7 +971,7 @@ public class RelationUtils {
     case COMPOSITION:
     case UNION: {
       SortedMap<Integer, Either<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>>> sm =
-          new TreeMap<Integer, Either<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>>>();
+          new TreeMap<>();
       for (Pair<Either3<Label, Integer, Unit>, Either<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>>> p : iter(lt
           .edges()))
         if (sm.put(p.x.y(), p.y) != null)

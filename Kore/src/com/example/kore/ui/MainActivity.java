@@ -61,9 +61,9 @@ public class MainActivity extends FragmentActivity {
       new RelationViewColors(relationColors, 0xFFCCCCCC, pair(0xFF000000,
           0xFF444444));
 
-  private HashSet<Code> codes = new HashSet<Code>();
+  private HashSet<Code> codes = new HashSet<>();
   private List<Code> recentCodes = nil();
-  private HashSet<Relation> relations = new HashSet<Relation>();
+  private HashSet<Relation> relations = new HashSet<>();
   private List<Relation> recentRelations = nil();
   private Map<CanonicalCode, Bijection<Label, String>> codeLabelAliases = Map
       .empty();

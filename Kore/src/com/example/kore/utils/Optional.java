@@ -36,12 +36,12 @@ public final class Optional<T> implements Serializable {
 
   public static <T> Optional<T> some(Some<T> some) {
     notNull(some);
-    return new Optional<T>(null, some);
+    return new Optional<>(null, some);
   }
 
   public static <T> Optional<T> nothing(Nothing<T> nothing) {
     notNull(nothing);
-    return new Optional<T>(nothing, null);
+    return new Optional<>(nothing, null);
   }
 
   public static final class Nothing<T> implements Serializable {

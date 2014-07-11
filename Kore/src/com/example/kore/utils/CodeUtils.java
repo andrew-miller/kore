@@ -102,9 +102,9 @@ public final class CodeUtils {
       Code c, List<Label> path) {
     Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
         codeToGraph(c);
-    Set<Identity<Tag>> vs = new HashSet<Identity<Tag>>();
-    for (Set<Identity<Tag>> scc : new StrongConnectivityInspector<Identity<Tag>, Pair<Identity<Tag>, Label>>(
-        p.x).stronglyConnectedSets()) {
+    Set<Identity<Tag>> vs = new HashSet<>();
+    for (Set<Identity<Tag>> scc : new StrongConnectivityInspector<>(p.x)
+        .stronglyConnectedSets()) {
       Identity<Tag> v = p.y;
       for (Label l : iter(path)) {
         if (scc.contains(v))
@@ -115,8 +115,7 @@ public final class CodeUtils {
         vs.addAll(scc);
     }
     Ref<Map<List<Label>, Map<Label, Label>>> i =
-        new Ref<Map<List<Label>, Map<Label, Label>>>(
-            Map.<List<Label>, Map<Label, Label>> empty());
+        new Ref<>(Map.<List<Label>, Map<Label, Label>> empty());
     return pair(
         mapPaths(dissassociate_(p.x, p.y, c, vs, i, ListUtils.<Label> nil()),
             i.get(), ListUtils.<Label> nil()), i.get());
@@ -247,8 +246,7 @@ public final class CodeUtils {
       Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>>
       codeToGraph(Code c) {
     DirectedMultigraph<Identity<Code.Tag>, Pair<Identity<Code.Tag>, Label>> g =
-        new DirectedMultigraph<Identity<Code.Tag>, Pair<Identity<Code.Tag>, Label>>(
-            (Class<Pair<Identity<Code.Tag>, Label>>) null);
+        new DirectedMultigraph<>((Class<Pair<Identity<Code.Tag>, Label>>) null);
     Identity<Tag> root = codeSpanningTreeToGraph(g, c);
     addLinksToCodeGraph(c, g, root, root);
     return pair(g, root);
@@ -280,7 +278,7 @@ public final class CodeUtils {
       codeSpanningTreeToGraph(
           DirectedMultigraph<Identity<Code.Tag>, Pair<Identity<Code.Tag>, Label>> g,
           Code c) {
-    Identity<Code.Tag> v = new Identity<Code.Tag>(c.tag);
+    Identity<Code.Tag> v = new Identity<>(c.tag);
     g.addVertex(v);
     for (Pair<Label, Either<Code, List<Label>>> e : iter(c.labels.entrySet())) {
       Either<Code, List<Label>> cp = e.y;

@@ -9,6 +9,6 @@ public class RVProjectionComparer implements Comparer<RVertex.Projection> {
     Comparison c = new CodeComparer().compare(a.o, b.o);
     if (c != Comparison.EQ)
       return c;
-    return new ListComparer<Label>(new LabelComparer()).compare(a.path, b.path);
+    return new ListComparer<>(new LabelComparer()).compare(a.path, b.path);
   }
 }

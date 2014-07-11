@@ -123,7 +123,7 @@ public final class RelationView {
             };
         switch (r.tag) {
         case COMPOSITION: {
-          final SARef<View> rvr = new SARef<View>();
+          final SARef<View> rvr = new SARef<>();
           rvr.set(rv =
               CompositionView.make(context, make, dragBro, cp.x, cp.y, root,
                   path, new CompositionView.Listener() {
@@ -133,7 +133,7 @@ public final class RelationView {
 
                     public void extend(final Integer i) {
                       final SARef<Pair<PopupWindow, ViewGroup>> p =
-                          new SARef<Pair<PopupWindow, ViewGroup>>();
+                          new SARef<>();
                       F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
                           new F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>() {
                             public
@@ -154,7 +154,7 @@ public final class RelationView {
           break;
         }
         case UNION:
-          final SARef<View> rvr = new SARef<View>();
+          final SARef<View> rvr = new SARef<>();
           rvr.set(rv =
               UnionView.make(context, make, dragBro, cp.x, cp.y, root, path,
                   new UnionView.Listener() {
@@ -164,7 +164,7 @@ public final class RelationView {
 
                     public void insert(final Integer i) {
                       final SARef<Pair<PopupWindow, ViewGroup>> p =
-                          new SARef<Pair<PopupWindow, ViewGroup>>();
+                          new SARef<>();
                       F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
                           new F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>() {
                             public
@@ -304,8 +304,7 @@ public final class RelationView {
               switch (p.x) {
               case BOTTOM:
               case TOP: {
-                final SARef<Pair<PopupWindow, ViewGroup>> p2 =
-                    new SARef<Pair<PopupWindow, ViewGroup>>();
+                final SARef<Pair<PopupWindow, ViewGroup>> p2 = new SARef<>();
                 F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
                     new F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>() {
                       public
@@ -331,8 +330,7 @@ public final class RelationView {
               }
               case LEFT:
               case RIGHT:
-                final SARef<Pair<PopupWindow, ViewGroup>> p2 =
-                    new SARef<Pair<PopupWindow, ViewGroup>>();
+                final SARef<Pair<PopupWindow, ViewGroup>> p2 = new SARef<>();
                 F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
                     new F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>() {
                       public

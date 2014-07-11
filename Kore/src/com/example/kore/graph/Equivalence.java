@@ -7,7 +7,7 @@ public class Equivalence<O> {
   Map<O, O> pointers;
 
   public Equivalence() {
-    pointers = new HashMap<O, O>();
+    pointers = new HashMap<>();
 
   }
 

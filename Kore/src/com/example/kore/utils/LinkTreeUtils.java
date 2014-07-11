@@ -29,10 +29,9 @@ public class LinkTreeUtils {
         linkTreeToGraph(lt);
     DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g = p.x;
     Identity<V> root = p.y;
-    Set<Pair<Identity<V>, E>> spanningTreeEdges =
-        new HashSet<Pair<Identity<V>, E>>();
+    Set<Pair<Identity<V>, E>> spanningTreeEdges = new HashSet<>();
     Ref<Map<Identity<V>, List<E>>> m =
-        new Ref<Map<Identity<V>, List<E>>>(Map.<Identity<V>, List<E>> empty());
+        new Ref<>(Map.<Identity<V>, List<E>> empty());
     Identity<V> r = followPath(path, g, root);
     buildSpanningTreeOfCodeGraph(g, r, m, ListUtils.<E> nil(),
         spanningTreeEdges);
@@ -108,8 +107,7 @@ public class LinkTreeUtils {
       Pair<DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>>, Identity<V>>
       linkTreeToGraph(LinkTree<E, V> lt) {
     DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g =
-        new DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>>(
-            (Class<Pair<Identity<V>, E>>) null);
+        new DirectedMultigraph<>((Class<Pair<Identity<V>, E>>) null);
     Identity<V> root = linkTreeSpanningTreeToGraph(g, lt);
     addLinksToLinkTreeGraph(lt, g, root, root);
     return pair(g, root);
@@ -119,7 +117,7 @@ public class LinkTreeUtils {
       linkTreeSpanningTreeToGraph(
           DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g,
           LinkTree<E, V> lt) {
-    Identity<V> v = new Identity<V>(lt.vertex());
+    Identity<V> v = new Identity<>(lt.vertex());
     g.addVertex(v);
     for (Pair<E, Either<LinkTree<E, V>, List<E>>> e : iter(lt.edges())) {
       Either<LinkTree<E, V>, List<E>> vp = e.y;
@@ -161,10 +159,9 @@ public class LinkTreeUtils {
         linkTreeToGraph(lt);
     DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g = p.x;
     Identity<V> root = p.y;
-    Set<Pair<Identity<V>, E>> spanningTreeEdges =
-        new HashSet<Pair<Identity<V>, E>>();
+    Set<Pair<Identity<V>, E>> spanningTreeEdges = new HashSet<>();
     Ref<Map<Identity<V>, List<E>>> m =
-        new Ref<Map<Identity<V>, List<E>>>(Map.<Identity<V>, List<E>> empty());
+        new Ref<>(Map.<Identity<V>, List<E>> empty());
     Identity<V> r = followPath(path, g, root);
     buildCanonicalSpanningTreeOfLinkTreeGraph(g, r, m, ListUtils.<E> nil(),
         spanningTreeEdges, c);
@@ -205,21 +202,20 @@ public class LinkTreeUtils {
       Ref<Map<Identity<V>, List<E>>> m, List<E> path,
       Set<Pair<Identity<V>, E>> spanningTreeEdges, final Comparer<E> c) {
     m.set(m.get().put(v, path));
-    SortedMap<E, Pair<Identity<V>, E>> sm =
-        new TreeMap<E, Pair<Identity<V>, E>>(new Comparator<E>() {
-          public int compare(E a, E b) {
-            switch (c.compare(a, b)) {
-            case EQ:
-              return 0;
-            case GT:
-              return 1;
-            case LT:
-              return -1;
-            default:
-              throw boom();
-            }
-          }
-        });
+    SortedMap<E, Pair<Identity<V>, E>> sm = new TreeMap<>(new Comparator<E>() {
+      public int compare(E a, E b) {
+        switch (c.compare(a, b)) {
+        case EQ:
+          return 0;
+        case GT:
+          return 1;
+        case LT:
+          return -1;
+        default:
+          throw boom();
+        }
+      }
+    });
     for (Pair<Identity<V>, E> e : g.outgoingEdgesOf(v))
       sm.put(e.y, e);
     for (Pair<Identity<V>, E> e : sm.values()) {

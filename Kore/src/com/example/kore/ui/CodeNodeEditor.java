@@ -78,7 +78,7 @@ public class CodeNodeEditor {
     });
 
     final Ref<Optional<Label>> selectedLabel =
-        new Ref<Optional<Label>>(OptionalUtils.<Label> nothing());
+        new Ref<>(OptionalUtils.<Label> nothing());
     final F<Unit, Unit> render = new F<Unit, Unit>() {
       public Unit f(Unit _) {
         switch (code.tag) {

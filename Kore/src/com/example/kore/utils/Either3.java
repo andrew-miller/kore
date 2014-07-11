@@ -46,17 +46,17 @@ public final class Either3<X, Y, Z> implements Serializable {
 
   public static <X, Y, Z> Either3<X, Y, Z> x(X x) {
     notNull(x);
-    return new Either3<X, Y, Z>(Tag.X, x, null, null);
+    return new Either3<>(Tag.X, x, null, null);
   }
 
   public static <X, Y, Z> Either3<X, Y, Z> y(Y y) {
     notNull(y);
-    return new Either3<X, Y, Z>(Tag.Y, null, y, null);
+    return new Either3<>(Tag.Y, null, y, null);
   }
 
   public static <X, Y, Z> Either3<X, Y, Z> z(Z z) {
     notNull(z);
-    return new Either3<X, Y, Z>(Tag.Z, null, null, z);
+    return new Either3<>(Tag.Z, null, null, z);
   }
 
   @Override

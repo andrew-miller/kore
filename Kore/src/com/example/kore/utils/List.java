@@ -123,13 +123,13 @@ public final class List<T> implements Serializable {
   public static <T> List<T> cons(Cons<T> cons) {
     if (cons == null)
       throw new RuntimeException("constructor received null");
-    return new List<T>(null, cons);
+    return new List<>(null, cons);
   }
 
   public static <T> List<T> nil(Nil<T> nil) {
     if (nil == null)
       throw new RuntimeException("constructor received null");
-    return new List<T>(nil, null);
+    return new List<>(nil, null);
   }
 
   @Override

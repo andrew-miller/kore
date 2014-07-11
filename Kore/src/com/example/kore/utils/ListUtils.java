@@ -79,9 +79,9 @@ public class ListUtils {
   }
 
   public static <T> List<T> sort(List<T> l, Comparer<T> c) {
-    LinkedList<LinkedList<T>> p = new LinkedList<LinkedList<T>>();
+    LinkedList<LinkedList<T>> p = new LinkedList<>();
     for (T t : iter(l)) {
-      LinkedList<T> s = new LinkedList<T>();
+      LinkedList<T> s = new LinkedList<>();
       s.add(t);
       p.add(s);
     }
@@ -91,12 +91,12 @@ public class ListUtils {
   private static <T> LinkedList<T> sort_(LinkedList<LinkedList<T>> p,
       Comparer<T> c) {
     if (p.isEmpty())
-      return new LinkedList<T>();
+      return new LinkedList<>();
     if (p.size() == 1)
       return p.remove(0);
-    LinkedList<LinkedList<T>> p2 = new LinkedList<LinkedList<T>>();
+    LinkedList<LinkedList<T>> p2 = new LinkedList<>();
     while (p.size() >= 2) {
-      LinkedList<T> l = new LinkedList<T>();
+      LinkedList<T> l = new LinkedList<>();
       LinkedList<T> a = p.remove(0);
       LinkedList<T> b = p.remove(0);
       while (!a.isEmpty() && !b.isEmpty()) {

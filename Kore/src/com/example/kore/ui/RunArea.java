@@ -58,7 +58,7 @@ public class RunArea {
     ll.setOrientation(LinearLayout.VERTICAL);
     ll.setBackgroundColor(0xFFFFFFFF);
     final Ref<List<Optional<Pair<F<Unit, Bundle>, F<Unit, List<Tree<Unit, Optional<String>>>>>>>> children =
-        new Ref<List<Optional<Pair<F<Unit, Bundle>, F<Unit, List<Tree<Unit, Optional<String>>>>>>>>(
+        new Ref<>(
             ListUtils
                 .<Optional<Pair<F<Unit, Bundle>, F<Unit, List<Tree<Unit, Optional<String>>>>>>> nil());
     final F<Optional<Either<Relation, Pair<Bundle, List<Tree<Unit, Optional<String>>>>>>, Unit> add2 =
@@ -150,11 +150,10 @@ public class RunArea {
               l =
                   ListUtils
                       .append(
-                          c.isNothing() ? new Tree<Unit, Optional<String>>(
-                              OptionalUtils.<String> nothing(),
-                              ListUtils
-                                  .<Pair<Unit, Tree<Unit, Optional<String>>>> nil())
-                              : new Tree<Unit, Optional<String>>(
+                          c.isNothing() ? new Tree<>(OptionalUtils
+                              .<String> nothing(), ListUtils
+                              .<Pair<Unit, Tree<Unit, Optional<String>>>> nil())
+                              : new Tree<>(
                                   some(serializeBundle(c.some().x.x.f(unit()))),
                                   map(new F<Tree<Unit, Optional<String>>, Pair<Unit, Tree<Unit, Optional<String>>>>() {
                                     public

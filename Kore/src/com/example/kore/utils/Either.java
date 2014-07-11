@@ -38,12 +38,12 @@ public final class Either<X, Y> implements Serializable {
 
   public static <X, Y> Either<X, Y> x(X x) {
     notNull(x);
-    return new Either<X, Y>(Tag.X, x, null);
+    return new Either<>(Tag.X, x, null);
   }
 
   public static <X, Y> Either<X, Y> y(Y y) {
     notNull(y);
-    return new Either<X, Y>(Tag.Y, null, y);
+    return new Either<>(Tag.Y, null, y);
   }
 
   @Override

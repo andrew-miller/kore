@@ -21,7 +21,7 @@ public final class Map<K, V> implements Serializable {
   }
 
   public static <K, V> Map<K, V> empty() {
-    return new Map<K, V>(ListUtils.<Pair<K, V>> nil());
+    return new Map<>(ListUtils.<Pair<K, V>> nil());
   }
 
   public Optional<V> get(K k) {
@@ -32,7 +32,7 @@ public final class Map<K, V> implements Serializable {
   }
 
   public Map<K, V> put(K k, V v) {
-    return new Map<K, V>(put(l, k, v));
+    return new Map<>(put(l, k, v));
   }
 
   private List<Pair<K, V>> put(List<Pair<K, V>> l, K k, V v) {
@@ -44,7 +44,7 @@ public final class Map<K, V> implements Serializable {
   }
 
   public Map<K, V> delete(K k) {
-    return new Map<K, V>(delete(l, k));
+    return new Map<>(delete(l, k));
   }
 
   private List<Pair<K, V>> delete(List<Pair<K, V>> l, K k) {
