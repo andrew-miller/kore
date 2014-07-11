@@ -1,25 +1,20 @@
 package com.example.kore.codes;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.Serializable;
 
-import com.example.kore.utils.CodeUtils;
+import com.example.kore.utils.Map;
 
-public class Value {
+public class Value implements Serializable {
   public final Map<Label, Value> val;
-  public final Code type;
+  public final Code code;
 
-  public Value(Map<Label, Value> val, Code type) {
+  public Value(Map<Label, Value> val, Code code) {
     this.val = val;
-    this.type = type;
+    this.code = code;
   }
 
   @Override
   public String toString() {
-    return "Value [val=" + val + ", type=" + type + "]";
+    return "Value [val=" + val + ", type=" + code + "]";
   }
-
-  public static final Value unit = new Value(new HashMap<Label, Value>(),
-      CodeUtils.unit);
-
 }

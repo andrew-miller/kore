@@ -33,6 +33,9 @@ public final class CodeUtils {
   public final static Code unit = Code.newProduct(Map
       .<Label, Either<Code, List<Label>>> empty());
 
+  public final static Code empty = Code.newUnion(Map
+      .<Label, Either<Code, List<Label>>> empty());
+
   public static Code reroot(Code c, List<Label> p) {
     return linkTreeToCode(LinkTreeUtils.reroot(linkTree(c), p));
   }

@@ -49,6 +49,13 @@
 		        android:text="ToggleButton"
 		        android:textOff="@string/relations"
 		        android:textOn="@string/codes" />
+
+		    <Button
+		        android:id="@+id/button_run"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:text="@string/button_run" />
+
 		</LinearLayout>
 
 		<LinearLayout
@@ -70,6 +77,12 @@
 
 			</FrameLayout>
 
+			<FrameLayout
+			    android:id="@+id/container_run"
+			    android:layout_width="match_parent"
+			    android:layout_height="wrap_content" >
+
+			</FrameLayout>
 		</LinearLayout>
 
 	</LinearLayout>

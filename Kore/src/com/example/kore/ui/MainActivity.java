@@ -46,6 +46,8 @@ public class MainActivity extends FragmentActivity {
   private static final String STATE_RELATION_EDITOR = "relation_editor";
   private static final String STATE_RECENT_CODES_VISIBLE =
       "recent_codes_visible";
+  private static final String STATE_RECENT_VISIBLE = "recent_visible";
+  private static final String STATE_RUN_AREA = "run_area";
 
   private final static RelationColors relationColors = new RelationColors(Map
       .<Tag, Pair<Integer, Integer>> empty()
@@ -75,6 +77,9 @@ public class MainActivity extends FragmentActivity {
   private Optional<Pair<F<Unit, Bundle>, F<Relation, Unit>>> relationEditor =
       nothing();
   private boolean recentCodesVisible;
+  private boolean recentVisible = true;
+  private F<Unit, Unit> addToRunArea;
+  private F<Unit, Bundle> getRunAreaState;
 
   CodeLabelAliasMap codeLabelAliasMap = new CodeLabelAliasMap() {
     public boolean setAlias(CanonicalCode c, Label l, String alias) {
@@ -131,12 +136,16 @@ public class MainActivity extends FragmentActivity {
     findViewById(R.id.button_new_relation).setOnClickListener(
         new OnClickListener() {
           public void onClick(View v) {
-            startRelationEditor(RelationUtils.unit_unit);
+            if (recentVisible)
+              startRelationEditor(RelationUtils.unit_unit);
+            else
+              addToRunArea.f(unit());
           }
         });
 
     Bundle codeEditorState = null;
     Bundle relationEditorState = null;
+    Optional<Bundle> runAreaState = nothing();
     if (b != null) {
       codes = (HashSet<Code>) b.get(STATE_CODES);
       recentCodes = (List<Code>) b.get(STATE_RECENT_CODES);
@@ -152,16 +161,20 @@ public class MainActivity extends FragmentActivity {
       codeEditorState = b.getBundle(STATE_CODE_EDITOR);
       relationEditorState = b.getBundle(STATE_RELATION_EDITOR);
       recentCodesVisible = b.getBoolean(STATE_RECENT_CODES_VISIBLE);
+      recentVisible = b.getBoolean(STATE_RECENT_VISIBLE);
+      runAreaState = some(b.getBundle(STATE_RUN_AREA));
     }
 
     initRecentCodes();
     initRecentRelations();
+    initRunArea(runAreaState);
     switchRecent();
 
     ToggleButton recentSwitch = (ToggleButton) findViewById(R.id.recent_switch);
     recentSwitch.setOnClickListener(new OnClickListener() {
       public void onClick(View _) {
         recentCodesVisible = !recentCodesVisible;
+        recentVisible = true;
         switchRecent();
       }
     });
@@ -188,6 +201,13 @@ public class MainActivity extends FragmentActivity {
       relationEditorContainer.addView(p.x);
       relationEditorContainer.setVisibility(View.VISIBLE);
     }
+
+    findViewById(R.id.button_run).setOnClickListener(new OnClickListener() {
+      public void onClick(View _) {
+        recentVisible = false;
+        switchRecent();
+      }
+    });
   }
 
   @Override
@@ -205,20 +225,45 @@ public class MainActivity extends FragmentActivity {
     if (!relationEditor.isNothing())
       b.putBundle(STATE_RELATION_EDITOR, relationEditor.some().x.x.f(unit()));
     b.putBoolean(STATE_RECENT_CODES_VISIBLE, recentCodesVisible);
+    b.putBoolean(STATE_RECENT_VISIBLE, recentVisible);
+    b.putBundle(STATE_RUN_AREA, getRunAreaState.f(unit()));
   }
 
   private void switchRecent() {
-    if (recentCodesVisible) {
-      ((ViewGroup) findViewById(R.id.container_recent_relations))
-          .setVisibility(View.GONE);
-      ((ViewGroup) findViewById(R.id.container_recent_codes))
-          .setVisibility(View.VISIBLE);
+    if (recentVisible) {
+      findViewById(R.id.container_run).setVisibility(View.GONE);
+      if (recentCodesVisible) {
+        findViewById(R.id.container_recent_relations).setVisibility(View.GONE);
+        findViewById(R.id.container_recent_codes).setVisibility(View.VISIBLE);
+      } else {
+        findViewById(R.id.container_recent_codes).setVisibility(View.GONE);
+        findViewById(R.id.container_recent_relations).setVisibility(
+            View.VISIBLE);
+      }
     } else {
-      ((ViewGroup) findViewById(R.id.container_recent_codes))
-          .setVisibility(View.GONE);
-      ((ViewGroup) findViewById(R.id.container_recent_relations))
-          .setVisibility(View.VISIBLE);
+      findViewById(R.id.container_recent_relations).setVisibility(View.GONE);
+      findViewById(R.id.container_recent_codes).setVisibility(View.GONE);
+      findViewById(R.id.container_run).setVisibility(View.VISIBLE);
+      initRunArea(some(getRunAreaState.f(unit())));
     }
+  }
+
+  private void initRunArea(Optional<Bundle> ob) {
+    Pair<Pair<View, F<Unit, Unit>>, F<Unit, Bundle>> rA;
+    if (ob.isNothing())
+      rA =
+          RunArea.make(this, recentCodes, codeLabelAliasMap, codeAliases,
+              relationAliases, recentRelations, relationViewColors);
+    else
+      rA =
+          RunArea
+              .make(ob.some().x, this, recentCodes, codeLabelAliasMap,
+                  codeAliases, relationAliases, recentRelations,
+                  relationViewColors);
+    ((ViewGroup) findViewById(R.id.container_run)).removeAllViews();
+    ((ViewGroup) findViewById(R.id.container_run)).addView(rA.x.x);
+    addToRunArea = rA.x.y;
+    getRunAreaState = rA.y;
   }
 
   private void initRecentCodes() {

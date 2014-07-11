@@ -15,5 +15,6 @@
     <string name="button_extend_union_last">[...*]</string>
     <string name="codes">C</string>
     <string name="relations">R</string>
+    <string name="button_run">run</string>
 
 </resources>
