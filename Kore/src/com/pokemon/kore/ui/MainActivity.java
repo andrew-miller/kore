@@ -244,7 +244,6 @@ public class MainActivity extends FragmentActivity {
       findViewById(R.id.container_recent_relations).setVisibility(View.GONE);
       findViewById(R.id.container_recent_codes).setVisibility(View.GONE);
       findViewById(R.id.container_run).setVisibility(View.VISIBLE);
-      initRunArea(some(getRunAreaState.f(unit())));
     }
   }
 
@@ -374,6 +373,7 @@ public class MainActivity extends FragmentActivity {
         initRecentCodes();
         codeEditor = nothing();
         initRecentRelations();
+        initRunArea(some(getRunAreaState.f(unit())));
         return unit();
       }
     };
@@ -395,6 +395,7 @@ public class MainActivity extends FragmentActivity {
         initRecentRelations();
         relationEditor = nothing();
         initRecentCodes();
+        initRunArea(some(getRunAreaState.f(unit())));
         return unit();
       }
     };
