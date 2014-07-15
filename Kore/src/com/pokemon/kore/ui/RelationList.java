@@ -2,6 +2,7 @@ package com.pokemon.kore.ui;
 
 import static com.pokemon.kore.ui.RelationUtils.emptyRelationViewListener;
 import static com.pokemon.kore.utils.ListUtils.iter;
+import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Null.notNull;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -16,7 +17,6 @@ import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Relation;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.List;
-import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.SARef;
 import com.pokemon.kore.utils.Unit;
 
@@ -48,14 +48,12 @@ public class RelationList {
       FrameLayout fl = new FrameLayout(context);
       SARef<View> overlay = new SARef<>();
       overlay.set(Overlay.make(context, RelationView.make(context, rvc,
-          new DragBro(), relation,
-          ListUtils.<Either3<Label, Integer, Unit>> nil(),
-          emptyRelationViewListener, codeLabelAliases, relationAliases,
+          new DragBro(), relation, nil(), emptyRelationViewListener,
+          codeLabelAliases, relationAliases,
           relations), new Overlay.Listener() {
         public boolean onLongClick() {
           UIUtils.replaceWithTextEntry(fl, overlay.get(), context, "", s -> {
-              listener.changeAlias(relation,
-                  ListUtils.<Either3<Label, Integer, Unit>> nil(), s);
+              listener.changeAlias(relation, nil(), s);
               return null;
             }
           );

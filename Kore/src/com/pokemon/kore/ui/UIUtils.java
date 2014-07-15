@@ -92,7 +92,7 @@ public class UIUtils {
           CodeLabelAliasMap codeLabelAliases,
           Bijection<CanonicalCode, String> codeAliases,
           F<List<Label>, Unit> f) {
-    addCodeToMenu(m, root, path, Either.<Code, List<Label>> x(root), "", "",
+    addCodeToMenu(m, root, path, Either.x(root), "", "",
         codeLabelAliases, codeAliases, f);
   }
 
