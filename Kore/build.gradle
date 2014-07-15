@@ -29,7 +29,7 @@ dependencies {
 android {
     // changed from 18 and 18.0.1 in the example because I don't have them or something
     compileSdkVersion 19
-    buildToolsVersion "19.1.0"
+    buildToolsVersion '19.1.0'
 
     sourceSets {
         main {
