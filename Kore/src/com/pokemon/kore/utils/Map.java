@@ -74,7 +74,7 @@ public final class Map<K, V> implements Serializable {
       if (!ov.some().x.equals(e.y))
         return false;
     }
-    return length(l) == length(m.l);
+    return length(l).equals(length(m.l));
   }
 
   @Override
