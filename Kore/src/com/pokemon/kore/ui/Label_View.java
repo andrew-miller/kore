@@ -19,16 +19,16 @@ import com.pokemon.kore.utils.Unit;
 
 public class Label_View {
 
-  public static View make(final Context context,
+  public static View make(Context context,
       F<Either3<Label, Integer, Unit>, View> make, Integer color,
-      final Relation relation, final List<Either3<Label, Integer, Unit>> path,
-      Integer aliasTextColor, final CodeLabelAliasMap codeLabelAliases,
-      final F<View, Unit> select) {
-    final Relation r = relationAt(path, relation).some().x;
+      Relation relation, List<Either3<Label, Integer, Unit>> path,
+      Integer aliasTextColor, CodeLabelAliasMap codeLabelAliases,
+      F<View, Unit> select) {
+    Relation r = relationAt(path, relation).some().x;
     LinearLayout ll = new LinearLayout(context);
     ll.setBackgroundColor(color);
 
-    final View v;
+    View v;
     Optional<String> ola =
         codeLabelAliases.getAliases(new CanonicalCode(r.label().o,
             nil())).xy.get(r.label().label);

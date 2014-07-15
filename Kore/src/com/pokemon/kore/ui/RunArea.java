@@ -46,18 +46,18 @@ public class RunArea {
 
   private static
       Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>>
-      make(List<Tree<Unit, Optional<String>>> ts, final Context context,
-          final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
-          final Bijection<CanonicalCode, String> codeAliases,
-          final Bijection<CanonicalRelation, String> relationAliases,
-          final List<Relation> relations,
-          final RelationViewColors relationViewColors) {
-    final LinearLayout ll = new LinearLayout(context);
+      make(List<Tree<Unit, Optional<String>>> ts, Context context,
+          List<Code> codes, CodeLabelAliasMap codeLabelAliases,
+          Bijection<CanonicalCode, String> codeAliases,
+          Bijection<CanonicalRelation, String> relationAliases,
+          List<Relation> relations,
+          RelationViewColors relationViewColors) {
+    LinearLayout ll = new LinearLayout(context);
     ll.setOrientation(LinearLayout.VERTICAL);
     ll.setBackgroundColor(0xFFFFFFFF);
-    final Ref<List<Optional<Pair<F<Unit, Bundle>, F<Unit, List<Tree<Unit, Optional<String>>>>>>>> children =
+    Ref<List<Optional<Pair<F<Unit, Bundle>, F<Unit, List<Tree<Unit, Optional<String>>>>>>>> children =
         new Ref<>(nil());
-    final F<Optional<Either<Relation, Pair<Bundle, List<Tree<Unit, Optional<String>>>>>>, Unit> add2 =
+    F<Optional<Either<Relation, Pair<Bundle, List<Tree<Unit, Optional<String>>>>>>, Unit> add2 =
         or -> {
           if (or.isNothing()) {
             Button b = new Button(context);
@@ -65,7 +65,7 @@ public class RunArea {
             ll.addView(b);
             children.set(ListUtils.append(nothing(), children.get()));
           } else {
-            final Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> cRA =
+            Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> cRA =
                 make(
                     or.some().x.tag == Tag.X ? nil()
                         : or.some().x.y().y, context, codes,
@@ -136,12 +136,12 @@ public class RunArea {
   }
 
   public static Pair<Pair<View, F<Unit, Unit>>, F<Unit, Bundle>> make(Bundle b,
-      final Context context, final List<Code> codes,
-      final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalCode, String> codeAliases,
-      final Bijection<CanonicalRelation, String> relationAliases,
-      final List<Relation> relations,
-      final RelationViewColors relationViewColors) {
+      Context context, List<Code> codes,
+      CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalCode, String> codeAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
+      List<Relation> relations,
+      RelationViewColors relationViewColors) {
     Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> p =
         make((List<Tree<Unit, Optional<String>>>) b.getSerializable("s"),
             context, codes, codeLabelAliases, codeAliases, relationAliases,
@@ -151,12 +151,12 @@ public class RunArea {
   }
 
   public static Pair<Pair<View, F<Unit, Unit>>, F<Unit, Bundle>> make(
-      final Context context, final List<Code> codes,
-      final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalCode, String> codeAliases,
-      final Bijection<CanonicalRelation, String> relationAliases,
-      final List<Relation> relations,
-      final RelationViewColors relationViewColors) {
+      Context context, List<Code> codes,
+      CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalCode, String> codeAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
+      List<Relation> relations,
+      RelationViewColors relationViewColors) {
     Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> p =
         make(nil(), context, codes,
             codeLabelAliases, codeAliases, relationAliases, relations,
@@ -168,18 +168,18 @@ public class RunArea {
   private static
       Pair<Pair<View, F<Unit, Unit>>, F<Unit, Bundle>>
       make(
-          final Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> p,
-          final Context context, final List<Code> codes,
-          final CodeLabelAliasMap codeLabelAliases,
-          final Bijection<CanonicalCode, String> codeAliases,
-          final Bijection<CanonicalRelation, String> relationAliases,
-          final List<Relation> relations,
-          final RelationViewColors relationViewColors) {
+          Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> p,
+          Context context, List<Code> codes,
+          CodeLabelAliasMap codeLabelAliases,
+          Bijection<CanonicalCode, String> codeAliases,
+          Bijection<CanonicalRelation, String> relationAliases,
+          List<Relation> relations,
+          RelationViewColors relationViewColors) {
     LinearLayout ll = new LinearLayout(context);
     ll.setOrientation(LinearLayout.VERTICAL);
-    final FrameLayout menuAnchor = new FrameLayout(context);
+    FrameLayout menuAnchor = new FrameLayout(context);
     ll.addView(menuAnchor);
-    final ScrollView sv = new ScrollView(context);
+    ScrollView sv = new ScrollView(context);
     sv.addView(p.x);
     ll.addView(sv);
     F<Unit, Unit> choose = $ -> {
@@ -195,7 +195,7 @@ public class RunArea {
               relations,
               false,
               er -> {
-                final Relation r =
+                Relation r =
                     equal(unit, domain(er.x())) ? er.x() : changeDomain(
                         er.x(),
                         nil(),

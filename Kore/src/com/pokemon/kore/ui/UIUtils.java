@@ -56,10 +56,10 @@ import com.pokemon.kore.utils.Unit;
 
 public class UIUtils {
 
-  public static void replaceWithTextEntry(final ViewGroup vg, final View v,
-      final Context a, String hint, final F<String, Void> onDone) {
+  public static void replaceWithTextEntry(ViewGroup vg, View v,
+      Context a, String hint, F<String, Void> onDone) {
     vg.removeView(v);
-    final EditText t = new EditText(a);
+    EditText t = new EditText(a);
     t.requestFocus();
     t.setImeOptions(EditorInfo.IME_ACTION_DONE);
     t.setInputType(EditorInfo.TYPE_CLASS_TEXT);
@@ -88,20 +88,20 @@ public class UIUtils {
   }
 
   public static void
-      addCodeToMenu(Menu m, final Code root, final List<Label> path,
+      addCodeToMenu(Menu m, Code root, List<Label> path,
           CodeLabelAliasMap codeLabelAliases,
           Bijection<CanonicalCode, String> codeAliases,
-          final F<List<Label>, Unit> f) {
+          F<List<Label>, Unit> f) {
     addCodeToMenu(m, root, path, Either.<Code, List<Label>> x(root), "", "",
         codeLabelAliases, codeAliases, f);
   }
 
   private static void
-      addCodeToMenu(Menu m, final Code root, final List<Label> path,
+      addCodeToMenu(Menu m, Code root, List<Label> path,
           Either<Code, List<Label>> cp, String ls, String space,
           CodeLabelAliasMap codeLabelAliases,
           Bijection<CanonicalCode, String> codeAliases,
-          final F<List<Label>, Unit> f) {
+          F<List<Label>, Unit> f) {
     MenuItem i =
         m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
             + renderCode(root, path, codeLabelAliases, codeAliases, 1));
@@ -121,13 +121,13 @@ public class UIUtils {
       }
   }
 
-  public static void addEmptyRelationsToMenu(final Context context,
-      final RelationViewColors rvc, final ViewGroup vg,
-      final F<Relation, Unit> f, Relation root,
+  public static void addEmptyRelationsToMenu(Context context,
+      RelationViewColors rvc, ViewGroup vg,
+      F<Relation, Unit> f, Relation root,
       List<Either3<Label, Integer, Unit>> path,
-      final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalRelation, String> relationAliases,
-      final List<Relation> relations) {
+      CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
+      List<Relation> relations) {
     F<Unit, Unit> addSpace = x -> {
       Space s = new Space(context);
       s.setMinimumHeight(1);
@@ -171,7 +171,7 @@ public class UIUtils {
     Optional<Abstraction> oea = enclosingAbstraction(path, root);
     if (!oea.isNothing()) {
       addSpace.f(unit());
-      final Relation p =
+      Relation p =
           RelationUtils.emptyRelation(oea.some().x.i, c,
               Relation.Tag.PROJECTION);
       Relation a =
@@ -195,9 +195,9 @@ public class UIUtils {
 
   public static List<View> relationLabels(ViewGroup vg, Context context,
       View v, CodeLabelAliasMap codeLabelAliases, CanonicalCode cc,
-      final F<Label, Unit> f) {
+      F<Label, Unit> f) {
     List<View> l = nil();
-    for (final Pair<Label, ?> e : iter(cc.code.labels.entrySet())) {
+    for (Pair<Label, ?> e : iter(cc.code.labels.entrySet())) {
       Optional<String> a = codeLabelAliases.getAliases(cc).xy.get(e.x);
       Button b = new Button(context);
       b.setText(a.isNothing() ? e.x.toString() : a.some().x);
@@ -216,10 +216,10 @@ public class UIUtils {
   }
 
   private static void addProjectionsToMenu(
-      final Pair<PopupWindow, ViewGroup> p, final Context context,
-      final View v, final CodeLabelAliasMap codeLabelAliases,
-      final List<Label> proj, final Code c, final Code out,
-      final F<List<Label>, Unit> select) {
+      Pair<PopupWindow, ViewGroup> p, Context context,
+      View v, CodeLabelAliasMap codeLabelAliases,
+      List<Label> proj, Code c, Code out,
+      F<List<Label>, Unit> select) {
     Code o = reroot(c, proj);
     Button b = new Button(context);
     int i = 0;
@@ -231,7 +231,7 @@ public class UIUtils {
       select.f(proj);
     });
     b.setEnabled(equal(o, out));
-    for (final Pair<Label, ?> e : iter(o.labels.entrySet())) {
+    for (Pair<Label, ?> e : iter(o.labels.entrySet())) {
       Optional<String> a =
           codeLabelAliases.getAliases(new CanonicalCode(c, proj)).xy.get(e.x);
       Button b2 = new Button(context);
@@ -248,7 +248,7 @@ public class UIUtils {
   }
 
   public static Pair<PopupWindow, ViewGroup> makePopupWindow(Context context) {
-    final LinearLayout ll = new LinearLayout(context);
+    LinearLayout ll = new LinearLayout(context);
     ll.setOrientation(LinearLayout.VERTICAL);
     ll.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,
         LayoutParams.WRAP_CONTENT));

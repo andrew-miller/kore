@@ -25,17 +25,17 @@ public class CompositionView {
     void select(View v);
   }
 
-  public static View make(final Context context,
+  public static View make(Context context,
       F<Either3<Label, Integer, Unit>, View> make, DragBro dragBro,
-      Integer color, Integer highlightColor, final Relation relation,
-      final List<Either3<Label, Integer, Unit>> path, final Listener listener) {
+      Integer color, Integer highlightColor, Relation relation,
+      List<Either3<Label, Integer, Unit>> path, Listener listener) {
     Relation r = relationAt(path, relation).some().x;
     LinearLayout ll = new LinearLayout(context);
     ll.setBackgroundColor(color);
     boolean first = true;
     int i = 0;
     for (Object $ : iter(r.composition().l)) {
-      final int i_ = i;
+      int i_ = i;
       if (!first)
         ll.addView(DragDropEdges.makeSeparator(context, dragBro, color,
             highlightColor, true, o -> {
@@ -52,7 +52,7 @@ public class CompositionView {
       i++;
     }
     if (r.composition().l.isEmpty()) {
-      final Button b = new Button(context);
+      Button b = new Button(context);
       b.setOnClickListener($ -> listener.select(b));
       ll.addView(b);
     }

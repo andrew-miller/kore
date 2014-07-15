@@ -29,7 +29,7 @@ public class RelationList {
         List<Either3<Label, Integer, Unit>> path, String alias);
   }
 
-  public static View make(final Context context, final Listener listener,
+  public static View make(Context context, Listener listener,
       List<Relation> relations, CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalRelation, String> relationAliases,
       RelationViewColors rvc) {
@@ -38,15 +38,15 @@ public class RelationList {
     LinearLayout relationListLayout =
         (LinearLayout) v.findViewById(R.id.layout_relation_list);
     boolean first = true;
-    for (final Relation relation : iter(relations)) {
+    for (Relation relation : iter(relations)) {
       if (!first) {
         Space s = new Space(context);
         s.setMinimumHeight(1);
         relationListLayout.addView(s);
       }
       first = false;
-      final FrameLayout fl = new FrameLayout(context);
-      final SARef<View> overlay = new SARef<>();
+      FrameLayout fl = new FrameLayout(context);
+      SARef<View> overlay = new SARef<>();
       overlay.set(Overlay.make(context, RelationView.make(context, rvc,
           new DragBro(), relation,
           ListUtils.<Either3<Label, Integer, Unit>> nil(),

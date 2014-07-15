@@ -13,9 +13,9 @@ import com.pokemon.kore.utils.Unit;
 
 public class DragDropEdges {
   public static View makeSeparator(Context context, DragBro dragBro,
-      final Integer color, final Integer highlightedColor, Boolean vertical,
-      final F<Object, Unit> dropped, final F<Object, Boolean> match) {
-    final LinearLayout ll = new LinearLayout(context);
+      Integer color, Integer highlightedColor, Boolean vertical,
+      F<Object, Unit> dropped, F<Object, Boolean> match) {
+    LinearLayout ll = new LinearLayout(context);
     ll.setPadding(10, 10, 0, 0);
     ll.setBackgroundColor(color);
     if (vertical)
@@ -47,10 +47,10 @@ public class DragDropEdges {
   }
 
   public static View
-      make(Context context, DragBro dragBro, View v, final Integer color,
-          final Integer highlightedColor,
-          final F<Pair<Side, Object>, Unit> dropped,
-          final F<Object, Boolean> match) {
+      make(Context context, DragBro dragBro, View v, Integer color,
+          Integer highlightedColor,
+          F<Pair<Side, Object>, Unit> dropped,
+          F<Object, Boolean> match) {
     FrameLayout middle = new FrameLayout(context);
     middle.setPadding(0, 0, 0, 0);
     middle.setBackgroundColor(color);
@@ -65,7 +65,7 @@ public class DragDropEdges {
       public void dropped(Object o) {
       }
     });
-    final FrameLayout left = new FrameLayout(context);
+    FrameLayout left = new FrameLayout(context);
     left.setPadding(10, 0, 0, 0);
     left.setBackgroundColor(color);
     left.addView(middle);
@@ -87,7 +87,7 @@ public class DragDropEdges {
         }
       }
     });
-    final FrameLayout right = new FrameLayout(context);
+    FrameLayout right = new FrameLayout(context);
     right.setPadding(0, 0, 10, 0);
     right.setBackgroundColor(color);
     dragBro.setDragListener(right, new DragBro.Listener() {
@@ -108,7 +108,7 @@ public class DragDropEdges {
         }
       }
     });
-    final FrameLayout top = new FrameLayout(context);
+    FrameLayout top = new FrameLayout(context);
     top.setPadding(0, 10, 0, 0);
     top.setBackgroundColor(color);
     dragBro.setDragListener(top, new DragBro.Listener() {
@@ -129,7 +129,7 @@ public class DragDropEdges {
         }
       }
     });
-    final FrameLayout bottom = new FrameLayout(context);
+    FrameLayout bottom = new FrameLayout(context);
     bottom.setPadding(0, 0, 0, 10);
     bottom.setBackgroundColor(color);
     dragBro.setDragListener(bottom, new DragBro.Listener() {

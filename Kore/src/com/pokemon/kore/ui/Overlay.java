@@ -13,10 +13,10 @@ public class Overlay {
     boolean onLongClick();
   }
 
-  public static View make(final Context context, final View v,
-      final Listener listener) {
-    final OnLayoutChangeListener[] l = { null };
-    final RelativeLayout rl = new RelativeLayout(context);
+  public static View make(Context context, View v,
+      Listener listener) {
+    OnLayoutChangeListener[] l = { null };
+    RelativeLayout rl = new RelativeLayout(context);
     rl.addView(v);
     l[0] = (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) -> {
       // Adding views to rl doesn't work at this point. Dunno why.

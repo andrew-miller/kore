@@ -374,9 +374,9 @@ public class RelationUtils {
    * respectively.
    */
   public static Relation adaptComposition(Relation root,
-      final List<Either3<Label, Integer, Unit>> path) {
+      List<Either3<Label, Integer, Unit>> path) {
     Composition c = relationAt(path, root).some().x.composition();
-    final Pair<List<Boolean>, List<Either<Relation, List<Either3<Label, Integer, Unit>>>>> p =
+    Pair<List<Boolean>, List<Either<Relation, List<Either3<Label, Integer, Unit>>>>> p =
         adaptComposition_(root, c.i, c.l);
     Either<Relation, List<Either3<Label, Integer, Unit>>> elast =
         nth(c.l, length(c.l) - 1).some().x;
@@ -530,7 +530,7 @@ public class RelationUtils {
       Relation
       mapPaths(
           Relation r,
-          final F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>> f) {
+          F<List<Either3<Label, Integer, Unit>>, List<Either3<Label, Integer, Unit>>> f) {
     return linkTreeToRelation(LinkTreeUtils.mapPaths(linkTree(r), f));
   }
 
@@ -593,7 +593,7 @@ public class RelationUtils {
   }
 
   public static Relation extendComposition(Relation relation,
-      List<Either3<Label, Integer, Unit>> path, final Integer i,
+      List<Either3<Label, Integer, Unit>> path, Integer i,
       Either<Relation, List<Either3<Label, Integer, Unit>>> r2) {
     if (i < 0)
       throw new RuntimeException("index can't be negative");
@@ -629,7 +629,7 @@ public class RelationUtils {
   }
 
   public static Relation extendUnion(Relation relation,
-      List<Either3<Label, Integer, Unit>> path, final Integer i,
+      List<Either3<Label, Integer, Unit>> path, Integer i,
       Either<Relation, List<Either3<Label, Integer, Unit>>> er2) {
     if (i < 0)
       throw new RuntimeException("index can't be negative");
@@ -688,8 +688,8 @@ public class RelationUtils {
     }
   }
 
-  private static Relation bumpIndexes(Relation r, final Integer i,
-      final List<Either3<Label, Integer, Unit>> path) {
+  private static Relation bumpIndexes(Relation r, Integer i,
+      List<Either3<Label, Integer, Unit>> path) {
     return mapPaths(r, p -> {
           if (isPrefix(path, p)) {
             List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
@@ -703,8 +703,8 @@ public class RelationUtils {
     );
   }
 
-  private static Relation insertIndexes(Relation r, final Integer i,
-      final List<Either3<Label, Integer, Unit>> path) {
+  private static Relation insertIndexes(Relation r, Integer i,
+      List<Either3<Label, Integer, Unit>> path) {
     return mapPaths(r, p -> {
           if (isPrefix(path, p)) {
             List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
@@ -753,9 +753,9 @@ public class RelationUtils {
     }
   }
 
-  private static Relation adaptReferences(final Relation relation,
-      final List<Either3<Label, Integer, Unit>> path, final Code o,
-      final Either<Code, Code> dc) {
+  private static Relation adaptReferences(Relation relation,
+      List<Either3<Label, Integer, Unit>> path, Code o,
+      Either<Code, Code> dc) {
     F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Either<Relation, List<Either3<Label, Integer, Unit>>>> f =
         er -> {
           switch (er.tag) {
@@ -845,7 +845,7 @@ public class RelationUtils {
   }
 
   public static LinkTree<Either3<Label, Integer, Unit>, RVertex> linkTree(
-      final Relation r) {
+      Relation r) {
     return new LinkTree<Either3<Label, Integer, Unit>, RVertex>() {
       public
           List<Pair<Either3<Label, Integer, Unit>, Either<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>>>>
@@ -1047,7 +1047,7 @@ public class RelationUtils {
     }
   }
 
-  public static final RelationView.Listener emptyRelationViewListener =
+  public static RelationView.Listener emptyRelationViewListener =
       new RelationView.Listener() {
         public void selectPath(List<Either3<Label, Integer, Unit>> path) {
         }

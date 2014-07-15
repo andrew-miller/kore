@@ -57,22 +57,22 @@ public final class RelationView {
     boolean dontAbbreviate(List<Either3<Label, Integer, Unit>> path);
   }
 
-  public static View make(final Context context, final RelationViewColors rvc,
-      final DragBro dragBro, final Relation root,
-      final List<Either3<Label, Integer, Unit>> path, final Listener listener,
-      final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalRelation, String> relationAliases,
-      final List<Relation> relations) {
-    final Either<Relation, List<Either3<Label, Integer, Unit>>> er =
+  public static View make(Context context, RelationViewColors rvc,
+      DragBro dragBro, Relation root,
+      List<Either3<Label, Integer, Unit>> path, Listener listener,
+      CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
+      List<Relation> relations) {
+    Either<Relation, List<Either3<Label, Integer, Unit>>> er =
         RelationUtils.relationOrPathAt(path, root);
-    final View rv;
+    View rv;
     Pair<Integer, Integer> cp;
     Optional<String> alias =
         relationAliases.xy.get(new CanonicalRelation(root, path));
-    final F<Pair<Pair<Boolean, View>, F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>>, Pair<PopupWindow, ViewGroup>> makeMenu =
+    F<Pair<Pair<Boolean, View>, F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>>, Pair<PopupWindow, ViewGroup>> makeMenu =
         x -> RelationMenu.make(context, root, path, x.x.y, rvc,
             codeLabelAliases, relationAliases, relations, x.x.x, x.y);
-    final F<View, Pair<PopupWindow, ViewGroup>> makeReplacementMenu = v -> {
+    F<View, Pair<PopupWindow, ViewGroup>> makeReplacementMenu = v -> {
         F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
             $er -> {
               listener.replaceRelation(path, $er);
@@ -95,16 +95,16 @@ public final class RelationView {
         break;
       case X:
         Optional<Abstraction> oea = enclosingAbstraction(path, root);
-        final Optional<Code> argCode =
+        Optional<Code> argCode =
             oea.isNothing() ? nothing() : some(oea.some().x.i);
-        final Relation r = er.x();
+        Relation r = er.x();
         cp = rvc.relationcolors.m.get(r.tag).some().x;
         F<Either3<Label, Integer, Unit>, View> make =
             e -> make(context, rvc, dragBro, root, append(e, path),
                 listener, codeLabelAliases, relationAliases, relations);
         switch (r.tag) {
         case COMPOSITION: {
-          final SARef<View> rvr = new SARef<>();
+          SARef<View> rvr = new SARef<>();
           rvr.set(rv =
               CompositionView.make(context, make, dragBro, cp.x, cp.y, root,
                   path, new CompositionView.Listener() {
@@ -112,9 +112,8 @@ public final class RelationView {
                       listener.select(path);
                     }
 
-                    public void extend(final Integer i) {
-                      final SARef<Pair<PopupWindow, ViewGroup>> p =
-                          new SARef<>();
+                    public void extend(Integer i) {
+                      SARef<Pair<PopupWindow, ViewGroup>> p = new SARef<>();
                       F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
                           $er -> {
                             p.get().x.dismiss();
@@ -131,7 +130,7 @@ public final class RelationView {
           break;
         }
         case UNION:
-          final SARef<View> rvr = new SARef<>();
+          SARef<View> rvr = new SARef<>();
           rvr.set(rv =
               UnionView.make(context, make, dragBro, cp.x, cp.y, root, path,
                   new UnionView.Listener() {
@@ -139,9 +138,8 @@ public final class RelationView {
                       listener.select(path);
                     }
 
-                    public void insert(final Integer i) {
-                      final SARef<Pair<PopupWindow, ViewGroup>> p =
-                          new SARef<>();
+                    public void insert(Integer i) {
+                      SARef<Pair<PopupWindow, ViewGroup>> p = new SARef<>();
                       F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
                           $er -> {
                             p.get().x.dismiss();
@@ -164,7 +162,7 @@ public final class RelationView {
           rv =
               Label_View.make(context, make, cp.x, root, path,
                   rvc.aliasTextColor, codeLabelAliases, v -> {
-                      final Pair<PopupWindow, ViewGroup> p =
+                      Pair<PopupWindow, ViewGroup> p =
                           makeReplacementMenu.f(v);
                       List<View> labels =
                           UIUtils.relationLabels(p.y, context, v,
@@ -218,7 +216,7 @@ public final class RelationView {
               ProjectionView.make(context, cp.x, rvc.aliasTextColor, root,
                   path, codeLabelAliases, argCode.some().x,
                   v -> {
-                      final Pair<PopupWindow, ViewGroup> p =
+                      Pair<PopupWindow, ViewGroup> p =
                           makeReplacementMenu.f(v);
                       UIUtils.addProjectionsToMenu(p, context, v,
                           codeLabelAliases, argCode.some().x,
@@ -260,7 +258,7 @@ public final class RelationView {
             switch (p.x) {
             case BOTTOM:
             case TOP: {
-              final SARef<Pair<PopupWindow, ViewGroup>> p2 = new SARef<>();
+              SARef<Pair<PopupWindow, ViewGroup>> p2 = new SARef<>();
               F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
                   x -> {
                     p2.get().x.dismiss();
@@ -282,7 +280,7 @@ public final class RelationView {
             }
             case LEFT:
             case RIGHT:
-              final SARef<Pair<PopupWindow, ViewGroup>> p2 = new SARef<>();
+              SARef<Pair<PopupWindow, ViewGroup>> p2 = new SARef<>();
               F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
                   x -> {
                     p2.get().x.dismiss();

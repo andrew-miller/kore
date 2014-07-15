@@ -21,12 +21,12 @@ import com.pokemon.kore.utils.Optional;
 import com.pokemon.kore.utils.Unit;
 
 public class ProjectionView {
-  public static View make(final Context context, Integer color,
-      Integer aliasTextColor, final Relation relation,
-      final List<Either3<Label, Integer, Unit>> path,
-      final CodeLabelAliasMap codeLabelAliases, final Code argCode,
-      final F<View, Unit> select) {
-    final Relation r = relationAt(path, relation).some().x;
+  public static View make(Context context, Integer color,
+      Integer aliasTextColor, Relation relation,
+      List<Either3<Label, Integer, Unit>> path,
+      CodeLabelAliasMap codeLabelAliases, Code argCode,
+      F<View, Unit> select) {
+    Relation r = relationAt(path, relation).some().x;
     LinearLayout ll = new LinearLayout(context);
     ll.setBackgroundColor(color);
 

@@ -21,7 +21,7 @@ import com.pokemon.kore.utils.Unit;
 
 public class CodePath {
   public static View make(Context context,
-      final F<List<Label>, Unit> subpathSelected, Code code, List<Label> path) {
+      F<List<Label>, Unit> subpathSelected, Code code, List<Label> path) {
     notNull(context, subpathSelected, code, path);
     View v = LayoutInflater.from(context).inflate(R.layout.path, null);
     ViewGroup pathVG = (ViewGroup) v.findViewById(R.id.layout_path);
@@ -41,7 +41,7 @@ public class CodePath {
       }
       b.setWidth(0);
       b.setHeight(LayoutParams.MATCH_PARENT);
-      final List<Label> subpathS = subpath;
+      List<Label> subpathS = subpath;
       b.setOnClickListener($ -> subpathSelected.f(subpathS));
       pathVG.addView(b);
       if (path.isEmpty())

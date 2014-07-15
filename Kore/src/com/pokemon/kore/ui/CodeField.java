@@ -40,12 +40,12 @@ public class CodeField {
     public void changeLabelAlias(String alias);
   }
 
-  public static View make(final Context context, final Listener listener,
-      final Label label, Either<Code, List<Label>> codeOrPath,
-      final Code rootCode, boolean selected,
-      final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalCode, String> codeAliases,
-      final List<Code> codes, final List<Label> path,
+  public static View make(Context context, Listener listener,
+      Label label, Either<Code, List<Label>> codeOrPath,
+      Code rootCode, boolean selected,
+      CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalCode, String> codeAliases,
+      List<Code> codes, List<Label> path,
       Optional<String> labelAlias) {
     notNull(context, listener, label, codeOrPath, rootCode, codeLabelAliases,
         codeAliases, codes, path, labelAlias);
@@ -82,7 +82,7 @@ public class CodeField {
           }
       );
       m.add("---");
-      for (final Code c : iter(codes))
+      for (Code c : iter(codes))
         UIUtils.addCodeToMenu(m, c, nil(),
             codeLabelAliases, codeAliases, p -> {
               Either<Code, List<Label>> n =

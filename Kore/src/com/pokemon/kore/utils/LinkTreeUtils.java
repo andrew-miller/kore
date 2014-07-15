@@ -51,13 +51,13 @@ public class LinkTreeUtils {
   }
 
   /** prepend <tt>p</tt> to all paths */
-  public static <E, V> LinkTree<E, V> rebase(final List<E> p,
-      final LinkTree<E, V> lt) {
+  public static <E, V> LinkTree<E, V> rebase(List<E> p,
+      LinkTree<E, V> lt) {
     return mapPaths(lt, p2 -> append(p, p2));
   }
 
-  public static <E, V> LinkTree<E, V> mapPaths(final LinkTree<E, V> lt,
-      final F<List<E>, List<E>> f) {
+  public static <E, V> LinkTree<E, V> mapPaths(LinkTree<E, V> lt,
+      F<List<E>, List<E>> f) {
     return new LinkTree<E, V>() {
       public List<Pair<E, Either<LinkTree<E, V>, List<E>>>> edges() {
         List<Pair<E, Either<LinkTree<E, V>, List<E>>>> l = nil();
@@ -155,9 +155,9 @@ public class LinkTreeUtils {
   }
 
   private static <E, V> LinkTree<E, V> buildLinkTreeFromSpanningTree(
-      final DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g,
-      final Map<Identity<V>, List<E>> m, final Identity<V> v,
-      final Set<Pair<Identity<V>, E>> spanningTreeEdges) {
+      DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g,
+      Map<Identity<V>, List<E>> m, Identity<V> v,
+      Set<Pair<Identity<V>, E>> spanningTreeEdges) {
     return new LinkTree<E, V>() { /*
                                    * XXX Leaks capability to use mutable data
                                    * (g). Rewrite to be strict
@@ -185,7 +185,7 @@ public class LinkTreeUtils {
   private static <E, V> void buildCanonicalSpanningTreeOfLinkTreeGraph(
       DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g, Identity<V> v,
       Ref<Map<Identity<V>, List<E>>> m, List<E> path,
-      Set<Pair<Identity<V>, E>> spanningTreeEdges, final Comparer<E> c) {
+      Set<Pair<Identity<V>, E>> spanningTreeEdges, Comparer<E> c) {
     m.set(m.get().put(v, path));
     SortedMap<E, Pair<Identity<V>, E>> sm = new TreeMap<>((a, b) -> {
       switch (c.compare(a, b)) {

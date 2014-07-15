@@ -12,7 +12,7 @@ import com.pokemon.kore.utils.Unit;
 
 public class RelationRefView {
   public static View make(Context context,
-      Optional<Pair<Integer, String>> label, final F<Unit, Unit> selected) {
+      Optional<Pair<Integer, String>> label, F<Unit, Unit> selected) {
     Button b = new Button(context);
     b.setBackgroundColor(0xFF000000);
     if (!label.isNothing()) {

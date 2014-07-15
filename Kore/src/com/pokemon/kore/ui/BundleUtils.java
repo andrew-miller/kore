@@ -13,7 +13,7 @@ import android.util.Base64;
 
 // from https://gist.github.com/aprock/2037883
 public class BundleUtils {
-  public static String serializeBundle(final Bundle bundle) {
+  public static String serializeBundle(Bundle bundle) {
     Parcel p = Parcel.obtain();
     p.writeBundle(bundle);
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -30,7 +30,7 @@ public class BundleUtils {
     return base64;
   }
 
-  public static Bundle deserializeBundle(final String base64) {
+  public static Bundle deserializeBundle(String base64) {
     Parcel p = Parcel.obtain();
     try {
       ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();

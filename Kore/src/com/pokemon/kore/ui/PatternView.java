@@ -23,19 +23,19 @@ import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.Unit;
 
 public class PatternView {
-  public static View make(final Context context, Integer aliasTextColor,
-      final Pattern rootPattern, final Code rootCode,
-      final List<Label> codePath, final CodeLabelAliasMap codeLabelAliases,
-      final F<Pattern, Unit> replace) {
+  public static View make(Context context, Integer aliasTextColor,
+      Pattern rootPattern, Code rootCode,
+      List<Label> codePath, CodeLabelAliasMap codeLabelAliases,
+      F<Pattern, Unit> replace) {
     return make(context, aliasTextColor, rootPattern, nil(),
         rootCode, codePath, codeLabelAliases, replace);
   }
 
-  private static View make(final Context context, Integer aliasTextColor,
-      final Pattern rootPattern, final List<Label> patternPath,
-      final Code rootCode, final List<Label> codePath,
-      final CodeLabelAliasMap codeLabelAliases, final F<Pattern, Unit> replace) {
-    final Pattern pattern = patternAt(rootPattern, patternPath).some().x;
+  private static View make(Context context, Integer aliasTextColor,
+      Pattern rootPattern, List<Label> patternPath,
+      Code rootCode, List<Label> codePath,
+      CodeLabelAliasMap codeLabelAliases, F<Pattern, Unit> replace) {
+    Pattern pattern = patternAt(rootPattern, patternPath).some().x;
     F<View, Unit> f = v -> {
       v.setOnClickListener($ ->
           PatternMenu.make(v, context, rootCode, codePath, codeLabelAliases,

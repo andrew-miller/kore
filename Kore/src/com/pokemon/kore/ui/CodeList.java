@@ -26,19 +26,19 @@ public class CodeList {
     public boolean changeAlias(Code code, List<Label> path, String alias);
   }
 
-  public static View make(final Context context, final Listener listener,
+  public static View make(Context context, Listener listener,
       List<Code> codes, CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalCode, String> codeAliases) {
     notNull(context, codes, listener, codeLabelAliases, codeAliases);
     View v = LayoutInflater.from(context).inflate(R.layout.code_list, null);
     LinearLayout codeListLayout =
         (LinearLayout) v.findViewById(R.id.layout_code_list);
-    for (final Code code : iter(codes)) {
-      final FrameLayout fl = new FrameLayout(context);
+    for (Code code : iter(codes)) {
+      FrameLayout fl = new FrameLayout(context);
       Button b = new Button(context);
       Optional<String> codeName =
           codeAliases.xy.get(new CanonicalCode(code, nil()));
-      final String strCode =
+      String strCode =
           codeName.isNothing() ? CodeUtils.renderCode(code,
               nil(), codeLabelAliases, codeAliases, 1)
               : codeName.some().x;

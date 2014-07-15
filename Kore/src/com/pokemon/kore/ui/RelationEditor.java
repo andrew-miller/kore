@@ -68,25 +68,24 @@ public class RelationEditor {
                 linkTree(er.x())))) : er);
   }
 
-  private static Pair<View, F<Unit, Bundle>> make(final Context context,
-      Relation relation, final List<Code> codes,
-      final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalCode, String> codeAliases,
-      final Bijection<CanonicalRelation, String> relationAliases,
-      final List<Relation> relations,
-      final RelationViewColors relationViewColors,
-      List<Either3<Label, Integer, Unit>> path, final F<Relation, Unit> done) {
+  private static Pair<View, F<Unit, Bundle>> make(Context context,
+      Relation relation, List<Code> codes,
+      CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalCode, String> codeAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
+      List<Relation> relations,
+      RelationViewColors relationViewColors,
+      List<Either3<Label, Integer, Unit>> path, F<Relation, Unit> done) {
     notNull(context, relation, done, relationViewColors);
-    final View v =
+    View v =
         LayoutInflater.from(context).inflate(R.layout.relation_editor, null);
-    final ViewGroup pathContainer =
-        (ViewGroup) v.findViewById(R.id.container_path);
+    ViewGroup pathContainer = (ViewGroup) v.findViewById(R.id.container_path);
 
-    final S s = new S();
+    S s = new S();
     s.relation = relation;
     s.path = path;
 
-    final F<List<Either3<Label, Integer, Unit>>, Unit> setPath =
+    F<List<Either3<Label, Integer, Unit>>, Unit> setPath =
         new F<List<Either3<Label, Integer, Unit>>, Unit>() {
           public Unit f(List<Either3<Label, Integer, Unit>> p) {
             pathContainer.removeAllViews();
@@ -207,10 +206,10 @@ public class RelationEditor {
   }
 
   public static Pair<View, F<Unit, Bundle>> make(Context context,
-      Relation relation, final List<Code> codes,
-      final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalCode, String> codeAliases,
-      final Bijection<CanonicalRelation, String> relationAliases,
+      Relation relation, List<Code> codes,
+      CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalCode, String> codeAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
       List<Relation> relations, RelationViewColors relationViewColors,
       F<Relation, Unit> done) {
     return make(context, relation, codes, codeLabelAliases, codeAliases,
@@ -218,9 +217,9 @@ public class RelationEditor {
   }
 
   public static Pair<View, F<Unit, Bundle>> make(Context context,
-      final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalCode, String> codeAliases,
-      final Bijection<CanonicalRelation, String> relationAliases,
+      List<Code> codes, CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalCode, String> codeAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
       List<Relation> relations, RelationViewColors relationViewColors,
       Bundle b, F<Relation, Unit> done) {
     return make(context, (Relation) b.getSerializable(STATE_RELATION), codes,

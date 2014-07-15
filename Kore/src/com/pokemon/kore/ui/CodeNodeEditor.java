@@ -41,22 +41,20 @@ public class CodeNodeEditor {
     void done();
   }
 
-  public static View make(final Context context, final Code code,
-      final Code rootCode, final Listener listener,
-      final Bijection<CanonicalCode, String> codeAliases,
-      final List<Code> codes, final List<Label> path,
-      final CodeLabelAliasMap codeLabelAliases) {
+  public static View make(Context context, Code code,
+      Code rootCode, Listener listener,
+      Bijection<CanonicalCode, String> codeAliases,
+      List<Code> codes, List<Label> path,
+      CodeLabelAliasMap codeLabelAliases) {
     notNull(context, code, rootCode, listener, codeAliases, codes, path,
         codeLabelAliases);
 
     View v =
         LayoutInflater.from(context).inflate(R.layout.code_node_editor, null,
             true);
-    final LinearLayout fields =
-        (LinearLayout) v.findViewById(R.id.layout_fields);
-    final Button deleteButton =
-        (Button) v.findViewById(R.id.button_delete_field);
-    final Button switchCodeOpButton =
+    LinearLayout fields = (LinearLayout) v.findViewById(R.id.layout_fields);
+    Button deleteButton = (Button) v.findViewById(R.id.button_delete_field);
+    Button switchCodeOpButton =
         (Button) v.findViewById(R.id.button_switch_code_op);
     switchCodeOpButton.setOnClickListener($ -> listener.switchCodeOp());
     v.findViewById(R.id.button_new_field).setOnClickListener(
@@ -64,9 +62,8 @@ public class CodeNodeEditor {
 
     v.findViewById(R.id.button_done).setOnClickListener($ -> listener.done());
 
-    final Ref<Optional<Label>> selectedLabel =
-        new Ref<>(nothing());
-    final F<Unit, Unit> render = new F<Unit, Unit>() {
+    Ref<Optional<Label>> selectedLabel = new Ref<>(nothing());
+    F<Unit, Unit> render = new F<Unit, Unit>() {
       public Unit f(Unit $) {
         switch (code.tag) {
         case PRODUCT:
@@ -81,9 +78,9 @@ public class CodeNodeEditor {
         fields.removeAllViews();
         Bijection<Label, String> las =
             codeLabelAliases.getAliases(new CanonicalCode(rootCode, path));
-        for (final Pair<Label, Either<Code, List<Label>>> e : iter(code.labels
+        for (Pair<Label, Either<Code, List<Label>>> e : iter(code.labels
             .entrySet())) {
-          final Label l = e.x;
+          Label l = e.x;
           CodeField.Listener cfl = new CodeField.Listener() {
             public void selectLabel() {
               notNull(l);

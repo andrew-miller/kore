@@ -20,11 +20,11 @@ import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.Unit;
 
 public class ProductView {
-  public static View make(final Context context,
+  public static View make(Context context,
       F<Either3<Label, Integer, Unit>, View> make, Integer color,
-      Integer aliasTextColor, final Relation relation,
-      final List<Either3<Label, Integer, Unit>> path,
-      final CodeLabelAliasMap codeLabelAliases, final F<View, Unit> select) {
+      Integer aliasTextColor, Relation relation,
+      List<Either3<Label, Integer, Unit>> path,
+      CodeLabelAliasMap codeLabelAliases, F<View, Unit> select) {
     Relation r = relationAt(path, relation).some().x;
     LinearLayout ll = new LinearLayout(context);
     ll.setOrientation(LinearLayout.VERTICAL);
@@ -45,7 +45,7 @@ public class ProductView {
       ll.addView(ll2);
     }
     if (r.product().m.entrySet().isEmpty()) {
-      final Button b = new Button(context);
+      Button b = new Button(context);
       b.setOnClickListener($ -> select.f(b));
       ll.addView(b);
     }

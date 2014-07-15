@@ -35,8 +35,8 @@ public class RelationMenu {
           Bijection<CanonicalRelation, String> relationAliases,
           List<Relation> relations,
           boolean ref,
-          final F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> select) {
-    final Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
+          F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> select) {
+    Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
     p.x.showAsDropDown(v);
     if (ref) {
       p.y.addView(RelationRefView.make(context,
@@ -58,7 +58,7 @@ public class RelationMenu {
     s.setMinimumHeight(1);
     p.y.addView(s);
     boolean first = true;
-    for (final Relation r : iter(relations)) {
+    for (Relation r : iter(relations)) {
       if (!first) {
         Space s2 = new Space(context);
         s2.setMinimumHeight(1);

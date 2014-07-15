@@ -391,7 +391,7 @@ public final class CodeUtils {
     }
   }
 
-  public static LinkTree<Label, Code.Tag> linkTree(final Code c) {
+  public static LinkTree<Label, Code.Tag> linkTree(Code c) {
     return new LinkTree<Label, Code.Tag>() {
       public List<Pair<Label, Either<LinkTree<Label, Tag>, List<Label>>>>
           edges() {

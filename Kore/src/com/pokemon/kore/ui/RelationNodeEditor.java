@@ -64,10 +64,10 @@ public class RelationNodeEditor {
    * <code>selectPath</code>, <code>path</code> starts at the relation which is
    * being edited (not the root)
    */
-  public static View make(final Context context, final Relation rootRelation,
-      final Listener listener, final List<Either3<Label, Integer, Unit>> path,
-      final List<Code> codes, final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalCode, String> codeAliases,
+  public static View make(Context context, Relation rootRelation,
+      Listener listener, List<Either3<Label, Integer, Unit>> path,
+      List<Code> codes, CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalCode, String> codeAliases,
       Bijection<CanonicalRelation, String> relationAliases,
       RelationViewColors relationViewColors, List<Relation> relations) {
     notNull(context, rootRelation, listener, path, codes, codeLabelAliases,
@@ -94,7 +94,7 @@ public class RelationNodeEditor {
     changeDomainButton.setOnClickListener($v -> {
       PopupMenu pm = new PopupMenu(context, $v);
       Menu m = pm.getMenu();
-      for (final Code c : iter(codes))
+      for (Code c : iter(codes))
         UIUtils.addCodeToMenu(m, c, nil(),
             codeLabelAliases, codeAliases, p -> {
               listener.changeDomain(reroot(c, p));
@@ -109,7 +109,7 @@ public class RelationNodeEditor {
     changeCodomainButton.setOnClickListener($v -> {
       PopupMenu pm = new PopupMenu(context, $v);
       Menu m = pm.getMenu();
-      for (final Code c : iter(codes))
+      for (Code c : iter(codes))
         UIUtils.addCodeToMenu(m, c, nil(),
             codeLabelAliases, codeAliases, p -> {
               listener.changeCodomain(reroot(c, p));

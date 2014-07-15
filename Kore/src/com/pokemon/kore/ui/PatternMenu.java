@@ -28,10 +28,10 @@ public class PatternMenu {
     void select(Pattern p);
   }
 
-  public static void make(final View v, final Context context,
-      final Code rootCode, final List<Label> path,
-      final CodeLabelAliasMap codeLabelAliases, final Pattern current,
-      final Listener listener) {
+  public static void make(View v, Context context,
+      Code rootCode, List<Label> path,
+      CodeLabelAliasMap codeLabelAliases, Pattern current,
+      Listener listener) {
     CanonicalCode cc = new CanonicalCode(rootCode, path);
     Code code = codeAt(path, rootCode).some().x;
     PopupMenu pm = new PopupMenu(context, v);
@@ -43,9 +43,9 @@ public class PatternMenu {
         return true;
       });
       Map<Label, Pattern> mp = Map.empty();
-      for (final Pair<Label, ?> e : iter(code.labels.entrySet()))
+      for (Pair<Label, ?> e : iter(code.labels.entrySet()))
         mp = mp.put(e.x, emptyPattern);
-      final Pattern p = new Pattern(mp);
+      Pattern p = new Pattern(mp);
       m.add(renderPattern(p, rootCode, path, codeLabelAliases))
           .setOnMenuItemClickListener($ -> {
             listener.select(p);
@@ -53,7 +53,7 @@ public class PatternMenu {
           });
       break;
     case UNION:
-      for (final Pair<Label, ?> e : iter(code.labels.entrySet())) {
+      for (Pair<Label, ?> e : iter(code.labels.entrySet())) {
         Optional<String> a = codeLabelAliases.getAliases(cc).xy.get(e.x);
         m.add((a.isNothing() ? e.x : a.some().x) + " *")
             .setOnMenuItemClickListener($ -> {

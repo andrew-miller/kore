@@ -22,13 +22,13 @@ public class AbstractionView {
     void select(View v);
   }
 
-  public static View make(final Context context,
+  public static View make(Context context,
       F<Either3<Label, Integer, Unit>, View> make, Integer color,
-      Integer aliasTextColor, final Relation relation,
-      final List<Either3<Label, Integer, Unit>> path,
-      final CodeLabelAliasMap codeLabelAliases, final Listener listener) {
-    final Relation r = relationAt(path, relation).some().x;
-    final LinearLayout ll = new LinearLayout(context);
+      Integer aliasTextColor, Relation relation,
+      List<Either3<Label, Integer, Unit>> path,
+       CodeLabelAliasMap codeLabelAliases, Listener listener) {
+    Relation r = relationAt(path, relation).some().x;
+    LinearLayout ll = new LinearLayout(context);
     ll.setBackgroundColor(color);
     ll.addView(PatternView.make(context, aliasTextColor,
         r.abstraction().pattern, r.abstraction().i, nil(),

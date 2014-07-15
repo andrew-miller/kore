@@ -35,7 +35,7 @@ public class RelationPath {
         Either<Relation, List<Either3<Label, Integer, Unit>>> er);
   }
 
-  public static View make(final Context context, RelationColors rc,
+  public static View make(Context context, RelationColors rc,
       Listener listener, Relation root, List<Relation> relations,
       CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalRelation, String> relationAliases,
@@ -49,16 +49,16 @@ public class RelationPath {
     return v;
   }
 
-  private static void make(final Context context, RelationColors rc,
-      final Listener listener, final Relation root,
-      final List<Relation> relations, final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalRelation, String> relationAliases,
-      final List<Either3<Label, Integer, Unit>> before,
-      final List<Either3<Label, Integer, Unit>> after,
-      final Either<Relation, List<Either3<Label, Integer, Unit>>> rp,
-      ViewGroup vg, int referenceColor, final RelationViewColors rvc) {
-    final Relation r = resolve(root, rp);
-    final Button b = new Button(context);
+  private static void make(Context context, RelationColors rc,
+      Listener listener, Relation root,
+      List<Relation> relations, CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
+      List<Either3<Label, Integer, Unit>> before,
+      List<Either3<Label, Integer, Unit>> after,
+       Either<Relation, List<Either3<Label, Integer, Unit>>> rp,
+      ViewGroup vg, int referenceColor, RelationViewColors rvc) {
+    Relation r = resolve(root, rp);
+    Button b = new Button(context);
     b.setBackgroundColor(rp.tag == rp.tag.Y ? referenceColor : rc.m.get(
         rp.x().tag).some().x.x);
     b.setWidth(0);
