@@ -20,8 +20,8 @@ import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.Unit;
 
 public class ValueUtils {
-  public static Value unitVal = new Value(Map.empty(), unit);
-  public static Value emptyVal = new Value(Map.empty(), empty);
+  public static final Value unitVal = new Value(Map.empty(), unit);
+  public static final Value emptyVal = new Value(Map.empty(), empty);
 
   public static Optional<Value> eval(Relation r) {
     return eval(r, r, emptyVal, unitVal);
