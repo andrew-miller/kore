@@ -6,7 +6,7 @@ public class Unit implements Serializable {
   private Unit() {
   }
 
-  public static final Unit unit() {
+  public static Unit unit() {
     return new Unit();
   }
 

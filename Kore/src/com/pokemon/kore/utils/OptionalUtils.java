@@ -5,7 +5,7 @@ import com.pokemon.kore.utils.Optional.Some;
 
 public class OptionalUtils {
   public static <T> Optional<T> nothing() {
-    return Optional.nothing(new Nothing<T>());
+    return Optional.nothing(new Nothing<>());
   }
 
   public static <T> Optional<T> some(T x) {

@@ -15,8 +15,6 @@ import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
-import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -31,7 +29,6 @@ import com.pokemon.kore.codes.Relation;
 import com.pokemon.kore.utils.CodeUtils;
 import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
-import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.Unit;
 
@@ -82,57 +79,44 @@ public class RelationNodeEditor {
         LayoutInflater.from(context).inflate(R.layout.relation_node_editor,
             null);
     LinearLayout fields = (LinearLayout) v.findViewById(R.id.layout_fields);
-    v.findViewById(R.id.button_done).setOnClickListener(new OnClickListener() {
-      public void onClick(View v) {
-        listener.done();
-      }
-    });
+    v.findViewById(R.id.button_done).setOnClickListener($ -> listener.done());
 
     Button newFieldButton = (Button) v.findViewById(R.id.button_new_field);
-    newFieldButton.setOnTouchListener(new OnTouchListener() {
-      public boolean onTouch(View v, MotionEvent e) {
-        if (e.getAction() == MotionEvent.ACTION_DOWN)
-          v.startDrag(null, new DragShadowBuilder(), new ExtendRelation(), 0);
-        return false;
-      }
+    newFieldButton.setOnTouchListener(($v, e) -> {
+      if (e.getAction() == MotionEvent.ACTION_DOWN)
+        $v.startDrag(null, new DragShadowBuilder(), new ExtendRelation(), 0);
+      return false;
     });
     Button changeDomainButton =
         (Button) v.findViewById(R.id.button_change_domain);
     changeDomainButton.setText(CodeUtils.renderCode(RelationUtils.domain(r),
         nil(), codeLabelAliases, codeAliases, 1));
-    changeDomainButton.setOnClickListener(new OnClickListener() {
-      public void onClick(View v) {
-        PopupMenu pm = new PopupMenu(context, v);
-        Menu m = pm.getMenu();
-        for (final Code c : iter(codes))
-          UIUtils.addCodeToMenu(m, c, nil(),
-              codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
-                public Unit f(List<Label> p) {
-                  listener.changeDomain(reroot(c, p));
-                  return unit();
-                }
-              });
-        pm.show();
-      }
+    changeDomainButton.setOnClickListener($v -> {
+      PopupMenu pm = new PopupMenu(context, $v);
+      Menu m = pm.getMenu();
+      for (final Code c : iter(codes))
+        UIUtils.addCodeToMenu(m, c, nil(),
+            codeLabelAliases, codeAliases, p -> {
+              listener.changeDomain(reroot(c, p));
+              return unit();
+            });
+      pm.show();
     });
     Button changeCodomainButton =
         (Button) v.findViewById(R.id.button_change_codomain);
     changeCodomainButton.setText(CodeUtils.renderCode(
         RelationUtils.codomain(r), nil(), codeLabelAliases, codeAliases, 1));
-    changeCodomainButton.setOnClickListener(new OnClickListener() {
-      public void onClick(View v) {
-        PopupMenu pm = new PopupMenu(context, v);
-        Menu m = pm.getMenu();
-        for (final Code c : iter(codes))
-          UIUtils.addCodeToMenu(m, c, nil(),
-              codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
-                public Unit f(List<Label> p) {
-                  listener.changeCodomain(reroot(c, p));
-                  return unit();
-                }
-              });
-        pm.show();
-      }
+    changeCodomainButton.setOnClickListener($v -> {
+      PopupMenu pm = new PopupMenu(context, $v);
+      Menu m = pm.getMenu();
+      for (final Code c : iter(codes))
+        UIUtils.addCodeToMenu(m, c, nil(),
+            codeLabelAliases, codeAliases, p -> {
+              listener.changeCodomain(reroot(c, p));
+              return unit();
+            }
+        );
+      pm.show();
     });
 
     DragBro dragBro = new DragBro();

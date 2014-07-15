@@ -6,7 +6,6 @@ import static com.pokemon.kore.utils.ListUtils.nil;
 
 import android.content.Context;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -47,11 +46,7 @@ public class ProductView {
     }
     if (r.product().m.entrySet().isEmpty()) {
       final Button b = new Button(context);
-      b.setOnClickListener(new OnClickListener() {
-        public void onClick(View _) {
-          select.f(b);
-        }
-      });
+      b.setOnClickListener($ -> select.f(b));
       ll.addView(b);
     }
     return ll;

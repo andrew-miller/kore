@@ -5,11 +5,9 @@ import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
 
 import com.pokemon.kore.codes.Label;
-import com.pokemon.kore.codes.Pattern;
 import com.pokemon.kore.codes.Relation;
 import com.pokemon.kore.codes.Relation.Abstraction;
 import com.pokemon.kore.utils.Either3;
@@ -34,19 +32,14 @@ public class AbstractionView {
     ll.setBackgroundColor(color);
     ll.addView(PatternView.make(context, aliasTextColor,
         r.abstraction().pattern, r.abstraction().i, nil(),
-        codeLabelAliases, new F<Pattern, Unit>() {
-          public Unit f(Pattern p) {
-            listener.replace(Relation.abstraction(new Abstraction(p, r
-                .abstraction().r, r.abstraction().i, r.abstraction().o)));
-            return unit();
-          }
-        }));
+        codeLabelAliases, p -> {
+          listener.replace(Relation.abstraction(new Abstraction(p, r
+              .abstraction().r, r.abstraction().i, r.abstraction().o)));
+          return unit();
+        }
+    ));
     ll.setClickable(true);
-    ll.setOnClickListener(new OnClickListener() {
-      public void onClick(View _) {
-        listener.select(ll);
-      }
-    });
+    ll.setOnClickListener($ -> listener.select(ll));
     ll.addView(make.f(Either3.z(unit())));
     return ll;
   }

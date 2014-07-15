@@ -11,8 +11,6 @@ import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.iter;
 import android.content.Context;
 import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.widget.PopupMenu;
 
@@ -40,45 +38,39 @@ public class PatternMenu {
     Menu m = pm.getMenu();
     switch (code.tag) {
     case PRODUCT:
-      m.add("*").setOnMenuItemClickListener(new OnMenuItemClickListener() {
-        public boolean onMenuItemClick(MenuItem _) {
-          listener.select(emptyPattern);
-          return true;
-        }
+      m.add("*").setOnMenuItemClickListener($ -> {
+        listener.select(emptyPattern);
+        return true;
       });
       Map<Label, Pattern> mp = Map.empty();
       for (final Pair<Label, ?> e : iter(code.labels.entrySet()))
         mp = mp.put(e.x, emptyPattern);
       final Pattern p = new Pattern(mp);
       m.add(renderPattern(p, rootCode, path, codeLabelAliases))
-          .setOnMenuItemClickListener(new OnMenuItemClickListener() {
-            public boolean onMenuItemClick(MenuItem _) {
-              listener.select(p);
-              return true;
-            }
+          .setOnMenuItemClickListener($ -> {
+            listener.select(p);
+            return true;
           });
       break;
     case UNION:
       for (final Pair<Label, ?> e : iter(code.labels.entrySet())) {
         Optional<String> a = codeLabelAliases.getAliases(cc).xy.get(e.x);
         m.add((a.isNothing() ? e.x : a.some().x) + " *")
-            .setOnMenuItemClickListener(new OnMenuItemClickListener() {
-              public boolean onMenuItemClick(MenuItem _) {
-                listener.select(new Pattern(Map.<Label, Pattern> empty().put(
-                    e.x,
-                    !current.fields.entrySet().isEmpty()
-                        && equal(
-                            reroot(rootCode,
-                                directPath(append(e.x, path), rootCode)),
-                            reroot(
-                                rootCode,
-                                directPath(
-                                    append(
-                                        current.fields.entrySet().cons().x.x,
-                                        path), rootCode))) ? current.fields
-                        .entrySet().cons().x.y : emptyPattern)));
-                return true;
-              }
+            .setOnMenuItemClickListener($ -> {
+              listener.select(new Pattern(Map.<Label, Pattern> empty().put(
+                  e.x,
+                  !current.fields.entrySet().isEmpty()
+                      && equal(
+                          reroot(rootCode,
+                              directPath(append(e.x, path), rootCode)),
+                          reroot(
+                              rootCode,
+                              directPath(
+                                  append(
+                                      current.fields.entrySet().cons().x.x,
+                                      path), rootCode))) ? current.fields
+                      .entrySet().cons().x.y : emptyPattern)));
+              return true;
             });
       }
       break;

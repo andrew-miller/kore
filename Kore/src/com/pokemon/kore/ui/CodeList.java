@@ -6,8 +6,6 @@ import static com.pokemon.kore.utils.Null.notNull;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -17,7 +15,6 @@ import com.pokemon.kore.codes.CanonicalCode;
 import com.pokemon.kore.codes.Code;
 import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.utils.CodeUtils;
-import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.Optional;
 
@@ -46,24 +43,16 @@ public class CodeList {
               nil(), codeLabelAliases, codeAliases, 1)
               : codeName.some().x;
       b.setText(strCode);
-      b.setOnClickListener(new OnClickListener() {
-        public void onClick(View v) {
-          listener.select(code);
-        }
-      });
+      b.setOnClickListener($ -> listener.select(code));
       fl.addView(b);
 
-      b.setOnLongClickListener(new OnLongClickListener() {
-        public boolean onLongClick(final View v) {
-          UIUtils.replaceWithTextEntry(fl, v, context, strCode,
-              new F<String, Void>() {
-                public Void f(String s) {
-                  listener.changeAlias(code, nil(), s);
-                  return null;
-                }
-              });
-          return true;
-        }
+      b.setOnLongClickListener($v -> {
+        UIUtils.replaceWithTextEntry(fl, $v, context, strCode,
+            s -> {
+              listener.changeAlias(code, nil(), s);
+              return null;
+            });
+        return true;
       });
 
       codeListLayout.addView(fl);

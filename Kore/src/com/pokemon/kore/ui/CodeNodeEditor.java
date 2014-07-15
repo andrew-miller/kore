@@ -8,7 +8,6 @@ import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -59,28 +58,16 @@ public class CodeNodeEditor {
         (Button) v.findViewById(R.id.button_delete_field);
     final Button switchCodeOpButton =
         (Button) v.findViewById(R.id.button_switch_code_op);
-    switchCodeOpButton.setOnClickListener(new OnClickListener() {
-      public void onClick(View v) {
-        listener.switchCodeOp();
-      }
-    });
+    switchCodeOpButton.setOnClickListener($ -> listener.switchCodeOp());
     v.findViewById(R.id.button_new_field).setOnClickListener(
-        new View.OnClickListener() {
-          public void onClick(View v) {
-            listener.newField();
-          }
-        });
+        $ -> listener.newField());
 
-    v.findViewById(R.id.button_done).setOnClickListener(new OnClickListener() {
-      public void onClick(View v) {
-        listener.done();
-      }
-    });
+    v.findViewById(R.id.button_done).setOnClickListener($ -> listener.done());
 
     final Ref<Optional<Label>> selectedLabel =
         new Ref<>(nothing());
     final F<Unit, Unit> render = new F<Unit, Unit>() {
-      public Unit f(Unit _) {
+      public Unit f(Unit $) {
         switch (code.tag) {
         case PRODUCT:
           switchCodeOpButton.setText("{}");
@@ -102,11 +89,7 @@ public class CodeNodeEditor {
               notNull(l);
               deleteButton.setVisibility(View.VISIBLE);
               selectedLabel.set(some(l));
-              deleteButton.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                  listener.deleteField(l);
-                }
-              });
+              deleteButton.setOnClickListener($ -> listener.deleteField(l));
               f(unit());
             }
 

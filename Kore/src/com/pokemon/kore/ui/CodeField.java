@@ -17,8 +17,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.PopupMenu;
@@ -28,10 +26,8 @@ import com.pokemon.kore.codes.CanonicalCode;
 import com.pokemon.kore.codes.Code;
 import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.utils.Either;
-import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.Optional;
-import com.pokemon.kore.utils.Unit;
 
 public class CodeField {
   public static interface Listener {
@@ -61,59 +57,44 @@ public class CodeField {
         .some().x);
     if (selected)
       labelButton.setText("---");
-    labelButton.setOnClickListener(new OnClickListener() {
-      public void onClick(View v) {
-        listener.selectLabel();
-      }
-    });
-    labelButton.setOnLongClickListener(new OnLongClickListener() {
-      public boolean onLongClick(final View v) {
-        UIUtils.replaceWithTextEntry((ViewGroup) v.getParent(), v, context,
-            label.label, new F<String, Void>() {
-              public Void f(String s) {
-                listener.changeLabelAlias(s);
-                return null;
-              }
-            });
-        return true;
-      }
+    labelButton.setOnClickListener($ -> listener.selectLabel());
+    labelButton.setOnLongClickListener($v -> {
+      UIUtils.replaceWithTextEntry((ViewGroup) $v.getParent(), $v, context,
+          label.label, s -> {
+            listener.changeLabelAlias(s);
+            return null;
+          }
+      );
+      return true;
     });
     Button codeButton = (Button) v.findViewById(R.id.button_code);
-    codeButton.setOnClickListener(new View.OnClickListener() {
-      public void onClick(View v) {
-        listener.selectCode();
-      }
-    });
-    codeButton.setOnLongClickListener(new OnLongClickListener() {
-      public boolean onLongClick(View v) {
-        PopupMenu pm = new PopupMenu(context, v);
-        Menu m = pm.getMenu();
-        UIUtils.addCodeToMenu(m, rootCode, nil(),
-            codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
-              public Unit f(List<Label> p) {
-                p = directPath(p, rootCode);
-                if (validCode(replaceCodeAt(rootCode, append(label, path),
-                    Either.y(p))))
-                  listener.replaceField(Either.y(p));
-                return unit();
-              }
-            });
-        m.add("---");
-        for (final Code c : iter(codes))
-          UIUtils.addCodeToMenu(m, c, nil(),
-              codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
-                public Unit f(List<Label> p) {
-                  Either<Code, List<Label>> n =
-                      Either.x(linkTreeToCode(rebase(
-                          append(label, path), linkTree(reroot(c, p)))));
-                  if (validCode(replaceCodeAt(rootCode, append(label, path), n)))
-                    listener.replaceField(n);
-                  return unit();
-                }
-              });
-        pm.show();
-        return true;
-      }
+    codeButton.setOnClickListener($ -> listener.selectCode());
+    codeButton.setOnLongClickListener($v -> {
+      PopupMenu pm = new PopupMenu(context, $v);
+      Menu m = pm.getMenu();
+      UIUtils.addCodeToMenu(m, rootCode, nil(),
+          codeLabelAliases, codeAliases, p -> {
+            p = directPath(p, rootCode);
+            if (validCode(replaceCodeAt(rootCode, append(label, path),
+                Either.y(p))))
+              listener.replaceField(Either.y(p));
+            return unit();
+          }
+      );
+      m.add("---");
+      for (final Code c : iter(codes))
+        UIUtils.addCodeToMenu(m, c, nil(),
+            codeLabelAliases, codeAliases, p -> {
+              Either<Code, List<Label>> n =
+                  Either.x(linkTreeToCode(rebase(
+                      append(label, path), linkTree(reroot(c, p)))));
+              if (validCode(replaceCodeAt(rootCode, append(label, path), n)))
+                listener.replaceField(n);
+              return unit();
+            }
+        );
+      pm.show();
+      return true;
     });
     codeButton.setText(renderCode(rootCode, append(label, path),
         codeLabelAliases, codeAliases, 1));

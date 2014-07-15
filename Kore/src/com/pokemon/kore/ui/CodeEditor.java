@@ -68,49 +68,44 @@ public class CodeEditor {
     s.path = path;
     s.code = code;
 
-    final F<List<Label>, Unit> setPath = new F<List<Label>, Unit>() {
-      public Unit f(List<Label> path) {
-        pathContainer.removeAllViews();
-        pathContainer.addView(CodePath.make(context,
-            new F<List<Label>, Unit>() {
-              public Unit f(List<Label> p) {
-                notNull(p);
-                Optional<Code> oc = codeAt(p, s.code);
-                if (oc.isNothing())
-                  throw new RuntimeException("invalid path");
-                if (!isPrefix(p, s.pathShadow)) {
-                  s.pathShadow = p;
-                  f(s.pathShadow);
-                }
-                s.path = p;
-                s.initNodeEditor.f(oc.some().x);
-                return unit();
+    final F<List<Label>, Unit> setPath = $path -> {
+      pathContainer.removeAllViews();
+      pathContainer.addView(CodePath.make(context,
+          new F<List<Label>, Unit>() {
+            public Unit f(List<Label> p) {
+              notNull(p);
+              Optional<Code> oc = codeAt(p, s.code);
+              if (oc.isNothing())
+                throw new RuntimeException("invalid path");
+              if (!isPrefix(p, s.pathShadow)) {
+                s.pathShadow = p;
+                f(s.pathShadow);
               }
-            }, s.code, path));
-        return unit();
-      }
+              s.path = p;
+              s.initNodeEditor.f(oc.some().x);
+              return unit();
+            }
+          }, s.code, $path));
+      return unit();
     };
 
-    final F<Pair<Code, Optional<List<Label>>>, Unit> codeEdited =
-        new F<Pair<Code, Optional<List<Label>>>, Unit>() {
-          public Unit f(Pair<Code, Optional<List<Label>>> a) {
-            Code code2 =
-                replaceCodeAt(s.code, s.path, Either.x(a.x));
-            remapAliases(s.code, code2, nil(), a.y,
-                codeLabelAliases, s.code);
-            s.pathShadow = longestValidSubPath(s.pathShadow, code2);
-            Pair<Code, Map<List<Label>, Map<Label, Label>>> p =
-                disassociate(code2, s.path);
-            mapAliases(code2, nil(), p.x,
-                nil(), code2, p.y, codeLabelAliases);
-            s.code = p.x;
-            s.path = mapPath(s.path, p.y);
-            s.pathShadow = mapPath(s.pathShadow, p.y);
-            setPath.f(s.pathShadow);
-            s.initNodeEditor.f(codeAt(s.path, s.code).some().x);
-            return unit();
-          }
-        };
+    final F<Pair<Code, Optional<List<Label>>>, Unit> codeEdited = a -> {
+      Code code2 =
+          replaceCodeAt(s.code, s.path, Either.x(a.x));
+      remapAliases(s.code, code2, nil(), a.y,
+          codeLabelAliases, s.code);
+      s.pathShadow = longestValidSubPath(s.pathShadow, code2);
+      Pair<Code, Map<List<Label>, Map<Label, Label>>> p =
+          disassociate(code2, s.path);
+      mapAliases(code2, nil(), p.x,
+          nil(), code2, p.y, codeLabelAliases);
+      s.code = p.x;
+      s.path = mapPath(s.path, p.y);
+      s.pathShadow = mapPath(s.pathShadow, p.y);
+      setPath.f(s.pathShadow);
+      s.initNodeEditor.f(codeAt(s.path, s.code).some().x);
+      return unit();
+    };
 
     s.initNodeEditor = new F<Code, Unit>() {
       public Unit f(Code c) {
@@ -211,14 +206,12 @@ public class CodeEditor {
       }
     };
 
-    F<Unit, Bundle> getState = new F<Unit, Bundle>() {
-      public Bundle f(Unit x) {
-        Bundle b = new Bundle();
-        b.putSerializable(STATE_CODE, s.code);
-        b.putSerializable(STATE_PATH, s.path);
-        b.putSerializable(STATE_PATH_SHADOW, s.pathShadow);
-        return b;
-      }
+    F<Unit, Bundle> getState = $ -> {
+      Bundle b = new Bundle();
+      b.putSerializable(STATE_CODE, s.code);
+      b.putSerializable(STATE_PATH, s.path);
+      b.putSerializable(STATE_PATH_SHADOW, s.pathShadow);
+      return b;
     };
 
     s.initNodeEditor.f(codeAt(path, code).some().x);

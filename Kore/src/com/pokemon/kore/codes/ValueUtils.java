@@ -33,22 +33,17 @@ public class ValueUtils {
       Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> m =
           Map.empty();
       for (Pair<Label, Value> e : iter(v.val.entrySet()))
-        m = m.put(e.x, x(toRelation(e.y)));
+        m = m.put(e.x, Either.x(toRelation(e.y)));
       return Relation.product(new Product(m, v.code));
     case UNION:
       List<Pair<Label, Value>> es = v.val.entrySet();
       if (es.isEmpty())
         return dummy(unit, v.code);
       Pair<Label, Value> x = es.cons().x;
-      return Relation.label(new Label_(x.x, x(toRelation(x.y)), v.code));
+      return Relation.label(new Label_(x.x, Either.x(toRelation(x.y)), v.code));
     default:
       throw boom();
     }
-  }
-
-  private static Either<Relation, List<Either3<Label, Integer, Unit>>> x(
-      Relation r) {
-    return Either.x(r);
   }
 
   private static Optional<Value> eval(Relation root, Relation r, Value a,

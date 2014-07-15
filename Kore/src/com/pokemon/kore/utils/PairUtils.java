@@ -6,10 +6,6 @@ public class PairUtils {
   }
 
   public static <X, Y> F<Pair<X, Y>, Y> snd() {
-    return new F<Pair<X, Y>, Y>() {
-      public Y f(Pair<X, Y> p) {
-        return p.y;
-      }
-    };
+    return p -> p.y;
   }
 }

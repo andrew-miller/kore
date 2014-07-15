@@ -7,7 +7,6 @@ import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -31,15 +30,9 @@ public class ProjectionView {
     LinearLayout ll = new LinearLayout(context);
     ll.setBackgroundColor(color);
 
-    F<View, Unit> setLCL = new F<View, Unit>() {
-      public Unit f(final View v) {
-        v.setOnClickListener(new OnClickListener() {
-          public void onClick(View _) {
-            select.f(v);
-          }
-        });
+    F<View, Unit> setLCL = v -> {
+        v.setOnClickListener($ -> select.f(v));
         return unit();
-      }
     };
 
     List<Label> p = nil();

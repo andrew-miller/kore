@@ -42,29 +42,25 @@ public class ListUtils {
   }
 
   public static <T> Iterable<T> iter(final List<T> l) {
-    return new Iterable<T>() {
-      public Iterator<T> iterator() {
-        return new Iterator<T>() {
-          List<T> l_ = l;
+    return () -> new Iterator<T>() {
+      List<T> l_ = l;
 
-          public boolean hasNext() {
-            return !l_.isEmpty();
-          }
-
-          public T next() {
-            if (l_.isEmpty())
-              throw new RuntimeException("empty");
-            T x = l_.cons().x;
-            l_ = l_.cons().tail;
-            return x;
-          }
-
-          public void remove() {
-            throw new UnsupportedOperationException();
-          }
-
-        };
+      public boolean hasNext() {
+        return !l_.isEmpty();
       }
+
+      public T next() {
+        if (l_.isEmpty())
+          throw new RuntimeException("empty");
+        T x = l_.cons().x;
+        l_ = l_.cons().tail;
+        return x;
+      }
+
+      public void remove() {
+        throw new UnsupportedOperationException();
+      }
+
     };
   }
 
@@ -162,27 +158,23 @@ public class ListUtils {
   }
 
   public static <T> Iterable<T> cycle(final List<T> l) {
-    return new Iterable<T>() {
-      public Iterator<T> iterator() {
-        return new Iterator<T>() {
-          List<T> l2 = l;
+    return () -> new Iterator<T>() {
+      List<T> l2 = l;
 
-          public boolean hasNext() {
-            return true;
-          }
+      public boolean hasNext() {
+        return true;
+      }
 
-          public T next() {
-            T x = l2.cons().x;
-            l2 = l2.cons().tail;
-            if (l2.isEmpty())
-              l2 = l;
-            return x;
-          }
+      public T next() {
+        T x = l2.cons().x;
+        l2 = l2.cons().tail;
+        if (l2.isEmpty())
+          l2 = l;
+        return x;
+      }
 
-          public void remove() {
-            throw new UnsupportedOperationException();
-          }
-        };
+      public void remove() {
+        throw new UnsupportedOperationException();
       }
     };
   }

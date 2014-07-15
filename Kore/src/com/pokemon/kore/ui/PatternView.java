@@ -9,7 +9,6 @@ import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -37,21 +36,14 @@ public class PatternView {
       final Code rootCode, final List<Label> codePath,
       final CodeLabelAliasMap codeLabelAliases, final F<Pattern, Unit> replace) {
     final Pattern pattern = patternAt(rootPattern, patternPath).some().x;
-    F<View, Unit> f = new F<View, Unit>() {
-      public Unit f(final View v) {
-        v.setOnClickListener(new OnClickListener() {
-          public void onClick(View _) {
-            PatternMenu.make(v, context, rootCode, codePath, codeLabelAliases,
-                pattern, new PatternMenu.Listener() {
-                  public void select(Pattern p) {
-                    replace.f(replacePatternAt(rootPattern, patternPath, p)
-                        .some().x);
-                  }
-                });
-          }
-        });
-        return unit();
-      }
+    F<View, Unit> f = v -> {
+      v.setOnClickListener($ ->
+          PatternMenu.make(v, context, rootCode, codePath, codeLabelAliases,
+              pattern, p ->
+                  replace.f(replacePatternAt(rootPattern, patternPath, p)
+                      .some().x)
+          ));
+      return unit();
     };
     LinearLayout ll = new LinearLayout(context);
     ll.setOrientation(LinearLayout.VERTICAL);

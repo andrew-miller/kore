@@ -6,7 +6,6 @@ import static com.pokemon.kore.utils.Null.notNull;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
@@ -43,11 +42,7 @@ public class CodePath {
       b.setWidth(0);
       b.setHeight(LayoutParams.MATCH_PARENT);
       final List<Label> subpathS = subpath;
-      b.setOnClickListener(new OnClickListener() {
-        public void onClick(View v) {
-          subpathSelected.f(subpathS);
-        }
-      });
+      b.setOnClickListener($ -> subpathSelected.f(subpathS));
       pathVG.addView(b);
       if (path.isEmpty())
         break;

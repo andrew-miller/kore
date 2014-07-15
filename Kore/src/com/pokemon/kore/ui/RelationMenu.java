@@ -40,25 +40,19 @@ public class RelationMenu {
     p.x.showAsDropDown(v);
     if (ref) {
       p.y.addView(RelationRefView.make(context,
-          nothing(), new F<Unit, Unit>() {
-            public Unit f(Unit x) {
-              p.x.dismiss();
-              select.f(Either.y(nil()));
-              return unit();
-            }
+          nothing(), $ -> {
+            p.x.dismiss();
+            select.f(Either.y(nil()));
+            return unit();
           }));
       Space s = new Space(context);
       s.setMinimumHeight(1);
       p.y.addView(s);
     }
-    UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y,
-        new F<Relation, Unit>() {
-          public Unit f(Relation r) {
-            p.x.dismiss();
-            select.f(Either.x(r));
-            return unit();
-          }
-
+    UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y, r -> {
+          p.x.dismiss();
+          select.f(Either.x(r));
+          return unit();
         }, relation, path, codeLabelAliases, relationAliases, relations);
     Space s = new Space(context);
     s.setMinimumHeight(1);

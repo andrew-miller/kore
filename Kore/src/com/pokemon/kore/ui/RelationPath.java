@@ -14,8 +14,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
-import android.view.View.OnClickListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
@@ -26,7 +24,6 @@ import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Relation;
 import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
-import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.Unit;
 
@@ -66,41 +63,35 @@ public class RelationPath {
         rp.x().tag).some().x.x);
     b.setWidth(0);
     b.setHeight(LayoutParams.MATCH_PARENT);
-    b.setOnClickListener(new OnClickListener() {
-      public void onClick(View v) {
-        if (after.isEmpty()) {
-          if (validLinkTree(linkTree(replaceRelationOrPathAt(
+    b.setOnClickListener(v -> {
+      if (after.isEmpty()) {
+        if (validLinkTree(linkTree(replaceRelationOrPathAt(
+            root,
+            before,
+            Either.x(RelationUtils.dummy(unit, unit)))))) {
+          RelationMenu.make(
+              context,
               root,
               before,
-              Either.x(RelationUtils.dummy(unit, unit)))))) {
-            RelationMenu.make(
-                context,
-                root,
-                before,
-                v,
-                rvc,
-                codeLabelAliases,
-                relationAliases,
-                relations,
-                !before.isEmpty(),
-                new F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>() {
-                  public Unit f(
-                      Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
-                    listener.replaceRelation(er);
-                    return unit();
-                  }
-                });
-          }
-        } else
-          listener.selectPath(before);
-      }
+              v,
+              rvc,
+              codeLabelAliases,
+              relationAliases,
+              relations,
+              !before.isEmpty(),
+              er -> {
+                listener.replaceRelation(er);
+                return unit();
+              }
+          );
+        }
+      } else
+        listener.selectPath(before);
     });
-    b.setOnTouchListener(new OnTouchListener() {
-      public boolean onTouch(View _, MotionEvent e) {
-        if (e.getAction() == MotionEvent.ACTION_CANCEL)
-          b.startDrag(null, new DragShadowBuilder(), new SelectRelation(), 0);
-        return false;
-      }
+    b.setOnTouchListener(($, e) -> {
+      if (e.getAction() == MotionEvent.ACTION_CANCEL)
+        b.startDrag(null, new DragShadowBuilder(), new SelectRelation(), 0);
+      return false;
     });
     vg.addView(b);
     Button b2 = new Button(context);

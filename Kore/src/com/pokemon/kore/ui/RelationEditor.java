@@ -57,14 +57,14 @@ public class RelationEditor {
     Relation r2 = resolve(relation, er);
     return !equal(domain(r), domain(r2)) | !equal(codomain(r), codomain(r2)) ? adaptComposition(
         replaceRelationOrPathAt(relation, path,
-            x(Relation.composition(new Composition(
-                fromArray(er.tag == er.tag.X ? x(linkTreeToRelation(rebase(
+            Either.x(Relation.composition(new Composition(
+                fromArray(er.tag == er.tag.X ? Either.x(linkTreeToRelation(rebase(
                     append(Either3.y(0), path),
                     linkTree(er.x())))) : er), domain(r), codomain(r))))), path)
         : replaceRelationOrPathAt(
             relation,
             path,
-            er.tag == er.tag.X ? x(linkTreeToRelation(rebase(path,
+            er.tag == er.tag.X ? Either.x(linkTreeToRelation(rebase(path,
                 linkTree(er.x())))) : er);
   }
 
@@ -112,7 +112,7 @@ public class RelationEditor {
         };
 
     s.initNodeEditor = new F<Unit, Unit>() {
-      public Unit f(Unit _) {
+      public Unit f(Unit $) {
         s.nodeEditor =
             RelationNodeEditor.make(
                 context,
@@ -185,24 +185,20 @@ public class RelationEditor {
       }
     };
 
-    s.selectPath = new F<List<Either3<Label, Integer, Unit>>, Unit>() {
-      public Unit f(List<Either3<Label, Integer, Unit>> p) {
+    s.selectPath = p -> {
         notNull(p);
         relationOrPathAt(p, s.relation);
         s.path = p;
         setPath.f(p);
         s.initNodeEditor.f(unit());
         return unit();
-      }
     };
 
-    F<Unit, Bundle> getState = new F<Unit, Bundle>() {
-      public Bundle f(Unit _) {
-        Bundle b = new Bundle();
-        b.putSerializable(STATE_PATH, s.path);
-        b.putSerializable(STATE_RELATION, s.relation);
-        return b;
-      }
+    F<Unit, Bundle> getState = $ -> {
+      Bundle b = new Bundle();
+      b.putSerializable(STATE_PATH, s.path);
+      b.putSerializable(STATE_RELATION, s.relation);
+      return b;
     };
 
     s.initNodeEditor.f(unit());
@@ -232,10 +228,5 @@ public class RelationEditor {
         relationViewColors,
         (List<Either3<Label, Integer, Unit>>) b.getSerializable(STATE_PATH),
         done);
-  }
-
-  private static Either<Relation, List<Either3<Label, Integer, Unit>>> x(
-      Relation r) {
-    return Either.x(r);
   }
 }

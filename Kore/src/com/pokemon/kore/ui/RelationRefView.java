@@ -3,7 +3,6 @@ package com.pokemon.kore.ui;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 
 import com.pokemon.kore.utils.F;
@@ -20,11 +19,7 @@ public class RelationRefView {
       b.setText(label.some().x.y);
       b.setTextColor(label.some().x.x);
     }
-    b.setOnClickListener(new OnClickListener() {
-      public void onClick(View _) {
-        selected.f(unit());
-      }
-    });
+    b.setOnClickListener($ -> selected.f(unit()));
     return b;
   }
 }

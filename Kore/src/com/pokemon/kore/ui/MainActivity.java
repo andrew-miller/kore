@@ -13,7 +13,6 @@ import java.util.HashSet;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ToggleButton;
 
@@ -127,21 +126,16 @@ public class MainActivity extends FragmentActivity {
         (ViewGroup) findViewById(R.id.container_relation_editor);
 
     findViewById(R.id.button_new_code).setOnClickListener(
-        new OnClickListener() {
-          public void onClick(View v) {
-            startCodeEditor(CodeUtils.unit);
-          }
-        });
+        $ -> startCodeEditor(CodeUtils.unit));
 
     findViewById(R.id.button_new_relation).setOnClickListener(
-        new OnClickListener() {
-          public void onClick(View v) {
-            if (recentVisible)
-              startRelationEditor(RelationUtils.unit_unit);
-            else
-              addToRunArea.f(unit());
-          }
-        });
+        $ -> {
+          if (recentVisible)
+            startRelationEditor(RelationUtils.unit_unit);
+          else
+            addToRunArea.f(unit());
+        }
+    );
 
     Bundle codeEditorState = null;
     Bundle relationEditorState = null;
@@ -171,12 +165,10 @@ public class MainActivity extends FragmentActivity {
     switchRecent();
 
     ToggleButton recentSwitch = (ToggleButton) findViewById(R.id.recent_switch);
-    recentSwitch.setOnClickListener(new OnClickListener() {
-      public void onClick(View _) {
-        recentCodesVisible = !recentCodesVisible;
-        recentVisible = true;
-        switchRecent();
-      }
+    recentSwitch.setOnClickListener($ -> {
+      recentCodesVisible = !recentCodesVisible;
+      recentVisible = true;
+      switchRecent();
     });
 
     if (codeEditorState != null) {
@@ -202,11 +194,9 @@ public class MainActivity extends FragmentActivity {
       relationEditorContainer.setVisibility(View.VISIBLE);
     }
 
-    findViewById(R.id.button_run).setOnClickListener(new OnClickListener() {
-      public void onClick(View _) {
-        recentVisible = false;
-        switchRecent();
-      }
+    findViewById(R.id.button_run).setOnClickListener($ -> {
+      recentVisible = false;
+      switchRecent();
     });
   }
 

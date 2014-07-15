@@ -38,7 +38,7 @@ public class BundleUtils {
       GZIPInputStream zis =
           new GZIPInputStream(
               new ByteArrayInputStream(Base64.decode(base64, 0)));
-      int len = 0;
+      int len;
       while ((len = zis.read(buffer)) != -1) {
         byteBuffer.write(buffer, 0, len);
       }

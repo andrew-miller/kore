@@ -15,7 +15,6 @@ import com.pokemon.kore.codes.CanonicalRelation;
 import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Relation;
 import com.pokemon.kore.utils.Either3;
-import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.SARef;
@@ -54,14 +53,12 @@ public class RelationList {
           emptyRelationViewListener, codeLabelAliases, relationAliases,
           relations), new Overlay.Listener() {
         public boolean onLongClick() {
-          UIUtils.replaceWithTextEntry(fl, overlay.get(), context, "",
-              new F<String, Void>() {
-                public Void f(String s) {
-                  listener.changeAlias(relation,
-                      ListUtils.<Either3<Label, Integer, Unit>> nil(), s);
-                  return null;
-                }
-              });
+          UIUtils.replaceWithTextEntry(fl, overlay.get(), context, "", s -> {
+              listener.changeAlias(relation,
+                  ListUtils.<Either3<Label, Integer, Unit>> nil(), s);
+              return null;
+            }
+          );
           return true;
         }
 

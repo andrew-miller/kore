@@ -5,7 +5,6 @@ import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -40,11 +39,7 @@ public class Label_View {
       b.setText(ola.some().x);
       v = b;
     }
-    v.setOnClickListener(new OnClickListener() {
-      public void onClick(View _) {
-        select.f(v);
-      }
-    });
+    v.setOnClickListener($ -> select.f(v));
 
     ll.addView(v);
     ll.addView(make.f(Either3.z(unit())));

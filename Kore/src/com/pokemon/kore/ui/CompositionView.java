@@ -5,7 +5,6 @@ import static com.pokemon.kore.utils.ListUtils.iter;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -35,35 +34,26 @@ public class CompositionView {
     ll.setBackgroundColor(color);
     boolean first = true;
     int i = 0;
-    for (Object _ : iter(r.composition().l)) {
+    for (Object $ : iter(r.composition().l)) {
       final int i_ = i;
       if (!first)
         ll.addView(DragDropEdges.makeSeparator(context, dragBro, color,
-            highlightColor, true, new F<Object, Unit>() {
-              public Unit f(Object o) {
-                if (o instanceof ExtendRelation)
-                  listener.extend(i_);
-                else
-                  listener.select2();
-                return unit();
-              }
-            }, new F<Object, Boolean>() {
-              public Boolean f(Object o) {
-                return o instanceof SelectRelation
-                    | o instanceof ExtendRelation;
-              }
-            }));
+            highlightColor, true, o -> {
+              if (o instanceof ExtendRelation)
+                listener.extend(i_);
+              else
+                listener.select2();
+              return unit();
+            }, o -> o instanceof SelectRelation
+                | o instanceof ExtendRelation
+        ));
       first = false;
       ll.addView(make.f(Either3.y(i)));
       i++;
     }
     if (r.composition().l.isEmpty()) {
       final Button b = new Button(context);
-      b.setOnClickListener(new OnClickListener() {
-        public void onClick(View _) {
-          listener.select(b);
-        }
-      });
+      b.setOnClickListener($ -> listener.select(b));
       ll.addView(b);
     }
     return ll;

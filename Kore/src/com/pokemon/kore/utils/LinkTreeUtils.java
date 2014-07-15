@@ -8,7 +8,6 @@ import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.MapUtils.containsKey;
 import static com.pokemon.kore.utils.PairUtils.pair;
 
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedMap;
@@ -54,11 +53,7 @@ public class LinkTreeUtils {
   /** prepend <tt>p</tt> to all paths */
   public static <E, V> LinkTree<E, V> rebase(final List<E> p,
       final LinkTree<E, V> lt) {
-    return mapPaths(lt, new F<List<E>, List<E>>() {
-      public List<E> f(List<E> p2) {
-        return append(p, p2);
-      }
-    });
+    return mapPaths(lt, p2 -> append(p, p2));
   }
 
   public static <E, V> LinkTree<E, V> mapPaths(final LinkTree<E, V> lt,
@@ -192,18 +187,16 @@ public class LinkTreeUtils {
       Ref<Map<Identity<V>, List<E>>> m, List<E> path,
       Set<Pair<Identity<V>, E>> spanningTreeEdges, final Comparer<E> c) {
     m.set(m.get().put(v, path));
-    SortedMap<E, Pair<Identity<V>, E>> sm = new TreeMap<>(new Comparator<E>() {
-      public int compare(E a, E b) {
-        switch (c.compare(a, b)) {
-        case EQ:
-          return 0;
-        case GT:
-          return 1;
-        case LT:
-          return -1;
-        default:
-          throw boom();
-        }
+    SortedMap<E, Pair<Identity<V>, E>> sm = new TreeMap<>((a, b) -> {
+      switch (c.compare(a, b)) {
+      case EQ:
+        return 0;
+      case GT:
+        return 1;
+      case LT:
+        return -1;
+      default:
+        throw boom();
       }
     });
     for (Pair<Identity<V>, E> e : g.outgoingEdgesOf(v))

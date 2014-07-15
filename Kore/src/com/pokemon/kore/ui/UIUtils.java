@@ -25,10 +25,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
@@ -75,15 +72,13 @@ public class UIUtils {
         return false;
       }
     });
-    t.setOnFocusChangeListener(new OnFocusChangeListener() {
-      public void onFocusChange(View _, boolean hasFocus) {
-        if (!hasFocus) {
-          ((InputMethodManager) a
-              .getSystemService(Context.INPUT_METHOD_SERVICE))
-              .hideSoftInputFromWindow(t.getWindowToken(), 0);
-          vg.removeAllViews();
-          vg.addView(v);
-        }
+    t.setOnFocusChangeListener(($, hasFocus) -> {
+      if (!hasFocus) {
+        ((InputMethodManager) a
+            .getSystemService(Context.INPUT_METHOD_SERVICE))
+            .hideSoftInputFromWindow(t.getWindowToken(), 0);
+        vg.removeAllViews();
+        vg.addView(v);
       }
     });
     t.setHint(hint);
@@ -110,11 +105,9 @@ public class UIUtils {
     MenuItem i =
         m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
             + renderCode(root, path, codeLabelAliases, codeAliases, 1));
-    i.setOnMenuItemClickListener(new OnMenuItemClickListener() {
-      public boolean onMenuItemClick(MenuItem _) {
-        f.f(path);
-        return true;
-      }
+    i.setOnMenuItemClickListener($ -> {
+      f.f(path);
+      return true;
     });
     Bijection<Label, String> las =
         codeLabelAliases.getAliases(new CanonicalCode(root, path));
@@ -135,30 +128,26 @@ public class UIUtils {
       final CodeLabelAliasMap codeLabelAliases,
       final Bijection<CanonicalRelation, String> relationAliases,
       final List<Relation> relations) {
-    F<Unit, Unit> addSpace = new F<Unit, Unit>() {
-      public Unit f(Unit x) {
-        Space s = new Space(context);
-        s.setMinimumHeight(1);
-        vg.addView(s);
-        return unit();
-      }
+    F<Unit, Unit> addSpace = x -> {
+      Space s = new Space(context);
+      s.setMinimumHeight(1);
+      vg.addView(s);
+      return unit();
     };
-    F<Relation, Unit> add = new F<Relation, Unit>() {
-      public Unit f(final Relation r) {
-        List<Either3<Label, Integer, Unit>> n = nil();
-        vg.addView(Overlay.make(context, RelationView.make(context, rvc,
-            new DragBro(), r, n, emptyRelationViewListener, codeLabelAliases,
-            relationAliases, relations), new Overlay.Listener() {
-          public boolean onLongClick() {
-            return false;
-          }
+    F<Relation, Unit> add = r -> {
+      List<Either3<Label, Integer, Unit>> n = nil();
+      vg.addView(Overlay.make(context, RelationView.make(context, rvc,
+          new DragBro(), r, n, emptyRelationViewListener, codeLabelAliases,
+          relationAliases, relations), new Overlay.Listener() {
+        public boolean onLongClick() {
+          return false;
+        }
 
-          public void onClick() {
-            f.f(r);
-          }
-        }));
-        return unit();
-      }
+        public void onClick() {
+          f.f(r);
+        }
+      }));
+      return unit();
     };
     Relation r = resolve(root, relationOrPathAt(path, root));
     Code d = domain(r);
@@ -212,11 +201,7 @@ public class UIUtils {
       Optional<String> a = codeLabelAliases.getAliases(cc).xy.get(e.x);
       Button b = new Button(context);
       b.setText(a.isNothing() ? e.x.toString() : a.some().x);
-      b.setOnClickListener(new OnClickListener() {
-        public void onClick(View _) {
-          f.f(e.x);
-        }
-      });
+      b.setOnClickListener($ -> f.f(e.x));
       l = cons(b, l);
     }
     return l;
@@ -241,11 +226,9 @@ public class UIUtils {
     p.y.addView(b, i++);
     b.setText(renderRelation(some(c), Either
         .x(Relation.projection(new Projection(proj, o))), codeLabelAliases));
-    b.setOnClickListener(new OnClickListener() {
-      public void onClick(View _) {
-        p.x.dismiss();
-        select.f(proj);
-      }
+    b.setOnClickListener($ -> {
+      p.x.dismiss();
+      select.f(proj);
     });
     b.setEnabled(equal(o, out));
     for (final Pair<Label, ?> e : iter(o.labels.entrySet())) {
@@ -253,14 +236,12 @@ public class UIUtils {
           codeLabelAliases.getAliases(new CanonicalCode(c, proj)).xy.get(e.x);
       Button b2 = new Button(context);
       b2.setText(a.isNothing() ? e.x.toString() : a.some().x);
-      b2.setOnClickListener(new OnClickListener() {
-        public void onClick(View _) {
-          p.x.dismiss();
-          Pair<PopupWindow, ViewGroup> p = makePopupWindow(context);
-          p.x.showAsDropDown(v);
-          addProjectionsToMenu(p, context, v, codeLabelAliases,
-              append(e.x, proj), c, out, select);
-        }
+      b2.setOnClickListener($ -> {
+        p.x.dismiss();
+        Pair<PopupWindow, ViewGroup> p1 = makePopupWindow(context);
+        p1.x.showAsDropDown(v);
+        addProjectionsToMenu(p1, context, v, codeLabelAliases,
+            append(e.x, proj), c, out, select);
       });
       p.y.addView(b2, i++);
     }
@@ -284,7 +265,6 @@ public class UIUtils {
       pw.setBackgroundDrawable(new BitmapDrawable());
       pw.setOutsideTouchable(true);
     }
-    ViewGroup vgll = ll;
-    return pair(pw, vgll);
+    return pair(pw, ll);
   }
 }
