@@ -1,5 +1,7 @@
 package com.pokemon.kore.ui;
 
+import android.util.Log;
+
 import static com.pokemon.kore.utils.OptionalUtils.nothing;
 import static com.pokemon.kore.utils.OptionalUtils.some;
 
@@ -48,7 +50,8 @@ public class Bijection<X, Y> implements Serializable {
   }
 
   public static <X, Y> Bijection<X, Y> empty() {
-    return new Bijection<>(Map.<X, Y> empty(), Map.<Y, X> empty());
+      Log.e("WTF","MATEEE"   );
+    return new Bijection<>(Map.empty(), Map.empty());
   }
 
   @Override

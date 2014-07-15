@@ -17,8 +17,7 @@ import com.pokemon.kore.utils.Optional;
 import com.pokemon.kore.utils.Pair;
 
 public class PatternUtils {
-  public static final Pattern emptyPattern = new Pattern(
-      Map.<Label, Pattern> empty());
+  public static final Pattern emptyPattern = new Pattern(Map.empty());
 
   public static Optional<Pattern> patternAt(Pattern pattern, List<Label> path) {
     if (path.isEmpty())

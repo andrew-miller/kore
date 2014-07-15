@@ -2,6 +2,8 @@ package com.pokemon.kore.ui;
 
 import static com.pokemon.kore.ui.RelationUtils.emptyRelationViewListener;
 import static com.pokemon.kore.utils.ListUtils.iter;
+import static com.pokemon.kore.utils.ListUtils.nil;
+import static com.pokemon.kore.utils.OptionalUtils.nothing;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
@@ -16,8 +18,6 @@ import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
-import com.pokemon.kore.utils.ListUtils;
-import com.pokemon.kore.utils.OptionalUtils;
 import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.Unit;
 
@@ -40,12 +40,10 @@ public class RelationMenu {
     p.x.showAsDropDown(v);
     if (ref) {
       p.y.addView(RelationRefView.make(context,
-          OptionalUtils.<Pair<Integer, String>> nothing(), new F<Unit, Unit>() {
+          nothing(), new F<Unit, Unit>() {
             public Unit f(Unit x) {
               p.x.dismiss();
-              select.f(Either
-                  .<Relation, List<Either3<Label, Integer, Unit>>> y(ListUtils
-                      .<Either3<Label, Integer, Unit>> nil()));
+              select.f(Either.y(nil()));
               return unit();
             }
           }));
@@ -57,8 +55,7 @@ public class RelationMenu {
         new F<Relation, Unit>() {
           public Unit f(Relation r) {
             p.x.dismiss();
-            select.f(Either
-                .<Relation, List<Either3<Label, Integer, Unit>>> x(r));
+            select.f(Either.x(r));
             return unit();
           }
 
@@ -75,8 +72,7 @@ public class RelationMenu {
       }
       first = false;
       p.y.addView(Overlay.make(context, RelationView.make(context,
-          relationViewColors, new DragBro(), r,
-          ListUtils.<Either3<Label, Integer, Unit>> nil(),
+          relationViewColors, new DragBro(), r, nil(),
           emptyRelationViewListener, codeLabelAliases, relationAliases,
           relations), new Overlay.Listener() {
         public boolean onLongClick() {
@@ -85,7 +81,7 @@ public class RelationMenu {
 
         public void onClick() {
           p.x.dismiss();
-          select.f(Either.<Relation, List<Either3<Label, Integer, Unit>>> x(r));
+          select.f(Either.x(r));
         }
       }));
     }

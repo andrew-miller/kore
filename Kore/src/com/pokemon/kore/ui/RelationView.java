@@ -12,6 +12,8 @@ import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.fromArray;
 import static com.pokemon.kore.utils.ListUtils.iter;
 import static com.pokemon.kore.utils.ListUtils.length;
+import static com.pokemon.kore.utils.ListUtils.nil;
+import static com.pokemon.kore.utils.OptionalUtils.nothing;
 import static com.pokemon.kore.utils.OptionalUtils.some;
 import static com.pokemon.kore.utils.PairUtils.pair;
 import static com.pokemon.kore.utils.Unit.unit;
@@ -33,9 +35,7 @@ import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
-import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Optional;
-import com.pokemon.kore.utils.OptionalUtils;
 import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.SARef;
 import com.pokemon.kore.utils.Unit;
@@ -99,7 +99,7 @@ public final class RelationView {
         cp = rvc.referenceColors;
         rv =
             RelationRefView.make(context,
-                OptionalUtils.<Pair<Integer, String>> nothing(),
+                nothing(),
                 new F<Unit, Unit>() {
                   public Unit f(Unit _) {
                     listener.selectPath(path);
@@ -110,8 +110,7 @@ public final class RelationView {
       case X:
         Optional<Abstraction> oea = enclosingAbstraction(path, root);
         final Optional<Code> argCode =
-            oea.isNothing() ? OptionalUtils.<Code> nothing()
-                : some(oea.some().x.i);
+            oea.isNothing() ? nothing() : some(oea.some().x.i);
         final Relation r = er.x();
         cp = rvc.relationcolors.m.get(r.tag).some().x;
         F<Either3<Label, Integer, Unit>, View> make =
@@ -197,7 +196,7 @@ public final class RelationView {
                       List<View> labels =
                           UIUtils.relationLabels(p.y, context, v,
                               codeLabelAliases, new CanonicalCode(r.label().o,
-                                  ListUtils.<Label> nil()),
+                                  nil()),
                               new F<Label, Unit>() {
                                 public Unit f(Label l) {
                                   p.x.dismiss();
@@ -205,8 +204,7 @@ public final class RelationView {
                                       getRelation(
                                           root,
                                           r,
-                                          Either3
-                                              .<Label, Integer, Unit> z(unit()))
+                                          Either3.z(unit()))
                                           .some().x;
                                   Code o = reroot(r.label().o, fromArray(l));
                                   listener.replaceRelation(path, x(Relation

@@ -4,6 +4,7 @@ import static com.pokemon.kore.utils.ListUtils.cons;
 import static com.pokemon.kore.utils.ListUtils.fromArray;
 import static com.pokemon.kore.utils.ListUtils.iter;
 import static com.pokemon.kore.utils.ListUtils.length;
+import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.OptionalUtils.nothing;
 import static com.pokemon.kore.utils.OptionalUtils.some;
 import static com.pokemon.kore.utils.PairUtils.pair;
@@ -21,7 +22,7 @@ public final class Map<K, V> implements Serializable {
   }
 
   public static <K, V> Map<K, V> empty() {
-    return new Map<>(ListUtils.<Pair<K, V>> nil());
+    return new Map<>(nil());
   }
 
   public Optional<V> get(K k) {

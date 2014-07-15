@@ -9,16 +9,15 @@ import java.util.LinkedList;
 
 public class ListUtils {
   public static <T> List<T> nil() {
-    return List.nil(new List.Nil<T>());
+    return List.nil(new List.Nil<>());
   }
 
   public static <T> List<T> cons(T x, List<T> l) {
-    return List.cons(new List.Cons<T>(x, l));
+    return List.cons(new List.Cons<>(x, l));
   }
 
   public static <T, T2> List<T2> map(F<T, T2> f, List<T> l) {
-    return l.isEmpty() ? ListUtils.<T2> nil() : cons(f.f(l.cons().x),
-        map(f, l.cons().tail));
+    return l.isEmpty() ? nil() : cons(f.f(l.cons().x), map(f, l.cons().tail));
   }
 
   public static <T> List<T> append(T x, List<T> l) {
@@ -216,7 +215,6 @@ public class ListUtils {
   }
 
   public static <T> List<T> take(List<T> l, Integer n) {
-    return n == 0 ? ListUtils.<T> nil() : cons(l.cons().x,
-        take(l.cons().tail, n - 1));
+    return n == 0 ? nil() : cons(l.cons().x, take(l.cons().tail, n - 1));
   }
 }

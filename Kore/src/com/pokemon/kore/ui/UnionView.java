@@ -57,7 +57,7 @@ public class UnionView {
               }
             }));
       first = false;
-      ll.addView(make.f(Either3.<Label, Integer, Unit> y(i)));
+      ll.addView(make.f(Either3.y(i)));
       i++;
     }
     if (r.union().l.isEmpty()) {

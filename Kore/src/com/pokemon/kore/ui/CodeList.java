@@ -1,6 +1,7 @@
 package com.pokemon.kore.ui;
 
 import static com.pokemon.kore.utils.ListUtils.iter;
+import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Null.notNull;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -18,7 +19,6 @@ import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.utils.CodeUtils;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
-import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Optional;
 
 public class CodeList {
@@ -40,10 +40,10 @@ public class CodeList {
       final FrameLayout fl = new FrameLayout(context);
       Button b = new Button(context);
       Optional<String> codeName =
-          codeAliases.xy.get(new CanonicalCode(code, ListUtils.<Label> nil()));
+          codeAliases.xy.get(new CanonicalCode(code, nil()));
       final String strCode =
           codeName.isNothing() ? CodeUtils.renderCode(code,
-              ListUtils.<Label> nil(), codeLabelAliases, codeAliases, 1)
+              nil(), codeLabelAliases, codeAliases, 1)
               : codeName.some().x;
       b.setText(strCode);
       b.setOnClickListener(new OnClickListener() {
@@ -58,7 +58,7 @@ public class CodeList {
           UIUtils.replaceWithTextEntry(fl, v, context, strCode,
               new F<String, Void>() {
                 public Void f(String s) {
-                  listener.changeAlias(code, ListUtils.<Label> nil(), s);
+                  listener.changeAlias(code, nil(), s);
                   return null;
                 }
               });

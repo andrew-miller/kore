@@ -53,7 +53,6 @@ import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
-import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Optional;
 import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.Unit;
@@ -187,12 +186,11 @@ public class UIUtils {
           RelationUtils.emptyRelation(oea.some().x.i, c,
               Relation.Tag.PROJECTION);
       Relation a =
-          Relation.abstraction(new Abstraction(emptyPattern, Either
-              .<Relation, List<Either3<Label, Integer, Unit>>> x(p),
+          Relation.abstraction(new Abstraction(emptyPattern, Either.x(p),
               oea.some().x.i, c));
       vg.addView(Overlay.make(context, RelationView.make(context, rvc,
           new DragBro(), a,
-          fromArray(Either3.<Label, Integer, Unit> z(unit())),
+          fromArray(Either3.z(unit())),
           emptyRelationViewListener, codeLabelAliases, relationAliases,
           relations), new Overlay.Listener() {
         public boolean onLongClick() {
@@ -229,7 +227,7 @@ public class UIUtils {
       Context context, View v, CodeLabelAliasMap codeLabelAliases, Code c,
       Code out, F<List<Label>, Unit> select) {
     addProjectionsToMenu(p, context, v, codeLabelAliases,
-        ListUtils.<Label> nil(), c, out, select);
+        nil(), c, out, select);
   }
 
   private static void addProjectionsToMenu(
@@ -242,8 +240,7 @@ public class UIUtils {
     int i = 0;
     p.y.addView(b, i++);
     b.setText(renderRelation(some(c), Either
-        .<Relation, List<Either3<Label, Integer, Unit>>> x(Relation
-            .projection(new Projection(proj, o))), codeLabelAliases));
+        .x(Relation.projection(new Projection(proj, o))), codeLabelAliases));
     b.setOnClickListener(new OnClickListener() {
       public void onClick(View _) {
         p.x.dismiss();

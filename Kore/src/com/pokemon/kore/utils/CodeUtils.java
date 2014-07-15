@@ -30,11 +30,9 @@ import com.pokemon.kore.ui.LinkTree;
 public final class CodeUtils {
   private final static String className = CodeUtils.class.getName();
 
-  public final static Code unit = Code.newProduct(Map
-      .<Label, Either<Code, List<Label>>> empty());
+  public final static Code unit = Code.newProduct(Map.empty());
 
-  public final static Code empty = Code.newUnion(Map
-      .<Label, Either<Code, List<Label>>> empty());
+  public final static Code empty = Code.newUnion(Map.empty());
 
   public static Code reroot(Code c, List<Label> p) {
     return linkTreeToCode(LinkTreeUtils.reroot(linkTree(c), p));
@@ -114,11 +112,10 @@ public final class CodeUtils {
       if (scc.contains(v))
         vs.addAll(scc);
     }
-    Ref<Map<List<Label>, Map<Label, Label>>> i =
-        new Ref<>(Map.<List<Label>, Map<Label, Label>> empty());
+    Ref<Map<List<Label>, Map<Label, Label>>> i = new Ref<>(Map.empty());
     return pair(
-        mapPaths(dissassociate_(p.x, p.y, c, vs, i, ListUtils.<Label> nil()),
-            i.get(), ListUtils.<Label> nil()), i.get());
+        mapPaths(dissassociate_(p.x, p.y, c, vs, i, nil()),
+            i.get(), nil()), i.get());
   }
 
   private static Code mapPaths(Code c, Map<List<Label>, Map<Label, Label>> i,
@@ -126,13 +123,9 @@ public final class CodeUtils {
     Map<Label, Either<Code, List<Label>>> m2 = Map.empty();
     for (Pair<Label, Either<Code, List<Label>>> e : iter(c.labels.entrySet()))
       if (e.y.tag == e.y.tag.Y)
-        m2 = m2.put(e.x, Either.<Code, List<Label>> y(mapPath(e.y.y(), i)));
+        m2 = m2.put(e.x, Either.y(mapPath(e.y.y(), i)));
       else
-        m2 =
-            m2.put(
-                e.x,
-                Either.<Code, List<Label>> x(mapPaths(e.y.x(), i,
-                    append(e.x, path))));
+        m2 = m2.put(e.x, Either.x(mapPaths(e.y.x(), i, append(e.x, path))));
     return new Code(c.tag, m2);
   }
 
@@ -168,8 +161,7 @@ public final class CodeUtils {
       m =
           m.put(
               l,
-              e.y.tag == e.y.tag.X ? Either
-                  .<Code, List<Label>> x(dissassociate_(g,
+              e.y.tag == e.y.tag.X ? Either.x(dissassociate_(g,
                       g.getEdgeTarget(pair(v, e.x)), e.y.x(), vs, i,
                       append(e.x, path))) : e.y);
     }
@@ -193,7 +185,7 @@ public final class CodeUtils {
 
   private static Either<Code, List<Label>>
       codeOrPathAt(List<Label> path, Code c) {
-    Either<Code, List<Label>> cp = Either.<Code, List<Label>> x(c);
+    Either<Code, List<Label>> cp = Either.x(c);
     for (Label l : iter(path))
       cp = cp.x().labels.get(l).some().x;
     return cp;
@@ -216,7 +208,7 @@ public final class CodeUtils {
 
   public static Code replaceCodeAt(Code c, List<Label> p,
       Either<Code, List<Label>> newCode) {
-    return replaceCodeAt_(Either.<Code, List<Label>> x(c), p, newCode).x();
+    return replaceCodeAt_(Either.x(c), p, newCode).x();
   }
 
   private static Either<Code, List<Label>> replaceCodeAt_(
@@ -231,7 +223,7 @@ public final class CodeUtils {
                 l,
                 replaceCodeAt_(c.x().labels.get(l).some().x, p.cons().tail,
                     newCode));
-    return Either.<Code, List<Label>> x(new Code(c.x().tag, m));
+    return Either.x(new Code(c.x().tag, m));
   }
 
   /**
@@ -333,8 +325,7 @@ public final class CodeUtils {
   public static boolean equal(Code c, Code c2) {
     // TODO get real equality check.
     // e.g, {'a <>} should be equal to {'a {'a <>}}
-    return (canonicalCode(c, ListUtils.<Label> nil()).equals(canonicalCode(c2,
-        ListUtils.<Label> nil())));
+    return (canonicalCode(c, nil()).equals(canonicalCode(c2, nil())));
   }
 
   public static Optional<Code> getCode(Code root, Code c, Label l) {
@@ -368,11 +359,11 @@ public final class CodeUtils {
    * this <tt>Code</tt>) to a simple path from this <tt>Code</tt> to another
    * <tt>Code</tt>
    * 
-   * @param Code
+   * @param code
    *          a <tt>Code</tt> that <tt>validCode</tt> maps to <tt>true</tt>
    */
   public static List<Label> directPath(List<Label> path, Code code) {
-    return directPath(path, code, code, ListUtils.<Label> nil());
+    return directPath(path, code, code, nil());
   }
 
   private static List<Label> directPath(List<Label> p, Code root, Code c,
@@ -409,20 +400,10 @@ public final class CodeUtils {
             .entrySet()))
           switch (e.y.tag) {
           case X:
-            l =
-                cons(
-                    pair(
-                        e.x,
-                        Either
-                            .<LinkTree<Label, Code.Tag>, List<Label>> x(linkTree(e.y
-                                .x()))), l);
+            l = cons(pair(e.x, Either.x(linkTree(e.y.x()))), l);
             break;
           case Y:
-            l =
-                cons(
-                    pair(e.x,
-                        Either.<LinkTree<Label, Code.Tag>, List<Label>> y(e.y
-                            .y())), l);
+            l = cons(pair(e.x,Either.y(e.y.y())), l);
             break;
           default:
             throw boom();
@@ -443,8 +424,8 @@ public final class CodeUtils {
         .edges()))
       m =
           m.put(e.x,
-              e.y.tag == e.y.tag.Y ? Either.<Code, List<Label>> y(e.y.y())
-                  : Either.<Code, List<Label>> x(linkTreeToCode(e.y.x())));
+              e.y.tag == e.y.tag.Y ? Either.y(e.y.y())
+                  : Either.x(linkTreeToCode(e.y.x())));
     switch (lt.vertex()) {
     case PRODUCT:
       return Code.newProduct(m);

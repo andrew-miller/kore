@@ -13,8 +13,10 @@ import static com.pokemon.kore.utils.CodeUtils.unit;
 import static com.pokemon.kore.utils.ListUtils.iter;
 import static com.pokemon.kore.utils.ListUtils.map;
 import static com.pokemon.kore.utils.ListUtils.nil;
+import static com.pokemon.kore.utils.OptionalUtils.nothing;
 import static com.pokemon.kore.utils.OptionalUtils.some;
 import static com.pokemon.kore.utils.PairUtils.pair;
+import static com.pokemon.kore.utils.PairUtils.snd;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
 import android.os.Bundle;
@@ -37,9 +39,7 @@ import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Optional;
-import com.pokemon.kore.utils.OptionalUtils;
 import com.pokemon.kore.utils.Pair;
-import com.pokemon.kore.utils.PairUtils;
 import com.pokemon.kore.utils.Ref;
 import com.pokemon.kore.utils.Tree;
 import com.pokemon.kore.utils.Unit;
@@ -58,9 +58,7 @@ public class RunArea {
     ll.setOrientation(LinearLayout.VERTICAL);
     ll.setBackgroundColor(0xFFFFFFFF);
     final Ref<List<Optional<Pair<F<Unit, Bundle>, F<Unit, List<Tree<Unit, Optional<String>>>>>>>> children =
-        new Ref<>(
-            ListUtils
-                .<Optional<Pair<F<Unit, Bundle>, F<Unit, List<Tree<Unit, Optional<String>>>>>>> nil());
+        new Ref<>(nil());
     final F<Optional<Either<Relation, Pair<Bundle, List<Tree<Unit, Optional<String>>>>>>, Unit> add2 =
         new F<Optional<Either<Relation, Pair<Bundle, List<Tree<Unit, Optional<String>>>>>>, Unit>() {
           public
@@ -70,15 +68,11 @@ public class RunArea {
               Button b = new Button(context);
               b.setBackgroundColor(0xFF000000);
               ll.addView(b);
-              children
-                  .set(ListUtils.append(
-                      OptionalUtils
-                          .<Pair<F<Unit, Bundle>, F<Unit, List<Tree<Unit, Optional<String>>>>>> nothing(),
-                      children.get()));
+              children.set(ListUtils.append(nothing(), children.get()));
             } else {
               final Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> cRA =
                   make(
-                      or.some().x.tag == Tag.X ? ListUtils.<Tree<Unit, Optional<String>>> nil()
+                      or.some().x.tag == Tag.X ? nil()
                           : or.some().x.y().y, context, codes,
                       codeLabelAliases, codeAliases, relationAliases,
                       relations, relationViewColors);
@@ -87,7 +81,7 @@ public class RunArea {
                   if (!equal(domain(r), unit))
                     return unit();
                   Optional<Value> v = eval(r);
-                  cRA.y.x.f(v.isNothing() ? OptionalUtils.<Relation> nothing()
+                  cRA.y.x.f(v.isNothing() ? nothing()
                       : some(toRelation(v.some().x)));
                   return unit();
                 }
@@ -123,24 +117,18 @@ public class RunArea {
         };
     F<Optional<Relation>, Unit> add = new F<Optional<Relation>, Unit>() {
       public Unit f(Optional<Relation> or) {
-        add2.f(or.isNothing() ? OptionalUtils
-            .<Either<Relation, Pair<Bundle, List<Tree<Unit, Optional<String>>>>>> nothing()
-            : some(Either
-                .<Relation, Pair<Bundle, List<Tree<Unit, Optional<String>>>>> x(or
-                    .some().x)));
+        add2.f(or.isNothing() ? nothing() : some(Either.x(or.some().x)));
         return unit();
       }
     };
     for (Tree<Unit, Optional<String>> t : iter(ts))
       if (t.v.isNothing())
-        add2.f(OptionalUtils
-            .<Either<Relation, Pair<Bundle, List<Tree<Unit, Optional<String>>>>>> nothing());
+        add2.f(nothing());
       else
         add2.f(some(Either
-            .<Relation, Pair<Bundle, List<Tree<Unit, Optional<String>>>>> y(pair(
+            .y(pair(
                 deserializeBundle(t.v.some().x),
-                map(PairUtils.<Unit, Tree<Unit, Optional<String>>> snd(),
-                    t.edges)))));
+                map(snd(), t.edges)))));
     F<Unit, List<Tree<Unit, Optional<String>>>> getState =
         new F<Unit, List<Tree<Unit, Optional<String>>>>() {
           public List<Tree<Unit, Optional<String>>> f(Unit _) {
@@ -150,9 +138,7 @@ public class RunArea {
               l =
                   ListUtils
                       .append(
-                          c.isNothing() ? new Tree<>(OptionalUtils
-                              .<String> nothing(), ListUtils
-                              .<Pair<Unit, Tree<Unit, Optional<String>>>> nil())
+                          c.isNothing() ? new Tree<>(nothing(), nil())
                               : new Tree<>(
                                   some(serializeBundle(c.some().x.x.f(unit()))),
                                   map(new F<Tree<Unit, Optional<String>>, Pair<Unit, Tree<Unit, Optional<String>>>>() {
@@ -192,7 +178,7 @@ public class RunArea {
       final List<Relation> relations,
       final RelationViewColors relationViewColors) {
     Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> p =
-        make(ListUtils.<Tree<Unit, Optional<String>>> nil(), context, codes,
+        make(nil(), context, codes,
             codeLabelAliases, codeAliases, relationAliases, relations,
             relationViewColors);
     return make(p, context, codes, codeLabelAliases, codeAliases,
@@ -222,7 +208,7 @@ public class RunArea {
             .make(
                 context,
                 unit_unit,
-                ListUtils.<Either3<Label, Integer, Unit>> nil(),
+                nil(),
                 menuAnchor,
                 relationViewColors,
                 codeLabelAliases,
@@ -235,7 +221,7 @@ public class RunArea {
                     final Relation r =
                         equal(unit, domain(er.x())) ? er.x() : changeDomain(
                             er.x(),
-                            ListUtils.<Either3<Label, Integer, Unit>> nil(),
+                            nil(),
                             unit);
                     p.y.x.f(some(r));
                     return unit();

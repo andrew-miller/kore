@@ -6,6 +6,7 @@ import static com.pokemon.kore.utils.CodeUtils.reroot;
 import static com.pokemon.kore.utils.ListUtils.drop;
 import static com.pokemon.kore.utils.ListUtils.iter;
 import static com.pokemon.kore.utils.ListUtils.length;
+import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Null.notNull;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
@@ -32,7 +33,6 @@ import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
-import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Unit;
 
 public class RelationNodeEditor {
@@ -99,13 +99,13 @@ public class RelationNodeEditor {
     Button changeDomainButton =
         (Button) v.findViewById(R.id.button_change_domain);
     changeDomainButton.setText(CodeUtils.renderCode(RelationUtils.domain(r),
-        ListUtils.<Label> nil(), codeLabelAliases, codeAliases, 1));
+        nil(), codeLabelAliases, codeAliases, 1));
     changeDomainButton.setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
         PopupMenu pm = new PopupMenu(context, v);
         Menu m = pm.getMenu();
         for (final Code c : iter(codes))
-          UIUtils.addCodeToMenu(m, c, ListUtils.<Label> nil(),
+          UIUtils.addCodeToMenu(m, c, nil(),
               codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
                 public Unit f(List<Label> p) {
                   listener.changeDomain(reroot(c, p));
@@ -118,14 +118,13 @@ public class RelationNodeEditor {
     Button changeCodomainButton =
         (Button) v.findViewById(R.id.button_change_codomain);
     changeCodomainButton.setText(CodeUtils.renderCode(
-        RelationUtils.codomain(r), ListUtils.<Label> nil(), codeLabelAliases,
-        codeAliases, 1));
+        RelationUtils.codomain(r), nil(), codeLabelAliases, codeAliases, 1));
     changeCodomainButton.setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
         PopupMenu pm = new PopupMenu(context, v);
         Menu m = pm.getMenu();
         for (final Code c : iter(codes))
-          UIUtils.addCodeToMenu(m, c, ListUtils.<Label> nil(),
+          UIUtils.addCodeToMenu(m, c, nil(),
               codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
                 public Unit f(List<Label> p) {
                   listener.changeCodomain(reroot(c, p));

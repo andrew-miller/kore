@@ -2,6 +2,7 @@ package com.pokemon.kore.ui;
 
 import static com.pokemon.kore.utils.ListUtils.iter;
 import static com.pokemon.kore.utils.Null.notNull;
+import static com.pokemon.kore.utils.OptionalUtils.nothing;
 import static com.pokemon.kore.utils.OptionalUtils.some;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
@@ -20,7 +21,6 @@ import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.Optional;
-import com.pokemon.kore.utils.OptionalUtils;
 import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.Ref;
 import com.pokemon.kore.utils.Unit;
@@ -78,7 +78,7 @@ public class CodeNodeEditor {
     });
 
     final Ref<Optional<Label>> selectedLabel =
-        new Ref<>(OptionalUtils.<Label> nothing());
+        new Ref<>(nothing());
     final F<Unit, Unit> render = new F<Unit, Unit>() {
       public Unit f(Unit _) {
         switch (code.tag) {

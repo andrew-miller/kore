@@ -5,6 +5,7 @@ import static com.pokemon.kore.ui.PatternUtils.replacePatternAt;
 import static com.pokemon.kore.utils.CodeUtils.directPath;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.iter;
+import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
@@ -18,7 +19,6 @@ import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Pattern;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
-import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Optional;
 import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.Unit;
@@ -28,7 +28,7 @@ public class PatternView {
       final Pattern rootPattern, final Code rootCode,
       final List<Label> codePath, final CodeLabelAliasMap codeLabelAliases,
       final F<Pattern, Unit> replace) {
-    return make(context, aliasTextColor, rootPattern, ListUtils.<Label> nil(),
+    return make(context, aliasTextColor, rootPattern, nil(),
         rootCode, codePath, codeLabelAliases, replace);
   }
 

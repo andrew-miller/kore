@@ -11,8 +11,10 @@ import static com.pokemon.kore.utils.CodeUtils.validCode;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.isPrefix;
 import static com.pokemon.kore.utils.ListUtils.iter;
+import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.MapUtils.containsKey;
 import static com.pokemon.kore.utils.Null.notNull;
+import static com.pokemon.kore.utils.OptionalUtils.nothing;
 import static com.pokemon.kore.utils.OptionalUtils.some;
 import static com.pokemon.kore.utils.PairUtils.pair;
 import static com.pokemon.kore.utils.Unit.unit;
@@ -30,10 +32,8 @@ import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
-import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Map;
 import com.pokemon.kore.utils.Optional;
-import com.pokemon.kore.utils.OptionalUtils;
 import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.Random;
 import com.pokemon.kore.utils.Unit;
@@ -95,14 +95,14 @@ public class CodeEditor {
         new F<Pair<Code, Optional<List<Label>>>, Unit>() {
           public Unit f(Pair<Code, Optional<List<Label>>> a) {
             Code code2 =
-                replaceCodeAt(s.code, s.path, Either.<Code, List<Label>> x(a.x));
-            remapAliases(s.code, code2, ListUtils.<Label> nil(), a.y,
+                replaceCodeAt(s.code, s.path, Either.x(a.x));
+            remapAliases(s.code, code2, nil(), a.y,
                 codeLabelAliases, s.code);
             s.pathShadow = longestValidSubPath(s.pathShadow, code2);
             Pair<Code, Map<List<Label>, Map<Label, Label>>> p =
                 disassociate(code2, s.path);
-            mapAliases(code2, ListUtils.<Label> nil(), p.x,
-                ListUtils.<Label> nil(), code2, p.y, codeLabelAliases);
+            mapAliases(code2, nil(), p.x,
+                nil(), code2, p.y, codeLabelAliases);
             s.code = p.x;
             s.path = mapPath(s.path, p.y);
             s.pathShadow = mapPath(s.pathShadow, p.y);
@@ -129,7 +129,7 @@ public class CodeEditor {
                     default:
                       throw boom();
                     }
-                    codeEdited.f(pair(c, OptionalUtils.<List<Label>> nothing()));
+                    codeEdited.f(pair(c, nothing()));
                   }
 
                   public void done() {
@@ -146,9 +146,9 @@ public class CodeEditor {
                             "generated duplicate label");
                       l = new Label(Random.randomId());
                     } while (containsKey(m, l));
-                    m = m.put(l, Either.<Code, List<Label>> x(unit));
+                    m = m.put(l, Either.x(unit));
                     c = new Code(c.tag, m);
-                    codeEdited.f(pair(c, OptionalUtils.<List<Label>> nothing()));
+                    codeEdited.f(pair(c, nothing()));
                   }
 
                   public void changeLabelAlias(Label label, String alias) {
@@ -176,7 +176,7 @@ public class CodeEditor {
                     Code c = codeAt(s.path, s.code).some().x;
                     Code c2 = new Code(c.tag, c.labels.delete(l));
                     if (validCode(replaceCodeAt(s.code, s.path,
-                        Either.<Code, List<Label>> x(c2))))
+                        Either.x(c2))))
                       codeEdited.f(pair(c2, some(append(l, s.path))));
                   }
 
@@ -231,7 +231,7 @@ public class CodeEditor {
       Bijection<CanonicalCode, String> codeAliases, List<Code> codes,
       F<Code, Unit> done) {
     return make(context, code, codeLabelAliases, codeAliases, codes,
-        ListUtils.<Label> nil(), ListUtils.<Label> nil(), done);
+        nil(), nil(), done);
   }
 
   public static Pair<View, F<Unit, Bundle>> make(Context context, Bundle b,

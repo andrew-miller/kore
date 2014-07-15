@@ -1,6 +1,7 @@
 package com.pokemon.kore.ui;
 
 import static com.pokemon.kore.ui.RelationUtils.relationAt;
+import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.View;
@@ -14,7 +15,6 @@ import com.pokemon.kore.codes.Relation;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
-import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Optional;
 import com.pokemon.kore.utils.Unit;
 
@@ -31,8 +31,8 @@ public class Label_View {
 
     final View v;
     Optional<String> ola =
-        codeLabelAliases.getAliases(new CanonicalCode(r.label().o, ListUtils
-            .<Label> nil())).xy.get(r.label().label);
+        codeLabelAliases.getAliases(new CanonicalCode(r.label().o,
+            nil())).xy.get(r.label().label);
     if (ola.isNothing())
       v = LabelView.make(context, r.label().label, aliasTextColor);
     else {
@@ -47,7 +47,7 @@ public class Label_View {
     });
 
     ll.addView(v);
-    ll.addView(make.f(Either3.<Label, Integer, Unit> z(unit())));
+    ll.addView(make.f(Either3.z(unit())));
     return ll;
   }
 }

@@ -12,6 +12,7 @@ import static com.pokemon.kore.utils.CodeUtils.equal;
 import static com.pokemon.kore.utils.LinkTreeUtils.rebase;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.fromArray;
+import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Null.notNull;
 import static com.pokemon.kore.utils.PairUtils.pair;
 import static com.pokemon.kore.utils.Unit.unit;
@@ -32,7 +33,6 @@ import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
-import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.Unit;
 
@@ -59,7 +59,7 @@ public class RelationEditor {
         replaceRelationOrPathAt(relation, path,
             x(Relation.composition(new Composition(
                 fromArray(er.tag == er.tag.X ? x(linkTreeToRelation(rebase(
-                    append(Either3.<Label, Integer, Unit> y(0), path),
+                    append(Either3.y(0), path),
                     linkTree(er.x())))) : er), domain(r), codomain(r))))), path)
         : replaceRelationOrPathAt(
             relation,
@@ -218,8 +218,7 @@ public class RelationEditor {
       List<Relation> relations, RelationViewColors relationViewColors,
       F<Relation, Unit> done) {
     return make(context, relation, codes, codeLabelAliases, codeAliases,
-        relationAliases, relations, relationViewColors,
-        ListUtils.<Either3<Label, Integer, Unit>> nil(), done);
+        relationAliases, relations, relationViewColors, nil(), done);
   }
 
   public static Pair<View, F<Unit, Bundle>> make(Context context,

@@ -10,6 +10,7 @@ import static com.pokemon.kore.utils.CodeUtils.validCode;
 import static com.pokemon.kore.utils.LinkTreeUtils.rebase;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.iter;
+import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Null.notNull;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
@@ -29,7 +30,6 @@ import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
-import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Optional;
 import com.pokemon.kore.utils.Unit;
 
@@ -88,23 +88,23 @@ public class CodeField {
       public boolean onLongClick(View v) {
         PopupMenu pm = new PopupMenu(context, v);
         Menu m = pm.getMenu();
-        UIUtils.addCodeToMenu(m, rootCode, ListUtils.<Label> nil(),
+        UIUtils.addCodeToMenu(m, rootCode, nil(),
             codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
               public Unit f(List<Label> p) {
                 p = directPath(p, rootCode);
                 if (validCode(replaceCodeAt(rootCode, append(label, path),
-                    Either.<Code, List<Label>> y(p))))
-                  listener.replaceField(Either.<Code, List<Label>> y(p));
+                    Either.y(p))))
+                  listener.replaceField(Either.y(p));
                 return unit();
               }
             });
         m.add("---");
         for (final Code c : iter(codes))
-          UIUtils.addCodeToMenu(m, c, ListUtils.<Label> nil(),
+          UIUtils.addCodeToMenu(m, c, nil(),
               codeLabelAliases, codeAliases, new F<List<Label>, Unit>() {
                 public Unit f(List<Label> p) {
                   Either<Code, List<Label>> n =
-                      Either.<Code, List<Label>> x(linkTreeToCode(rebase(
+                      Either.x(linkTreeToCode(rebase(
                           append(label, path), linkTree(reroot(c, p)))));
                   if (validCode(replaceCodeAt(rootCode, append(label, path), n)))
                     listener.replaceField(n);

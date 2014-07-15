@@ -30,11 +30,9 @@ public class LinkTreeUtils {
     DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g = p.x;
     Identity<V> root = p.y;
     Set<Pair<Identity<V>, E>> spanningTreeEdges = new HashSet<>();
-    Ref<Map<Identity<V>, List<E>>> m =
-        new Ref<>(Map.<Identity<V>, List<E>> empty());
+    Ref<Map<Identity<V>, List<E>>> m = new Ref<>(Map.empty());
     Identity<V> r = followPath(path, g, root);
-    buildSpanningTreeOfCodeGraph(g, r, m, ListUtils.<E> nil(),
-        spanningTreeEdges);
+    buildSpanningTreeOfCodeGraph(g, r, m, nil(), spanningTreeEdges);
     return buildLinkTreeFromSpanningTree(g, m.get(), r, spanningTreeEdges);
   }
 
@@ -71,16 +69,10 @@ public class LinkTreeUtils {
         for (Pair<E, Either<LinkTree<E, V>, List<E>>> e : iter(lt.edges())) {
           switch (e.y.tag) {
           case X:
-            l =
-                cons(
-                    pair(e.x, Either.<LinkTree<E, V>, List<E>> x(mapPaths(
-                        e.y.x(), f))), l);
+            l = cons(pair(e.x, Either.x(mapPaths(e.y.x(), f))), l);
             break;
           case Y:
-            l =
-                cons(
-                    pair(e.x, Either.<LinkTree<E, V>, List<E>> y(f.f(e.y.y()))),
-                    l);
+            l = cons(pair(e.x, Either.y(f.f(e.y.y()))), l);
             break;
           }
         }
@@ -160,10 +152,9 @@ public class LinkTreeUtils {
     DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g = p.x;
     Identity<V> root = p.y;
     Set<Pair<Identity<V>, E>> spanningTreeEdges = new HashSet<>();
-    Ref<Map<Identity<V>, List<E>>> m =
-        new Ref<>(Map.<Identity<V>, List<E>> empty());
+    Ref<Map<Identity<V>, List<E>>> m = new Ref<>(Map.empty());
     Identity<V> r = followPath(path, g, root);
-    buildCanonicalSpanningTreeOfLinkTreeGraph(g, r, m, ListUtils.<E> nil(),
+    buildCanonicalSpanningTreeOfLinkTreeGraph(g, r, m, nil(),
         spanningTreeEdges, c);
     return buildLinkTreeFromSpanningTree(g, m.get(), r, spanningTreeEdges);
   }
@@ -184,10 +175,9 @@ public class LinkTreeUtils {
                   pair(
                       e.y,
                       spanningTreeEdges.contains(e) ? Either
-                          .<LinkTree<E, V>, List<E>> x(buildLinkTreeFromSpanningTree(
+                          .x(buildLinkTreeFromSpanningTree(
                               g, m, g.getEdgeTarget(e), spanningTreeEdges))
-                          : Either.<LinkTree<E, V>, List<E>> y(m.get(
-                              g.getEdgeTarget(e)).some().x)), l);
+                          : Either.y(m.get(g.getEdgeTarget(e)).some().x)), l);
         return l;
       }
 

@@ -7,6 +7,7 @@ import static com.pokemon.kore.ui.RelationUtils.subRelationOrPath;
 import static com.pokemon.kore.utils.CodeUtils.unit;
 import static com.pokemon.kore.utils.LinkTreeUtils.validLinkTree;
 import static com.pokemon.kore.utils.ListUtils.append;
+import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -27,7 +28,6 @@ import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
-import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Unit;
 
 public class RelationPath {
@@ -47,8 +47,7 @@ public class RelationPath {
     View v = LayoutInflater.from(context).inflate(R.layout.path, null);
     ViewGroup vg = (ViewGroup) v.findViewById(R.id.layout_path);
     make(context, rc, listener, root, relations, codeLabelAliases,
-        relationAliases, ListUtils.<Either3<Label, Integer, Unit>> nil(), path,
-        Either.<Relation, List<Either3<Label, Integer, Unit>>> x(root), vg,
+        relationAliases, nil(), path, Either.x(root), vg,
         referenceColor, rvc);
     return v;
   }
@@ -73,9 +72,7 @@ public class RelationPath {
           if (validLinkTree(linkTree(replaceRelationOrPathAt(
               root,
               before,
-              Either
-                  .<Relation, List<Either3<Label, Integer, Unit>>> x(RelationUtils
-                      .dummy(unit, unit)))))) {
+              Either.x(RelationUtils.dummy(unit, unit)))))) {
             RelationMenu.make(
                 context,
                 root,

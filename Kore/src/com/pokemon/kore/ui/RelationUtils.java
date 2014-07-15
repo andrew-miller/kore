@@ -57,7 +57,6 @@ import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Map;
 import com.pokemon.kore.utils.Optional;
-import com.pokemon.kore.utils.OptionalUtils;
 import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.Unit;
 import com.pokemon.kore.utils.UnitComparer;
@@ -67,8 +66,7 @@ public class RelationUtils {
       Relation
           .abstraction(new Abstraction(
               emptyPattern,
-              x(Relation.product(new Product(
-                  Map.<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> empty(),
+              x(Relation.product(new Product(Map.empty(),
                   unit))), unit, unit));
 
   /**
@@ -87,7 +85,7 @@ public class RelationUtils {
     case ABSTRACTION:
       return "("
           + renderPattern(r.abstraction().pattern, r.abstraction().i,
-              ListUtils.<Label> nil(), codeLabelAliases)
+              nil(), codeLabelAliases)
           + " -> "
           + renderRelation(some(r.abstraction().i), r.abstraction().r,
               codeLabelAliases) + ")";
@@ -106,15 +104,14 @@ public class RelationUtils {
     }
     case LABEL: {
       Optional<String> alias =
-          codeLabelAliases.getAliases(new CanonicalCode(r.label().o, ListUtils
-              .<Label> nil())).xy.get(r.label().label);
+          codeLabelAliases.getAliases(new CanonicalCode(r.label().o,
+              nil())).xy.get(r.label().label);
       return "'" + (alias.isNothing() ? r.label().label : alias.some().x) + " "
           + renderRelation(argCode, r.label().r, codeLabelAliases);
     }
     case PRODUCT: {
       Bijection<Label, String> las =
-          codeLabelAliases.getAliases(new CanonicalCode(r.product().o,
-              ListUtils.<Label> nil()));
+          codeLabelAliases.getAliases(new CanonicalCode(r.product().o, nil()));
       List<Pair<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>>> es =
           r.product().m.entrySet();
       if (es.isEmpty())
@@ -347,8 +344,7 @@ public class RelationUtils {
 
   public static Optional<Abstraction> enclosingAbstraction(
       List<Either3<Label, Integer, Unit>> path, Relation relation) {
-    return enclosingAbstraction(path, relation,
-        OptionalUtils.<Abstraction> nothing());
+    return enclosingAbstraction(path, relation, nothing());
   }
 
   private static Optional<Abstraction> enclosingAbstraction(
@@ -401,8 +397,7 @@ public class RelationUtils {
                     o++;
                 return append(
                     path,
-                    cons(Either3.<Label, Integer, Unit> y(l.cons().x.y() + o),
-                        l.cons().tail));
+                    cons(Either3.y(l.cons().x.y() + o), l.cons().tail));
               }
             }
             return p2;
@@ -415,7 +410,7 @@ public class RelationUtils {
       adaptComposition_(Relation root, Code c,
           List<Either<Relation, List<Either3<Label, Integer, Unit>>>> l) {
     if (l.isEmpty())
-      return pair(ListUtils.<Boolean> nil(), l);
+      return pair(nil(), l);
     Either<Relation, List<Either3<Label, Integer, Unit>>> er = l.cons().x;
     Relation r = resolve(root, er);
     Pair<List<Boolean>, List<Either<Relation, List<Either3<Label, Integer, Unit>>>>> p =
@@ -426,8 +421,7 @@ public class RelationUtils {
 
   /** Empty relation from <tt>i</tt> to <tt>o</tt> */
   public static Relation dummy(Code i, Code o) {
-    return Relation.union(new Union(ListUtils
-        .<Either<Relation, List<Either3<Label, Integer, Unit>>>> nil(), i, o));
+    return Relation.union(new Union(nil(), i, o));
   }
 
   private static Either<Relation, List<Either3<Label, Integer, Unit>>> x(
@@ -439,7 +433,7 @@ public class RelationUtils {
     Pair<DirectedMultigraph<Identity<Code.Tag>, Pair<Identity<Code.Tag>, Label>>, Identity<Code.Tag>> p =
         codeToGraph(i);
     Set<Identity<Code.Tag>> vs = new HashSet<>();
-    return projection(ListUtils.<Label> nil(), p.x, p.y, i, o, vs);
+    return projection(nil(), p.x, p.y, i, o, vs);
   }
 
   private static
@@ -474,26 +468,24 @@ public class RelationUtils {
       edges(Relation r) {
     switch (r.tag) {
     case ABSTRACTION:
-      return fromArray(pair(Either3.<Label, Integer, Unit> z(unit()),
-          r.abstraction().r));
+      return fromArray(pair(Either3.z(unit()), r.abstraction().r));
     case COMPOSITION: {
       List<Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>>> l =
           nil();
       int i = 0;
       for (Either<Relation, List<Either3<Label, Integer, Unit>>> e : iter(r
           .composition().l))
-        l = append(pair(Either3.<Label, Integer, Unit> y(i++), e), l);
+        l = append(pair(Either3.y(i++), e), l);
       return l;
     }
     case LABEL:
-      return fromArray(pair(Either3.<Label, Integer, Unit> z(unit()),
-          r.label().r));
+      return fromArray(pair(Either3.z(unit()), r.label().r));
     case PRODUCT: {
       List<Pair<Either3<Label, Integer, Unit>, Either<Relation, List<Either3<Label, Integer, Unit>>>>> l =
           nil();
       for (Pair<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(r
           .product().m.entrySet()))
-        l = append(pair(Either3.<Label, Integer, Unit> x(e.x), e.y), l);
+        l = append(pair(Either3.x(e.x), e.y), l);
       return l;
     }
     case PROJECTION:
@@ -504,7 +496,7 @@ public class RelationUtils {
       int i = 0;
       for (Either<Relation, List<Either3<Label, Integer, Unit>>> e : iter(r
           .union().l))
-        l = append(pair(Either3.<Label, Integer, Unit> y(i++), e), l);
+        l = append(pair(Either3.y(i++), e), l);
       return l;
     default:
       throw boom();
@@ -713,8 +705,7 @@ public class RelationUtils {
               if (!l.isEmpty() && l.cons().x.y() >= i)
                 return append(
                     path,
-                    cons(Either3.<Label, Integer, Unit> y(l.cons().x.y() + 1),
-                        l.cons().tail));
+                    cons(Either3.y(l.cons().x.y() + 1), l.cons().tail));
             }
             return p;
           }
@@ -730,8 +721,7 @@ public class RelationUtils {
               List<Either3<Label, Integer, Unit>> p) {
             if (isPrefix(path, p)) {
               List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
-              return append(path,
-                  cons(Either3.<Label, Integer, Unit> y((i + 1) % 2), l));
+              return append(path, cons(Either3.y((i + 1) % 2), l));
             }
             return p;
           }
@@ -826,7 +816,7 @@ public class RelationUtils {
               path,
               x(Relation.composition(new Composition(append(x(t),
                   r.composition().l), d, c2)))), path, c,
-          Either.<Code, Code> y(c2));
+          Either.y(c2));
     case ABSTRACTION:
     case LABEL:
     case PRODUCT:
@@ -856,7 +846,7 @@ public class RelationUtils {
                   path,
                   x(Relation.composition(new Composition(cons(x(t),
                       r.composition().l), d2, c)))), 0, path), path, d,
-          Either.<Code, Code> x(d2));
+          Either.x(d2));
     case ABSTRACTION:
     case LABEL:
     case PRODUCT:
@@ -880,26 +870,24 @@ public class RelationUtils {
         switch (r.tag) {
         case ABSTRACTION:
           Abstraction a = r.abstraction();
-          return fromArray(pair(Either3.<Label, Integer, Unit> z(unit()),
-              f(a.r)));
+          return fromArray(pair(Either3.z(unit()), f(a.r)));
         case COMPOSITION: {
           List<Pair<Either3<Label, Integer, Unit>, Either<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>>>> l =
               nil();
           int i = 0;
           Composition c = r.composition();
           for (Either<Relation, List<Either3<Label, Integer, Unit>>> r : iter(c.l))
-            l = cons(pair(Either3.<Label, Integer, Unit> y(i++), f(r)), l);
+            l = cons(pair(Either3.y(i++), f(r)), l);
           return l;
         }
         case LABEL:
-          return fromArray(pair(Either3.<Label, Integer, Unit> z(unit()),
-              f(r.label().r)));
+          return fromArray(pair(Either3.z(unit()), f(r.label().r)));
         case PRODUCT: {
           List<Pair<Either3<Label, Integer, Unit>, Either<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>>>> l =
               nil();
           for (Pair<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> e : iter(r
               .product().m.entrySet()))
-            l = cons(pair(Either3.<Label, Integer, Unit> x(e.x), f(e.y)), l);
+            l = cons(pair(Either3.x(e.x), f(e.y)), l);
           return l;
         }
         case PROJECTION:
@@ -910,7 +898,7 @@ public class RelationUtils {
           int i = 0;
           for (Either<Relation, List<Either3<Label, Integer, Unit>>> r_ : iter(r
               .union().l))
-            l = cons(pair(Either3.<Label, Integer, Unit> y(i++), f(r_)), l);
+            l = cons(pair(Either3.y(i++), f(r_)), l);
           return l;
         default:
           throw boom();
@@ -922,13 +910,9 @@ public class RelationUtils {
           f(Either<Relation, List<Either3<Label, Integer, Unit>>> rp) {
         switch (rp.tag) {
         case X:
-          return Either
-              .<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>> x(linkTree(rp
-                  .x()));
+          return Either.x(linkTree(rp.x()));
         case Y:
-          return Either
-              .<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>> y(rp
-                  .y());
+          return Either.y(rp.y());
         default:
           throw boom();
         }
@@ -1025,11 +1009,9 @@ public class RelationUtils {
       f(Either<LinkTree<Either3<Label, Integer, Unit>, RVertex>, List<Either3<Label, Integer, Unit>>> e) {
     switch (e.tag) {
     case X:
-      return Either
-          .<Relation, List<Either3<Label, Integer, Unit>>> x(linkTreeToRelation(e
-              .x()));
+      return Either.x(linkTreeToRelation(e.x()));
     case Y:
-      return Either.<Relation, List<Either3<Label, Integer, Unit>>> y(e.y());
+      return Either.y(e.y());
     default:
       throw boom();
     }
@@ -1037,8 +1019,7 @@ public class RelationUtils {
 
   public static Relation defaultValue(Code i, Code o) {
     if (equal(i, unit)) {
-      Optional<Relation> od =
-          defaultValue(new CanonicalCode(o, ListUtils.<Label> nil()).code);
+      Optional<Relation> od = defaultValue(new CanonicalCode(o, nil()).code);
       return od.isNothing() ? dummy(i, o) : od.some().x;
     }
     return dummy(i, o);
