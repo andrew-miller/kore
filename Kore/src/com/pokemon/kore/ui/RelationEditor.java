@@ -67,8 +67,9 @@ public class RelationEditor {
                 linkTree(er.x())))) : er);
   }
 
-  private static Pair<View, F<Unit, Bundle>> make(Context context,
-      Relation relation, List<Code> codes, CodeLabelAliasMap codeLabelAliases,
+  private static Pair<View, Pair<F<Unit, Bundle>, F<Unit, Relation>>> make(
+      Context context, Relation relation, List<Code> codes,
+      CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalCode, String> codeAliases,
       Bijection<CanonicalRelation, String> relationAliases,
       List<Relation> relations, RelationViewColors relationViewColors,
@@ -197,13 +198,18 @@ public class RelationEditor {
       return b;
     };
 
+    F<Unit, Relation> getRelation = $ -> {
+      return relation;
+    };
+
     s.initNodeEditor.f(unit());
     setPath.f(path);
-    return pair(v, getState);
+    return pair(v, pair(getState, getRelation));
   }
 
-  public static Pair<View, F<Unit, Bundle>> make(Context context,
-      Relation relation, List<Code> codes, CodeLabelAliasMap codeLabelAliases,
+  public static Pair<View, Pair<F<Unit, Bundle>, F<Unit, Relation>>> make(
+      Context context, Relation relation, List<Code> codes,
+      CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalCode, String> codeAliases,
       Bijection<CanonicalRelation, String> relationAliases,
       List<Relation> relations, RelationViewColors relationViewColors,
@@ -212,8 +218,8 @@ public class RelationEditor {
         relationAliases, relations, relationViewColors, nil(), done);
   }
 
-  public static Pair<View, F<Unit, Bundle>> make(Context context,
-      List<Code> codes, CodeLabelAliasMap codeLabelAliases,
+  public static Pair<View, Pair<F<Unit, Bundle>, F<Unit, Relation>>> make(
+      Context context, List<Code> codes, CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalCode, String> codeAliases,
       Bijection<CanonicalRelation, String> relationAliases,
       List<Relation> relations, RelationViewColors relationViewColors,

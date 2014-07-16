@@ -182,11 +182,11 @@ public class MainActivity extends FragmentActivity {
 
     if (relationEditorState != null) {
       F<Relation, Unit> doneListener = newRelationEditorDoneListener();
-      Pair<View, F<Unit, Bundle>> p =
+      Pair<View, Pair<F<Unit, Bundle>, F<Unit, Relation>>> p =
           RelationEditor.make(this, recentCodes, codeLabelAliasMap,
               codeAliases, relationAliases, recentRelations,
               relationViewColors, relationEditorState, doneListener);
-      relationEditor = some(pair(p.y, doneListener));
+      relationEditor = some(pair(p.y.x, doneListener));
       mainLayout.setVisibility(View.GONE);
       relationEditorContainer.addView(p.x);
       relationEditorContainer.setVisibility(View.VISIBLE);
@@ -335,11 +335,11 @@ public class MainActivity extends FragmentActivity {
     if (!(relationEditor.isNothing() & codeEditor.isNothing()))
       return;
     F<Relation, Unit> doneListener = newRelationEditorDoneListener();
-    Pair<View, F<Unit, Bundle>> p =
+    Pair<View, Pair<F<Unit, Bundle>, F<Unit, Relation>>> p =
         RelationEditor.make(this, r, recentCodes, codeLabelAliasMap,
             codeAliases, relationAliases, recentRelations, relationViewColors,
             doneListener);
-    relationEditor = some(pair(p.y, doneListener));
+    relationEditor = some(pair(p.y.x, doneListener));
     mainLayout.setVisibility(View.GONE);
     relationEditorContainer.addView(p.x);
     relationEditorContainer.setVisibility(View.VISIBLE);

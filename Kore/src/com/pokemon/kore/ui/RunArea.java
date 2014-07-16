@@ -6,6 +6,7 @@ import static com.pokemon.kore.ui.BundleUtils.deserializeBundle;
 import static com.pokemon.kore.ui.BundleUtils.serializeBundle;
 import static com.pokemon.kore.ui.RelationUtils.changeDomain;
 import static com.pokemon.kore.ui.RelationUtils.domain;
+import static com.pokemon.kore.ui.RelationUtils.emptyRelationViewListener;
 import static com.pokemon.kore.ui.RelationUtils.unit_unit;
 import static com.pokemon.kore.utils.Boom.boom;
 import static com.pokemon.kore.utils.CodeUtils.equal;
@@ -39,6 +40,7 @@ import com.pokemon.kore.utils.ListUtils;
 import com.pokemon.kore.utils.Optional;
 import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.Ref;
+import com.pokemon.kore.utils.SARef;
 import com.pokemon.kore.utils.Tree;
 import com.pokemon.kore.utils.Unit;
 
@@ -46,7 +48,9 @@ public class RunArea {
 
   private static
       Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>>
-      make(List<Tree<Unit, Optional<String>>> ts, Context context,
+      make(
+          Ref<Optional<Pair<FrameLayout, Pair<F<Relation, View>, Pair<View, Pair<F<Unit, Bundle>, F<Unit, Relation>>>>>>> current,
+          List<Tree<Unit, Optional<String>>> ts, Context context,
           List<Code> codes, CodeLabelAliasMap codeLabelAliases,
           Bijection<CanonicalCode, String> codeAliases,
           Bijection<CanonicalRelation, String> relationAliases,
@@ -65,7 +69,8 @@ public class RunArea {
             children.set(ListUtils.append(nothing(), children.get()));
           } else {
             Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> cRA =
-                make(or.some().x.tag == Tag.X ? nil() : or.some().x.y().y,
+                make(current,
+                    or.some().x.tag == Tag.X ? nil() : or.some().x.y().y,
                     context, codes, codeLabelAliases, codeAliases,
                     relationAliases, relations, relationViewColors);
             F<Relation, Unit> done =
@@ -77,7 +82,7 @@ public class RunArea {
                       .some().x)));
                   return unit();
                 };
-            Pair<View, F<Unit, Bundle>> rE;
+            Pair<View, Pair<F<Unit, Bundle>, F<Unit, Relation>>> rE;
             switch (or.some().x.tag) {
             case X:
               rE =
@@ -94,13 +99,45 @@ public class RunArea {
             default:
               throw boom();
             }
-            ll.addView(rE.x, 0);
+
+            FrameLayout fl = new FrameLayout(context);
+            fl.addView(rE.x);
+            rE.x.setVisibility(View.GONE);
+            SARef<F<Relation, View>> makeRV = new SARef<>();
+            makeRV.set(r -> {
+              SARef<View> rV = new SARef<>();
+              rV.set(Overlay.make(context, RelationView.make(context,
+                  relationViewColors, new DragBro(), r, nil(),
+                  emptyRelationViewListener, codeLabelAliases, relationAliases,
+                  relations), new Overlay.Listener() {
+                public boolean onLongClick() {
+                  return false;
+                }
+
+                public void onClick() {
+                  Optional<Pair<FrameLayout, Pair<F<Relation, View>, Pair<View, Pair<F<Unit, Bundle>, F<Unit, Relation>>>>>> c =
+                      current.get();
+                  if (!c.isNothing()) {
+                    c.some().x.x.removeViewAt(1);
+                    c.some().x.y.y.x.setVisibility(View.GONE);
+                    c.some().x.x.addView(c.some().x.y.x.f(c.some().x.y.y.y.y
+                        .f(unit())));
+                  }
+                  fl.getChildAt(1).setVisibility(View.GONE);
+                  rE.x.setVisibility(View.VISIBLE);
+                  current.set(some(pair(fl, pair(makeRV.get(), rE))));
+                }
+              }));
+              return rV.get();
+            });
+            fl.addView(makeRV.get().f(rE.y.y.f(unit())));
+            ll.addView(fl, 0);
             FrameLayout pad = new FrameLayout(context);
             pad.addView(cRA.x);
             pad.setPadding(10, 0, 0, 1);
             pad.setBackgroundColor(0xFF000000);
             ll.addView(pad, 1);
-            children.set(ListUtils.append(some(pair(rE.y, cRA.y.y)),
+            children.set(ListUtils.append(some(pair(rE.y.x, cRA.y.y)),
                 children.get()));
           }
           return unit();
@@ -135,7 +172,8 @@ public class RunArea {
       Bijection<CanonicalRelation, String> relationAliases,
       List<Relation> relations, RelationViewColors relationViewColors) {
     Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> p =
-        make((List<Tree<Unit, Optional<String>>>) b.getSerializable("s"),
+        make(new Ref<>(nothing()),
+            (List<Tree<Unit, Optional<String>>>) b.getSerializable("s"),
             context, codes, codeLabelAliases, codeAliases, relationAliases,
             relations, relationViewColors);
     return make(p, context, codeLabelAliases, relationAliases, relations,
@@ -148,8 +186,8 @@ public class RunArea {
       Bijection<CanonicalRelation, String> relationAliases,
       List<Relation> relations, RelationViewColors relationViewColors) {
     Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> p =
-        make(nil(), context, codes, codeLabelAliases, codeAliases,
-            relationAliases, relations, relationViewColors);
+        make(new Ref<>(nothing()), nil(), context, codes, codeLabelAliases,
+            codeAliases, relationAliases, relations, relationViewColors);
     return make(p, context, codeLabelAliases, relationAliases, relations,
         relationViewColors);
   }
