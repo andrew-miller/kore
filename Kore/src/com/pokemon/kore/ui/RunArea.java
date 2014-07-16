@@ -138,8 +138,8 @@ public class RunArea {
         make((List<Tree<Unit, Optional<String>>>) b.getSerializable("s"),
             context, codes, codeLabelAliases, codeAliases, relationAliases,
             relations, relationViewColors);
-    return make(p, context, codes, codeLabelAliases, codeAliases,
-        relationAliases, relations, relationViewColors);
+    return make(p, context, codeLabelAliases, relationAliases, relations,
+        relationViewColors);
   }
 
   public static Pair<Pair<View, F<Unit, Unit>>, F<Unit, Bundle>> make(
@@ -150,17 +150,15 @@ public class RunArea {
     Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> p =
         make(nil(), context, codes, codeLabelAliases, codeAliases,
             relationAliases, relations, relationViewColors);
-    return make(p, context, codes, codeLabelAliases, codeAliases,
-        relationAliases, relations, relationViewColors);
+    return make(p, context, codeLabelAliases, relationAliases, relations,
+        relationViewColors);
   }
 
   private static
       Pair<Pair<View, F<Unit, Unit>>, F<Unit, Bundle>>
       make(
           Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> p,
-          Context context, List<Code> codes,
-          CodeLabelAliasMap codeLabelAliases,
-          Bijection<CanonicalCode, String> codeAliases,
+          Context context, CodeLabelAliasMap codeLabelAliases,
           Bijection<CanonicalRelation, String> relationAliases,
           List<Relation> relations, RelationViewColors relationViewColors) {
     LinearLayout ll = new LinearLayout(context);
