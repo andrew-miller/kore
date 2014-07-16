@@ -41,11 +41,9 @@ public class CodeNodeEditor {
     void done();
   }
 
-  public static View make(Context context, Code code,
-      Code rootCode, Listener listener,
-      Bijection<CanonicalCode, String> codeAliases,
-      List<Code> codes, List<Label> path,
-      CodeLabelAliasMap codeLabelAliases) {
+  public static View make(Context context, Code code, Code rootCode,
+      Listener listener, Bijection<CanonicalCode, String> codeAliases,
+      List<Code> codes, List<Label> path, CodeLabelAliasMap codeLabelAliases) {
     notNull(context, code, rootCode, listener, codeAliases, codes, path,
         codeLabelAliases);
 

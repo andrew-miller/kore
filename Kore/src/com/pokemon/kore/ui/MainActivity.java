@@ -128,14 +128,12 @@ public class MainActivity extends FragmentActivity {
     findViewById(R.id.button_new_code).setOnClickListener(
         $ -> startCodeEditor(CodeUtils.unit));
 
-    findViewById(R.id.button_new_relation).setOnClickListener(
-        $ -> {
-          if (recentVisible)
-            startRelationEditor(RelationUtils.unit_unit);
-          else
-            addToRunArea.f(unit());
-        }
-    );
+    findViewById(R.id.button_new_relation).setOnClickListener($ -> {
+      if (recentVisible)
+        startRelationEditor(RelationUtils.unit_unit);
+      else
+        addToRunArea.f(unit());
+    });
 
     Bundle codeEditorState = null;
     Bundle relationEditorState = null;

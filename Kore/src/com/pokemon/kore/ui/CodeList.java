@@ -26,8 +26,8 @@ public class CodeList {
     public boolean changeAlias(Code code, List<Label> path, String alias);
   }
 
-  public static View make(Context context, Listener listener,
-      List<Code> codes, CodeLabelAliasMap codeLabelAliases,
+  public static View make(Context context, Listener listener, List<Code> codes,
+      CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalCode, String> codeAliases) {
     notNull(context, codes, listener, codeLabelAliases, codeAliases);
     View v = LayoutInflater.from(context).inflate(R.layout.code_list, null);
@@ -39,19 +39,17 @@ public class CodeList {
       Optional<String> codeName =
           codeAliases.xy.get(new CanonicalCode(code, nil()));
       String strCode =
-          codeName.isNothing() ? CodeUtils.renderCode(code,
-              nil(), codeLabelAliases, codeAliases, 1)
-              : codeName.some().x;
+          codeName.isNothing() ? CodeUtils.renderCode(code, nil(),
+              codeLabelAliases, codeAliases, 1) : codeName.some().x;
       b.setText(strCode);
       b.setOnClickListener($ -> listener.select(code));
       fl.addView(b);
 
       b.setOnLongClickListener($v -> {
-        UIUtils.replaceWithTextEntry(fl, $v, context, strCode,
-            s -> {
-              listener.changeAlias(code, nil(), s);
-              return null;
-            });
+        UIUtils.replaceWithTextEntry(fl, $v, context, strCode, s -> {
+          listener.changeAlias(code, nil(), s);
+          return null;
+        });
         return true;
       });
 

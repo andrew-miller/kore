@@ -62,12 +62,9 @@ import com.pokemon.kore.utils.Unit;
 import com.pokemon.kore.utils.UnitComparer;
 
 public class RelationUtils {
-  public static final Relation unit_unit =
-      Relation
-          .abstraction(new Abstraction(
-              emptyPattern,
-              Either.x(Relation.product(new Product(Map.empty(),
-                  unit))), unit, unit));
+  public static final Relation unit_unit = Relation
+      .abstraction(new Abstraction(emptyPattern, Either.x(Relation
+          .product(new Product(Map.empty(), unit))), unit, unit));
 
   /**
    * @param argCode
@@ -84,8 +81,8 @@ public class RelationUtils {
     switch (r.tag) {
     case ABSTRACTION:
       return "("
-          + renderPattern(r.abstraction().pattern, r.abstraction().i,
-              nil(), codeLabelAliases)
+          + renderPattern(r.abstraction().pattern, r.abstraction().i, nil(),
+              codeLabelAliases)
           + " -> "
           + renderRelation(some(r.abstraction().i), r.abstraction().r,
               codeLabelAliases) + ")";
@@ -104,8 +101,8 @@ public class RelationUtils {
     }
     case LABEL: {
       Optional<String> alias =
-          codeLabelAliases.getAliases(new CanonicalCode(r.label().o,
-              nil())).xy.get(r.label().label);
+          codeLabelAliases.getAliases(new CanonicalCode(r.label().o, nil())).xy
+              .get(r.label().label);
       return "'" + (alias.isNothing() ? r.label().label : alias.some().x) + " "
           + renderRelation(argCode, r.label().r, codeLabelAliases);
     }
@@ -258,17 +255,17 @@ public class RelationUtils {
       if (e.tag != Tag.Y)
         throw new RuntimeException("invalid path");
       Composition c = r.composition();
-      return Either.x(Relation
-          .composition(new Relation.Composition(
-              replace(r.composition().l, e.y(),
-                  replaceRelationOrPathAt(nth(c.l, e.y()).some().x, p2, er2)),
-              c.i, c.o)));
+      return Either
+          .x(Relation.composition(new Relation.Composition(replace(
+              r.composition().l, e.y(),
+              replaceRelationOrPathAt(nth(c.l, e.y()).some().x, p2, er2)), c.i,
+              c.o)));
     case PRODUCT:
       if (e.tag != Tag.X)
         throw new RuntimeException("invalid path");
       Product prod = r.product();
-      return Either.x(Relation
-          .product(new Relation.Product(prod.m.put(e.x(),
+      return Either
+          .x(Relation.product(new Relation.Product(prod.m.put(e.x(),
               replaceRelationOrPathAt(prod.m.get(e.x()).some().x, p2, er2)),
               prod.o)));
     case PROJECTION:
@@ -282,8 +279,8 @@ public class RelationUtils {
       if (e.tag != Tag.Y)
         throw new RuntimeException("invalid path");
       Union u = r.union();
-      return Either.x(Relation
-          .union(new Relation.Union(replace(u.l, e.y(),
+      return Either
+          .x(Relation.union(new Relation.Union(replace(u.l, e.y(),
               replaceRelationOrPathAt(nth(u.l, e.y()).some().x, p2, er2)), u.i,
               u.o)));
     default:
@@ -329,19 +326,6 @@ public class RelationUtils {
     }
   }
 
-  public static boolean inAbstraction(Relation relation,
-      List<Either3<Label, Integer, Unit>> path) {
-    if (path.isEmpty())
-      return false;
-    if (relation.tag == Relation.Tag.ABSTRACTION)
-      return true;
-    Either<Relation, List<Either3<Label, Integer, Unit>>> zz =
-        subRelationOrPath(relation, path.cons().x).some().x;
-    if (zz.tag == zz.tag.Y)
-      return false;
-    return inAbstraction(zz.x(), path.cons().tail);
-  }
-
   public static Optional<Abstraction> enclosingAbstraction(
       List<Either3<Label, Integer, Unit>> path, Relation relation) {
     return enclosingAbstraction(path, relation, nothing());
@@ -382,9 +366,9 @@ public class RelationUtils {
         nth(c.l, length(c.l) - 1).some().x;
     Code last = codomain(resolve(root, elast));
     return mapPaths(
-        replaceRelationOrPathAt(root, path,
-            Either.x(Relation.composition(new Composition(equal(last, c.o) ? p.y
-                : append(Either.x(defaultValue(last, c.o)), p.y), c.i, c.o)))),
+        replaceRelationOrPathAt(root, path, Either.x(Relation
+            .composition(new Composition(equal(last, c.o) ? p.y : append(
+                Either.x(defaultValue(last, c.o)), p.y), c.i, c.o)))),
         p2 -> {
           if (isPrefix(path, p2)) {
             List<Either3<Label, Integer, Unit>> l = drop(p2, length(path));
@@ -393,14 +377,12 @@ public class RelationUtils {
               for (Boolean b_ : iter(ListUtils.take(p.x, l.cons().x.y() + 1)))
                 if (b_)
                   o++;
-              return append(
-                  path,
+              return append(path,
                   cons(Either3.y(l.cons().x.y() + o), l.cons().tail));
             }
           }
           return p2;
-        }
-    );
+        });
   }
 
   private static
@@ -556,8 +538,8 @@ public class RelationUtils {
     switch (r.tag) {
     case ABSTRACTION:
       Abstraction a = r.abstraction();
-      return f.f(Either.x(Relation.abstraction(new Abstraction(a.pattern,
-          map_(a.r, f), a.i, a.o))));
+      return f.f(Either.x(Relation.abstraction(new Abstraction(a.pattern, map_(
+          a.r, f), a.i, a.o))));
     case COMPOSITION: {
       Composition c = r.composition();
       List<Either<Relation, List<Either3<Label, Integer, Unit>>>> l = nil();
@@ -567,7 +549,8 @@ public class RelationUtils {
     }
     case LABEL: {
       Label_ l = r.label();
-      return f.f(Either.x(Relation.label(new Label_(l.label, map_(l.r, f), l.o))));
+      return f.f(Either.x(Relation
+          .label(new Label_(l.label, map_(l.r, f), l.o))));
     }
     case PRODUCT: {
       Product p = r.product();
@@ -645,23 +628,23 @@ public class RelationUtils {
       Relation t = defaultValue(d, d2);
       if (er2.tag == er2.tag.X && er2.x().tag == Relation.Tag.COMPOSITION)
         er2 =
-            Either.x(Relation.composition(new Composition(
-                cons(Either.x(t), er2.x().composition().l), d, c2)));
+            Either.x(Relation.composition(new Composition(cons(Either.x(t), er2
+                .x().composition().l), d, c2)));
       else
         er2 =
-            Either.x(Relation.composition(
-                new Composition(fromArray(Either.x(t), er2), d, c2)));
+            Either.x(Relation.composition(new Composition(fromArray(
+                Either.x(t), er2), d, c2)));
     }
     if (!equal(c, c2)) {
       Relation t = defaultValue(c2, c);
       if (er2.tag == er2.tag.X && er2.x().tag == Relation.Tag.COMPOSITION)
         er2 =
-            Either.x(Relation.composition(new Composition(
-                append(Either.x(t), er2.x().composition().l), d, c)));
+            Either.x(Relation.composition(new Composition(append(Either.x(t),
+                er2.x().composition().l), d, c)));
       else
         er2 =
-            Either.x(Relation.composition(
-                new Composition(fromArray(er2, Either.x(t)), d, c)));
+            Either.x(Relation.composition(new Composition(fromArray(er2,
+                Either.x(t)), d, c)));
     }
     Union union;
     if (er.tag == er.tag.X && er.x().tag == Relation.Tag.UNION) {
@@ -690,29 +673,28 @@ public class RelationUtils {
 
   private static Relation bumpIndexes(Relation r, Integer i,
       List<Either3<Label, Integer, Unit>> path) {
-    return mapPaths(r, p -> {
+    return mapPaths(
+        r,
+        p -> {
           if (isPrefix(path, p)) {
             List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
             if (!l.isEmpty() && l.cons().x.y() >= i)
-              return append(
-                  path,
+              return append(path,
                   cons(Either3.y(l.cons().x.y() + 1), l.cons().tail));
           }
           return p;
-        }
-    );
+        });
   }
 
   private static Relation insertIndexes(Relation r, Integer i,
       List<Either3<Label, Integer, Unit>> path) {
     return mapPaths(r, p -> {
-          if (isPrefix(path, p)) {
-            List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
-            return append(path, cons(Either3.y((i + 1) % 2), l));
-          }
-          return p;
-        }
-    );
+      if (isPrefix(path, p)) {
+        List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
+        return append(path, cons(Either3.y((i + 1) % 2), l));
+      }
+      return p;
+    });
   }
 
   /**
@@ -722,8 +704,8 @@ public class RelationUtils {
   public static Relation emptyRelation(Code d, Code c, Relation.Tag t) {
     switch (t) {
     case ABSTRACTION:
-      return Relation.abstraction(new Abstraction(
-          emptyPattern, Either.x(defaultValue(unit, c)), d, c));
+      return Relation.abstraction(new Abstraction(emptyPattern, Either
+          .x(defaultValue(unit, c)), d, c));
     case COMPOSITION:
       return Relation.composition(new Composition(nil(), d, c));
     case PRODUCT:
@@ -732,8 +714,7 @@ public class RelationUtils {
       Map<Label, Either<Relation, List<Either3<Label, Integer, Unit>>>> m =
           Map.empty();
       for (Pair<Label, ?> e : iter(c.labels.entrySet()))
-        m = m.put(e.x,
-            Either.x(defaultValue(unit, reroot(c, fromArray(e.x)))));
+        m = m.put(e.x, Either.x(defaultValue(unit, reroot(c, fromArray(e.x)))));
       return Relation.product(new Product(m, c));
     case LABEL:
       if (!equal(d, unit))
@@ -754,8 +735,7 @@ public class RelationUtils {
   }
 
   private static Relation adaptReferences(Relation relation,
-      List<Either3<Label, Integer, Unit>> path, Code o,
-      Either<Code, Code> dc) {
+      List<Either3<Label, Integer, Unit>> path, Code o, Either<Code, Code> dc) {
     F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Either<Relation, List<Either3<Label, Integer, Unit>>>> f =
         er -> {
           switch (er.tag) {
@@ -772,8 +752,8 @@ public class RelationUtils {
               return Either.x(Relation.composition(new Composition(fromArray(
                   Either.x(defaultValue(o, dc.x())), er), o, c)));
             case Y:
-              return Either.x(Relation.composition(new Composition(fromArray(er,
-                  Either.x(defaultValue(dc.y(), o))), d, o)));
+              return Either.x(Relation.composition(new Composition(fromArray(
+                  er, Either.x(defaultValue(dc.y(), o))), d, o)));
             default:
               throw boom();
             }
@@ -793,19 +773,18 @@ public class RelationUtils {
     switch (r.tag) {
     case COMPOSITION:
       return adaptReferences(
-          replaceRelationOrPathAt(
-              relation,
-              path,
-              Either.x(Relation.composition(new Composition(append(Either.x(t),
-                  r.composition().l), d, c2)))), path, c,
-          Either.y(c2));
+          replaceRelationOrPathAt(relation, path, Either.x(Relation
+              .composition(new Composition(append(Either.x(t),
+                  r.composition().l), d, c2)))), path, c, Either.y(c2));
     case ABSTRACTION:
     case LABEL:
     case PRODUCT:
     case PROJECTION:
     case UNION:
       return insertIndexes(
-          replaceRelationOrPathAt(relation, path,
+          replaceRelationOrPathAt(
+              relation,
+              path,
               Either.x(Relation.composition(new Composition(fromArray(
                   Either.x(r), Either.x(t)), d, c2)))), 1, path);
     default:
@@ -826,17 +805,18 @@ public class RelationUtils {
               replaceRelationOrPathAt(
                   relation,
                   path,
-                  Either.x(Relation.composition(
-                      new Composition(cons(Either.x(t),r.composition().l),
-                          d2, c)))), 0, path), path, d,
-          Either.x(d2));
+                  Either.x(Relation.composition(new Composition(cons(
+                      Either.x(t), r.composition().l), d2, c)))), 0, path),
+          path, d, Either.x(d2));
     case ABSTRACTION:
     case LABEL:
     case PRODUCT:
     case PROJECTION:
     case UNION:
       return insertIndexes(
-          replaceRelationOrPathAt(relation, path,
+          replaceRelationOrPathAt(
+              relation,
+              path,
               Either.x(Relation.composition(new Composition(fromArray(
                   Either.x(t), Either.x(r)), d2, c)))), 0, path);
     default:
@@ -1035,8 +1015,7 @@ public class RelationUtils {
           Optional<Relation> od = defaultValue(e.y.x());
           if (od.isNothing())
             return nothing();
-          return some(Relation.label(
-              new Label_(e.x, Either.x(od.some().x), c)));
+          return some(Relation.label(new Label_(e.x, Either.x(od.some().x), c)));
         case Y:
           return nothing();
         }

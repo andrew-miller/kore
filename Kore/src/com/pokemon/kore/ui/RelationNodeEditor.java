@@ -95,8 +95,8 @@ public class RelationNodeEditor {
       PopupMenu pm = new PopupMenu(context, $v);
       Menu m = pm.getMenu();
       for (Code c : iter(codes))
-        UIUtils.addCodeToMenu(m, c, nil(),
-            codeLabelAliases, codeAliases, p -> {
+        UIUtils.addCodeToMenu(m, c, nil(), codeLabelAliases, codeAliases,
+            p -> {
               listener.changeDomain(reroot(c, p));
               return unit();
             });
@@ -110,12 +110,11 @@ public class RelationNodeEditor {
       PopupMenu pm = new PopupMenu(context, $v);
       Menu m = pm.getMenu();
       for (Code c : iter(codes))
-        UIUtils.addCodeToMenu(m, c, nil(),
-            codeLabelAliases, codeAliases, p -> {
+        UIUtils.addCodeToMenu(m, c, nil(), codeLabelAliases, codeAliases,
+            p -> {
               listener.changeCodomain(reroot(c, p));
               return unit();
-            }
-        );
+            });
       pm.show();
     });
 

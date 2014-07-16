@@ -27,8 +27,7 @@ public final class Code implements Serializable {
     return "Code [tag=" + tag + ", labels=" + labels + "]";
   }
 
-  public static Code
-      newUnion(Map<Label, Either<Code, List<Label>>> labels) {
+  public static Code newUnion(Map<Label, Either<Code, List<Label>>> labels) {
     return new Code(Tag.UNION, labels);
   }
 

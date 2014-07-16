@@ -30,8 +30,8 @@ public class Label_View {
 
     View v;
     Optional<String> ola =
-        codeLabelAliases.getAliases(new CanonicalCode(r.label().o,
-            nil())).xy.get(r.label().label);
+        codeLabelAliases.getAliases(new CanonicalCode(r.label().o, nil())).xy
+            .get(r.label().label);
     if (ola.isNothing())
       v = LabelView.make(context, r.label().label, aliasTextColor);
     else {

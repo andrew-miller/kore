@@ -28,9 +28,8 @@ public class PatternMenu {
     void select(Pattern p);
   }
 
-  public static void make(View v, Context context,
-      Code rootCode, List<Label> path,
-      CodeLabelAliasMap codeLabelAliases, Pattern current,
+  public static void make(View v, Context context, Code rootCode,
+      List<Label> path, CodeLabelAliasMap codeLabelAliases, Pattern current,
       Listener listener) {
     CanonicalCode cc = new CanonicalCode(rootCode, path);
     Code code = codeAt(path, rootCode).some().x;
@@ -56,22 +55,23 @@ public class PatternMenu {
       for (Pair<Label, ?> e : iter(code.labels.entrySet())) {
         Optional<String> a = codeLabelAliases.getAliases(cc).xy.get(e.x);
         m.add((a.isNothing() ? e.x : a.some().x) + " *")
-            .setOnMenuItemClickListener($ -> {
-              listener.select(new Pattern(Map.<Label, Pattern> empty().put(
-                  e.x,
-                  !current.fields.entrySet().isEmpty()
-                      && equal(
-                          reroot(rootCode,
-                              directPath(append(e.x, path), rootCode)),
-                          reroot(
-                              rootCode,
-                              directPath(
-                                  append(
-                                      current.fields.entrySet().cons().x.x,
-                                      path), rootCode))) ? current.fields
-                      .entrySet().cons().x.y : emptyPattern)));
-              return true;
-            });
+            .setOnMenuItemClickListener(
+                $ -> {
+                  listener.select(new Pattern(Map.<Label, Pattern> empty().put(
+                      e.x,
+                      !current.fields.entrySet().isEmpty()
+                          && equal(
+                              reroot(rootCode,
+                                  directPath(append(e.x, path), rootCode)),
+                              reroot(
+                                  rootCode,
+                                  directPath(
+                                      append(
+                                          current.fields.entrySet().cons().x.x,
+                                          path), rootCode))) ? current.fields
+                          .entrySet().cons().x.y : emptyPattern)));
+                  return true;
+                });
       }
       break;
     default:

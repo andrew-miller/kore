@@ -114,8 +114,8 @@ public final class CodeUtils {
     }
     Ref<Map<List<Label>, Map<Label, Label>>> i = new Ref<>(Map.empty());
     return pair(
-        mapPaths(dissassociate_(p.x, p.y, c, vs, i, nil()),
-            i.get(), nil()), i.get());
+        mapPaths(dissassociate_(p.x, p.y, c, vs, i, nil()), i.get(), nil()),
+        i.get());
   }
 
   private static Code mapPaths(Code c, Map<List<Label>, Map<Label, Label>> i,
@@ -162,8 +162,8 @@ public final class CodeUtils {
           m.put(
               l,
               e.y.tag == e.y.tag.X ? Either.x(dissassociate_(g,
-                      g.getEdgeTarget(pair(v, e.x)), e.y.x(), vs, i,
-                      append(e.x, path))) : e.y);
+                  g.getEdgeTarget(pair(v, e.x)), e.y.x(), vs, i,
+                  append(e.x, path))) : e.y);
     }
     i.set(i.get().put(path, lm));
     return new Code(c.tag, m);
@@ -403,7 +403,7 @@ public final class CodeUtils {
             l = cons(pair(e.x, Either.x(linkTree(e.y.x()))), l);
             break;
           case Y:
-            l = cons(pair(e.x,Either.y(e.y.y())), l);
+            l = cons(pair(e.x, Either.y(e.y.y())), l);
             break;
           default:
             throw boom();
@@ -423,9 +423,10 @@ public final class CodeUtils {
     for (Pair<Label, Either<LinkTree<Label, Tag>, List<Label>>> e : iter(lt
         .edges()))
       m =
-          m.put(e.x,
-              e.y.tag == e.y.tag.Y ? Either.y(e.y.y())
-                  : Either.x(linkTreeToCode(e.y.x())));
+          m.put(
+              e.x,
+              e.y.tag == e.y.tag.Y ? Either.y(e.y.y()) : Either
+                  .x(linkTreeToCode(e.y.x())));
     switch (lt.vertex()) {
     case PRODUCT:
       return Code.newProduct(m);

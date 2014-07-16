@@ -56,8 +56,8 @@ import com.pokemon.kore.utils.Unit;
 
 public class UIUtils {
 
-  public static void replaceWithTextEntry(ViewGroup vg, View v,
-      Context a, String hint, F<String, Void> onDone) {
+  public static void replaceWithTextEntry(ViewGroup vg, View v, Context a,
+      String hint, F<String, Void> onDone) {
     vg.removeView(v);
     EditText t = new EditText(a);
     t.requestFocus();
@@ -74,8 +74,7 @@ public class UIUtils {
     });
     t.setOnFocusChangeListener(($, hasFocus) -> {
       if (!hasFocus) {
-        ((InputMethodManager) a
-            .getSystemService(Context.INPUT_METHOD_SERVICE))
+        ((InputMethodManager) a.getSystemService(Context.INPUT_METHOD_SERVICE))
             .hideSoftInputFromWindow(t.getWindowToken(), 0);
         vg.removeAllViews();
         vg.addView(v);
@@ -87,21 +86,17 @@ public class UIUtils {
         .showSoftInput(t, 0);
   }
 
-  public static void
-      addCodeToMenu(Menu m, Code root, List<Label> path,
-          CodeLabelAliasMap codeLabelAliases,
-          Bijection<CanonicalCode, String> codeAliases,
-          F<List<Label>, Unit> f) {
-    addCodeToMenu(m, root, path, Either.x(root), "", "",
-        codeLabelAliases, codeAliases, f);
+  public static void addCodeToMenu(Menu m, Code root, List<Label> path,
+      CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalCode, String> codeAliases, F<List<Label>, Unit> f) {
+    addCodeToMenu(m, root, path, Either.x(root), "", "", codeLabelAliases,
+        codeAliases, f);
   }
 
-  private static void
-      addCodeToMenu(Menu m, Code root, List<Label> path,
-          Either<Code, List<Label>> cp, String ls, String space,
-          CodeLabelAliasMap codeLabelAliases,
-          Bijection<CanonicalCode, String> codeAliases,
-          F<List<Label>, Unit> f) {
+  private static void addCodeToMenu(Menu m, Code root, List<Label> path,
+      Either<Code, List<Label>> cp, String ls, String space,
+      CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalCode, String> codeAliases, F<List<Label>, Unit> f) {
     MenuItem i =
         m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
             + renderCode(root, path, codeLabelAliases, codeAliases, 1));
@@ -122,8 +117,7 @@ public class UIUtils {
   }
 
   public static void addEmptyRelationsToMenu(Context context,
-      RelationViewColors rvc, ViewGroup vg,
-      F<Relation, Unit> f, Relation root,
+      RelationViewColors rvc, ViewGroup vg, F<Relation, Unit> f, Relation root,
       List<Either3<Label, Integer, Unit>> path,
       CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalRelation, String> relationAliases,
@@ -134,21 +128,22 @@ public class UIUtils {
       vg.addView(s);
       return unit();
     };
-    F<Relation, Unit> add = r -> {
-      List<Either3<Label, Integer, Unit>> n = nil();
-      vg.addView(Overlay.make(context, RelationView.make(context, rvc,
-          new DragBro(), r, n, emptyRelationViewListener, codeLabelAliases,
-          relationAliases, relations), new Overlay.Listener() {
-        public boolean onLongClick() {
-          return false;
-        }
+    F<Relation, Unit> add =
+        r -> {
+          List<Either3<Label, Integer, Unit>> n = nil();
+          vg.addView(Overlay.make(context, RelationView.make(context, rvc,
+              new DragBro(), r, n, emptyRelationViewListener, codeLabelAliases,
+              relationAliases, relations), new Overlay.Listener() {
+            public boolean onLongClick() {
+              return false;
+            }
 
-        public void onClick() {
-          f.f(r);
-        }
-      }));
-      return unit();
-    };
+            public void onClick() {
+              f.f(r);
+            }
+          }));
+          return unit();
+        };
     Relation r = resolve(root, relationOrPathAt(path, root));
     Code d = domain(r);
     Code c = codomain(r);
@@ -175,11 +170,10 @@ public class UIUtils {
           RelationUtils.emptyRelation(oea.some().x.i, c,
               Relation.Tag.PROJECTION);
       Relation a =
-          Relation.abstraction(new Abstraction(emptyPattern, Either.x(p),
-              oea.some().x.i, c));
+          Relation.abstraction(new Abstraction(emptyPattern, Either.x(p), oea
+              .some().x.i, c));
       vg.addView(Overlay.make(context, RelationView.make(context, rvc,
-          new DragBro(), a,
-          fromArray(Either3.z(unit())),
+          new DragBro(), a, fromArray(Either3.z(unit())),
           emptyRelationViewListener, codeLabelAliases, relationAliases,
           relations), new Overlay.Listener() {
         public boolean onLongClick() {
@@ -211,21 +205,19 @@ public class UIUtils {
   public static void addProjectionsToMenu(Pair<PopupWindow, ViewGroup> p,
       Context context, View v, CodeLabelAliasMap codeLabelAliases, Code c,
       Code out, F<List<Label>, Unit> select) {
-    addProjectionsToMenu(p, context, v, codeLabelAliases,
-        nil(), c, out, select);
+    addProjectionsToMenu(p, context, v, codeLabelAliases, nil(), c, out, select);
   }
 
-  private static void addProjectionsToMenu(
-      Pair<PopupWindow, ViewGroup> p, Context context,
-      View v, CodeLabelAliasMap codeLabelAliases,
-      List<Label> proj, Code c, Code out,
-      F<List<Label>, Unit> select) {
+  private static void addProjectionsToMenu(Pair<PopupWindow, ViewGroup> p,
+      Context context, View v, CodeLabelAliasMap codeLabelAliases,
+      List<Label> proj, Code c, Code out, F<List<Label>, Unit> select) {
     Code o = reroot(c, proj);
     Button b = new Button(context);
     int i = 0;
     p.y.addView(b, i++);
-    b.setText(renderRelation(some(c), Either
-        .x(Relation.projection(new Projection(proj, o))), codeLabelAliases));
+    b.setText(renderRelation(some(c),
+        Either.x(Relation.projection(new Projection(proj, o))),
+        codeLabelAliases));
     b.setOnClickListener($ -> {
       p.x.dismiss();
       select.f(proj);

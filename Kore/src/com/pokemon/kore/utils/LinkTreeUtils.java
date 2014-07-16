@@ -51,8 +51,7 @@ public class LinkTreeUtils {
   }
 
   /** prepend <tt>p</tt> to all paths */
-  public static <E, V> LinkTree<E, V> rebase(List<E> p,
-      LinkTree<E, V> lt) {
+  public static <E, V> LinkTree<E, V> rebase(List<E> p, LinkTree<E, V> lt) {
     return mapPaths(lt, p2 -> append(p, p2));
   }
 
@@ -170,9 +169,9 @@ public class LinkTreeUtils {
                   pair(
                       e.y,
                       spanningTreeEdges.contains(e) ? Either
-                          .x(buildLinkTreeFromSpanningTree(
-                              g, m, g.getEdgeTarget(e), spanningTreeEdges))
-                          : Either.y(m.get(g.getEdgeTarget(e)).some().x)), l);
+                          .x(buildLinkTreeFromSpanningTree(g, m,
+                              g.getEdgeTarget(e), spanningTreeEdges)) : Either
+                          .y(m.get(g.getEdgeTarget(e)).some().x)), l);
         return l;
       }
 

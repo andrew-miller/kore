@@ -26,18 +26,17 @@ public class AbstractionView {
       F<Either3<Label, Integer, Unit>, View> make, Integer color,
       Integer aliasTextColor, Relation relation,
       List<Either3<Label, Integer, Unit>> path,
-       CodeLabelAliasMap codeLabelAliases, Listener listener) {
+      CodeLabelAliasMap codeLabelAliases, Listener listener) {
     Relation r = relationAt(path, relation).some().x;
     LinearLayout ll = new LinearLayout(context);
     ll.setBackgroundColor(color);
     ll.addView(PatternView.make(context, aliasTextColor,
-        r.abstraction().pattern, r.abstraction().i, nil(),
-        codeLabelAliases, p -> {
+        r.abstraction().pattern, r.abstraction().i, nil(), codeLabelAliases,
+        p -> {
           listener.replace(Relation.abstraction(new Abstraction(p, r
               .abstraction().r, r.abstraction().i, r.abstraction().o)));
           return unit();
-        }
-    ));
+        }));
     ll.setClickable(true);
     ll.setOnClickListener($ -> listener.select(ll));
     ll.addView(make.f(Either3.z(unit())));

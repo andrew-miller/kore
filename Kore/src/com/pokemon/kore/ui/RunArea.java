@@ -50,8 +50,7 @@ public class RunArea {
           List<Code> codes, CodeLabelAliasMap codeLabelAliases,
           Bijection<CanonicalCode, String> codeAliases,
           Bijection<CanonicalRelation, String> relationAliases,
-          List<Relation> relations,
-          RelationViewColors relationViewColors) {
+          List<Relation> relations, RelationViewColors relationViewColors) {
     LinearLayout ll = new LinearLayout(context);
     ll.setOrientation(LinearLayout.VERTICAL);
     ll.setBackgroundColor(0xFFFFFFFF);
@@ -66,19 +65,18 @@ public class RunArea {
             children.set(ListUtils.append(nothing(), children.get()));
           } else {
             Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> cRA =
-                make(
-                    or.some().x.tag == Tag.X ? nil()
-                        : or.some().x.y().y, context, codes,
-                    codeLabelAliases, codeAliases, relationAliases,
-                    relations, relationViewColors);
-            F<Relation, Unit> done = r -> {
-              if (!equal(domain(r), unit))
-                return unit();
-              Optional<Value> v = eval(r);
-              cRA.y.x.f(v.isNothing() ? nothing()
-                  : some(toRelation(v.some().x)));
-              return unit();
-            };
+                make(or.some().x.tag == Tag.X ? nil() : or.some().x.y().y,
+                    context, codes, codeLabelAliases, codeAliases,
+                    relationAliases, relations, relationViewColors);
+            F<Relation, Unit> done =
+                r -> {
+                  if (!equal(domain(r), unit))
+                    return unit();
+                  Optional<Value> v = eval(r);
+                  cRA.y.x.f(v.isNothing() ? nothing() : some(toRelation(v
+                      .some().x)));
+                  return unit();
+                };
             Pair<View, F<Unit, Bundle>> rE;
             switch (or.some().x.tag) {
             case X:
@@ -115,33 +113,27 @@ public class RunArea {
       if (t.v.isNothing())
         add2.f(nothing());
       else
-        add2.f(some(Either
-            .y(pair(
-                deserializeBundle(t.v.some().x),
-                map(snd(), t.edges)))));
-    F<Unit, List<Tree<Unit, Optional<String>>>> getState = $ -> {
+        add2.f(some(Either.y(pair(deserializeBundle(t.v.some().x),
+            map(snd(), t.edges)))));
+    F<Unit, List<Tree<Unit, Optional<String>>>> getState =
+        $ -> {
           List<Tree<Unit, Optional<String>>> l = nil();
           for (Optional<Pair<F<Unit, Bundle>, F<Unit, List<Tree<Unit, Optional<String>>>>>> c : iter(children
               .get()))
             l =
-                ListUtils
-                    .append(
-                        c.isNothing() ? new Tree<>(nothing(), nil())
-                            : new Tree<>(
-                                some(serializeBundle(c.some().x.x.f(unit()))),
-                                map(t -> pair(unit(), t), c.some().x.y.f(unit()))), l);
+                ListUtils.append(c.isNothing() ? new Tree<>(nothing(), nil())
+                    : new Tree<>(some(serializeBundle(c.some().x.x.f(unit()))),
+                        map(t -> pair(unit(), t), c.some().x.y.f(unit()))), l);
           return l;
         };
     return pair((View) ll, pair(add, getState));
   }
 
   public static Pair<Pair<View, F<Unit, Unit>>, F<Unit, Bundle>> make(Bundle b,
-      Context context, List<Code> codes,
-      CodeLabelAliasMap codeLabelAliases,
+      Context context, List<Code> codes, CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalCode, String> codeAliases,
       Bijection<CanonicalRelation, String> relationAliases,
-      List<Relation> relations,
-      RelationViewColors relationViewColors) {
+      List<Relation> relations, RelationViewColors relationViewColors) {
     Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> p =
         make((List<Tree<Unit, Optional<String>>>) b.getSerializable("s"),
             context, codes, codeLabelAliases, codeAliases, relationAliases,
@@ -151,16 +143,13 @@ public class RunArea {
   }
 
   public static Pair<Pair<View, F<Unit, Unit>>, F<Unit, Bundle>> make(
-      Context context, List<Code> codes,
-      CodeLabelAliasMap codeLabelAliases,
+      Context context, List<Code> codes, CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalCode, String> codeAliases,
       Bijection<CanonicalRelation, String> relationAliases,
-      List<Relation> relations,
-      RelationViewColors relationViewColors) {
+      List<Relation> relations, RelationViewColors relationViewColors) {
     Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> p =
-        make(nil(), context, codes,
-            codeLabelAliases, codeAliases, relationAliases, relations,
-            relationViewColors);
+        make(nil(), context, codes, codeLabelAliases, codeAliases,
+            relationAliases, relations, relationViewColors);
     return make(p, context, codes, codeLabelAliases, codeAliases,
         relationAliases, relations, relationViewColors);
   }
@@ -173,8 +162,7 @@ public class RunArea {
           CodeLabelAliasMap codeLabelAliases,
           Bijection<CanonicalCode, String> codeAliases,
           Bijection<CanonicalRelation, String> relationAliases,
-          List<Relation> relations,
-          RelationViewColors relationViewColors) {
+          List<Relation> relations, RelationViewColors relationViewColors) {
     LinearLayout ll = new LinearLayout(context);
     ll.setOrientation(LinearLayout.VERTICAL);
     FrameLayout menuAnchor = new FrameLayout(context);
@@ -182,9 +170,9 @@ public class RunArea {
     ScrollView sv = new ScrollView(context);
     sv.addView(p.x);
     ll.addView(sv);
-    F<Unit, Unit> choose = $ -> {
-      RelationMenu
-          .make(
+    F<Unit, Unit> choose =
+        $ -> {
+          RelationMenu.make(
               context,
               unit_unit,
               nil(),
@@ -196,16 +184,13 @@ public class RunArea {
               false,
               er -> {
                 Relation r =
-                    equal(unit, domain(er.x())) ? er.x() : changeDomain(
-                        er.x(),
-                        nil(),
-                        unit);
+                    equal(unit, domain(er.x())) ? er.x() : changeDomain(er.x(),
+                        nil(), unit);
                 p.y.x.f(some(r));
                 return unit();
-              }
-          );
-      return unit();
-    };
+              });
+          return unit();
+        };
     F<Unit, Bundle> getState = $ -> {
       Bundle b = new Bundle();
       b.putSerializable("s", p.y.y.f(unit()));

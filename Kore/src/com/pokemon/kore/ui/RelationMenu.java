@@ -23,37 +23,30 @@ import com.pokemon.kore.utils.Unit;
 
 public class RelationMenu {
 
-  public static
-      Pair<PopupWindow, ViewGroup>
-      make(
-          Context context,
-          Relation relation,
-          List<Either3<Label, Integer, Unit>> path,
-          View v,
-          RelationViewColors relationViewColors,
-          CodeLabelAliasMap codeLabelAliases,
-          Bijection<CanonicalRelation, String> relationAliases,
-          List<Relation> relations,
-          boolean ref,
-          F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> select) {
+  public static Pair<PopupWindow, ViewGroup> make(Context context,
+      Relation relation, List<Either3<Label, Integer, Unit>> path, View v,
+      RelationViewColors relationViewColors,
+      CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalRelation, String> relationAliases,
+      List<Relation> relations, boolean ref,
+      F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> select) {
     Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
     p.x.showAsDropDown(v);
     if (ref) {
-      p.y.addView(RelationRefView.make(context,
-          nothing(), $ -> {
-            p.x.dismiss();
-            select.f(Either.y(nil()));
-            return unit();
-          }));
+      p.y.addView(RelationRefView.make(context, nothing(), $ -> {
+        p.x.dismiss();
+        select.f(Either.y(nil()));
+        return unit();
+      }));
       Space s = new Space(context);
       s.setMinimumHeight(1);
       p.y.addView(s);
     }
     UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y, r -> {
-          p.x.dismiss();
-          select.f(Either.x(r));
-          return unit();
-        }, relation, path, codeLabelAliases, relationAliases, relations);
+      p.x.dismiss();
+      select.f(Either.x(r));
+      return unit();
+    }, relation, path, codeLabelAliases, relationAliases, relations);
     Space s = new Space(context);
     s.setMinimumHeight(1);
     p.y.addView(s);

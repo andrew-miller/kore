@@ -56,10 +56,9 @@ public class RelationEditor {
     Relation r = resolve(relation, rp);
     Relation r2 = resolve(relation, er);
     return !equal(domain(r), domain(r2)) | !equal(codomain(r), codomain(r2)) ? adaptComposition(
-        replaceRelationOrPathAt(relation, path,
-            Either.x(Relation.composition(new Composition(
-                fromArray(er.tag == er.tag.X ? Either.x(linkTreeToRelation(rebase(
-                    append(Either3.y(0), path),
+        replaceRelationOrPathAt(relation, path, Either.x(Relation
+            .composition(new Composition(fromArray(er.tag == er.tag.X ? Either
+                .x(linkTreeToRelation(rebase(append(Either3.y(0), path),
                     linkTree(er.x())))) : er), domain(r), codomain(r))))), path)
         : replaceRelationOrPathAt(
             relation,
@@ -69,12 +68,10 @@ public class RelationEditor {
   }
 
   private static Pair<View, F<Unit, Bundle>> make(Context context,
-      Relation relation, List<Code> codes,
-      CodeLabelAliasMap codeLabelAliases,
+      Relation relation, List<Code> codes, CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalCode, String> codeAliases,
       Bijection<CanonicalRelation, String> relationAliases,
-      List<Relation> relations,
-      RelationViewColors relationViewColors,
+      List<Relation> relations, RelationViewColors relationViewColors,
       List<Either3<Label, Integer, Unit>> path, F<Relation, Unit> done) {
     notNull(context, relation, done, relationViewColors);
     View v =
@@ -185,12 +182,12 @@ public class RelationEditor {
     };
 
     s.selectPath = p -> {
-        notNull(p);
-        relationOrPathAt(p, s.relation);
-        s.path = p;
-        setPath.f(p);
-        s.initNodeEditor.f(unit());
-        return unit();
+      notNull(p);
+      relationOrPathAt(p, s.relation);
+      s.path = p;
+      setPath.f(p);
+      s.initNodeEditor.f(unit());
+      return unit();
     };
 
     F<Unit, Bundle> getState = $ -> {
@@ -206,8 +203,7 @@ public class RelationEditor {
   }
 
   public static Pair<View, F<Unit, Bundle>> make(Context context,
-      Relation relation, List<Code> codes,
-      CodeLabelAliasMap codeLabelAliases,
+      Relation relation, List<Code> codes, CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalCode, String> codeAliases,
       Bijection<CanonicalRelation, String> relationAliases,
       List<Relation> relations, RelationViewColors relationViewColors,

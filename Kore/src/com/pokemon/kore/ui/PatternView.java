@@ -24,27 +24,24 @@ import com.pokemon.kore.utils.Unit;
 
 public class PatternView {
   public static View make(Context context, Integer aliasTextColor,
-      Pattern rootPattern, Code rootCode,
-      List<Label> codePath, CodeLabelAliasMap codeLabelAliases,
-      F<Pattern, Unit> replace) {
-    return make(context, aliasTextColor, rootPattern, nil(),
-        rootCode, codePath, codeLabelAliases, replace);
+      Pattern rootPattern, Code rootCode, List<Label> codePath,
+      CodeLabelAliasMap codeLabelAliases, F<Pattern, Unit> replace) {
+    return make(context, aliasTextColor, rootPattern, nil(), rootCode,
+        codePath, codeLabelAliases, replace);
   }
 
   private static View make(Context context, Integer aliasTextColor,
-      Pattern rootPattern, List<Label> patternPath,
-      Code rootCode, List<Label> codePath,
-      CodeLabelAliasMap codeLabelAliases, F<Pattern, Unit> replace) {
+      Pattern rootPattern, List<Label> patternPath, Code rootCode,
+      List<Label> codePath, CodeLabelAliasMap codeLabelAliases,
+      F<Pattern, Unit> replace) {
     Pattern pattern = patternAt(rootPattern, patternPath).some().x;
-    F<View, Unit> f = v -> {
-      v.setOnClickListener($ ->
-          PatternMenu.make(v, context, rootCode, codePath, codeLabelAliases,
-              pattern, p ->
-                  replace.f(replacePatternAt(rootPattern, patternPath, p)
-                      .some().x)
-          ));
-      return unit();
-    };
+    F<View, Unit> f =
+        v -> {
+          v.setOnClickListener($ -> PatternMenu.make(v, context, rootCode,
+              codePath, codeLabelAliases, pattern, p -> replace
+                  .f(replacePatternAt(rootPattern, patternPath, p).some().x)));
+          return unit();
+        };
     LinearLayout ll = new LinearLayout(context);
     ll.setOrientation(LinearLayout.VERTICAL);
     Bijection<Label, String> las =

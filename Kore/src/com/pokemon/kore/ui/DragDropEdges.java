@@ -46,11 +46,9 @@ public class DragDropEdges {
     LEFT, TOP, RIGHT, BOTTOM
   }
 
-  public static View
-      make(Context context, DragBro dragBro, View v, Integer color,
-          Integer highlightedColor,
-          F<Pair<Side, Object>, Unit> dropped,
-          F<Object, Boolean> match) {
+  public static View make(Context context, DragBro dragBro, View v,
+      Integer color, Integer highlightedColor,
+      F<Pair<Side, Object>, Unit> dropped, F<Object, Boolean> match) {
     FrameLayout middle = new FrameLayout(context);
     middle.setPadding(0, 0, 0, 0);
     middle.setBackgroundColor(color);

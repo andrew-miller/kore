@@ -40,13 +40,11 @@ public class CodeField {
     public void changeLabelAlias(String alias);
   }
 
-  public static View make(Context context, Listener listener,
-      Label label, Either<Code, List<Label>> codeOrPath,
-      Code rootCode, boolean selected,
+  public static View make(Context context, Listener listener, Label label,
+      Either<Code, List<Label>> codeOrPath, Code rootCode, boolean selected,
       CodeLabelAliasMap codeLabelAliases,
-      Bijection<CanonicalCode, String> codeAliases,
-      List<Code> codes, List<Label> path,
-      Optional<String> labelAlias) {
+      Bijection<CanonicalCode, String> codeAliases, List<Code> codes,
+      List<Label> path, Optional<String> labelAlias) {
     notNull(context, listener, label, codeOrPath, rootCode, codeLabelAliases,
         codeAliases, codes, path, labelAlias);
     View v = LayoutInflater.from(context).inflate(R.layout.code_field, null);
@@ -63,8 +61,7 @@ public class CodeField {
           label.label, s -> {
             listener.changeLabelAlias(s);
             return null;
-          }
-      );
+          });
       return true;
     });
     Button codeButton = (Button) v.findViewById(R.id.button_code);
@@ -72,27 +69,35 @@ public class CodeField {
     codeButton.setOnLongClickListener($v -> {
       PopupMenu pm = new PopupMenu(context, $v);
       Menu m = pm.getMenu();
-      UIUtils.addCodeToMenu(m, rootCode, nil(),
-          codeLabelAliases, codeAliases, p -> {
+      UIUtils.addCodeToMenu(
+          m,
+          rootCode,
+          nil(),
+          codeLabelAliases,
+          codeAliases,
+          p -> {
             p = directPath(p, rootCode);
             if (validCode(replaceCodeAt(rootCode, append(label, path),
                 Either.y(p))))
               listener.replaceField(Either.y(p));
             return unit();
-          }
-      );
+          });
       m.add("---");
       for (Code c : iter(codes))
-        UIUtils.addCodeToMenu(m, c, nil(),
-            codeLabelAliases, codeAliases, p -> {
+        UIUtils.addCodeToMenu(
+            m,
+            c,
+            nil(),
+            codeLabelAliases,
+            codeAliases,
+            p -> {
               Either<Code, List<Label>> n =
-                  Either.x(linkTreeToCode(rebase(
-                      append(label, path), linkTree(reroot(c, p)))));
+                  Either.x(linkTreeToCode(rebase(append(label, path),
+                      linkTree(reroot(c, p)))));
               if (validCode(replaceCodeAt(rootCode, append(label, path), n)))
                 listener.replaceField(n);
               return unit();
-            }
-        );
+            });
       pm.show();
       return true;
     });

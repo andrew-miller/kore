@@ -44,19 +44,18 @@ public class RelationPath {
     View v = LayoutInflater.from(context).inflate(R.layout.path, null);
     ViewGroup vg = (ViewGroup) v.findViewById(R.id.layout_path);
     make(context, rc, listener, root, relations, codeLabelAliases,
-        relationAliases, nil(), path, Either.x(root), vg,
-        referenceColor, rvc);
+        relationAliases, nil(), path, Either.x(root), vg, referenceColor, rvc);
     return v;
   }
 
   private static void make(Context context, RelationColors rc,
-      Listener listener, Relation root,
-      List<Relation> relations, CodeLabelAliasMap codeLabelAliases,
+      Listener listener, Relation root, List<Relation> relations,
+      CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalRelation, String> relationAliases,
       List<Either3<Label, Integer, Unit>> before,
       List<Either3<Label, Integer, Unit>> after,
-       Either<Relation, List<Either3<Label, Integer, Unit>>> rp,
-      ViewGroup vg, int referenceColor, RelationViewColors rvc) {
+      Either<Relation, List<Either3<Label, Integer, Unit>>> rp, ViewGroup vg,
+      int referenceColor, RelationViewColors rvc) {
     Relation r = resolve(root, rp);
     Button b = new Button(context);
     b.setBackgroundColor(rp.tag == rp.tag.Y ? referenceColor : rc.m.get(
@@ -65,25 +64,13 @@ public class RelationPath {
     b.setHeight(LayoutParams.MATCH_PARENT);
     b.setOnClickListener(v -> {
       if (after.isEmpty()) {
-        if (validLinkTree(linkTree(replaceRelationOrPathAt(
-            root,
-            before,
+        if (validLinkTree(linkTree(replaceRelationOrPathAt(root, before,
             Either.x(RelationUtils.dummy(unit, unit)))))) {
-          RelationMenu.make(
-              context,
-              root,
-              before,
-              v,
-              rvc,
-              codeLabelAliases,
-              relationAliases,
-              relations,
-              !before.isEmpty(),
-              er -> {
+          RelationMenu.make(context, root, before, v, rvc, codeLabelAliases,
+              relationAliases, relations, !before.isEmpty(), er -> {
                 listener.replaceRelation(er);
                 return unit();
-              }
-          );
+              });
         }
       } else
         listener.selectPath(before);

@@ -70,42 +70,39 @@ public class CodeEditor {
 
     final F<List<Label>, Unit> setPath = $path -> {
       pathContainer.removeAllViews();
-      pathContainer.addView(CodePath.make(context,
-          new F<List<Label>, Unit>() {
-            public Unit f(List<Label> p) {
-              notNull(p);
-              Optional<Code> oc = codeAt(p, s.code);
-              if (oc.isNothing())
-                throw new RuntimeException("invalid path");
-              if (!isPrefix(p, s.pathShadow)) {
-                s.pathShadow = p;
-                f(s.pathShadow);
-              }
-              s.path = p;
-              s.initNodeEditor.f(oc.some().x);
-              return unit();
-            }
-          }, s.code, $path));
+      pathContainer.addView(CodePath.make(context, new F<List<Label>, Unit>() {
+        public Unit f(List<Label> p) {
+          notNull(p);
+          Optional<Code> oc = codeAt(p, s.code);
+          if (oc.isNothing())
+            throw new RuntimeException("invalid path");
+          if (!isPrefix(p, s.pathShadow)) {
+            s.pathShadow = p;
+            f(s.pathShadow);
+          }
+          s.path = p;
+          s.initNodeEditor.f(oc.some().x);
+          return unit();
+        }
+      }, s.code, $path));
       return unit();
     };
 
-    final F<Pair<Code, Optional<List<Label>>>, Unit> codeEdited = a -> {
-      Code code2 =
-          replaceCodeAt(s.code, s.path, Either.x(a.x));
-      remapAliases(s.code, code2, nil(), a.y,
-          codeLabelAliases, s.code);
-      s.pathShadow = longestValidSubPath(s.pathShadow, code2);
-      Pair<Code, Map<List<Label>, Map<Label, Label>>> p =
-          disassociate(code2, s.path);
-      mapAliases(code2, nil(), p.x,
-          nil(), code2, p.y, codeLabelAliases);
-      s.code = p.x;
-      s.path = mapPath(s.path, p.y);
-      s.pathShadow = mapPath(s.pathShadow, p.y);
-      setPath.f(s.pathShadow);
-      s.initNodeEditor.f(codeAt(s.path, s.code).some().x);
-      return unit();
-    };
+    final F<Pair<Code, Optional<List<Label>>>, Unit> codeEdited =
+        a -> {
+          Code code2 = replaceCodeAt(s.code, s.path, Either.x(a.x));
+          remapAliases(s.code, code2, nil(), a.y, codeLabelAliases, s.code);
+          s.pathShadow = longestValidSubPath(s.pathShadow, code2);
+          Pair<Code, Map<List<Label>, Map<Label, Label>>> p =
+              disassociate(code2, s.path);
+          mapAliases(code2, nil(), p.x, nil(), code2, p.y, codeLabelAliases);
+          s.code = p.x;
+          s.path = mapPath(s.path, p.y);
+          s.pathShadow = mapPath(s.pathShadow, p.y);
+          setPath.f(s.pathShadow);
+          s.initNodeEditor.f(codeAt(s.path, s.code).some().x);
+          return unit();
+        };
 
     s.initNodeEditor = new F<Code, Unit>() {
       public Unit f(Code c) {
@@ -170,8 +167,7 @@ public class CodeEditor {
                   public void deleteField(Label l) {
                     Code c = codeAt(s.path, s.code).some().x;
                     Code c2 = new Code(c.tag, c.labels.delete(l));
-                    if (validCode(replaceCodeAt(s.code, s.path,
-                        Either.x(c2))))
+                    if (validCode(replaceCodeAt(s.code, s.path, Either.x(c2))))
                       codeEdited.f(pair(c2, some(append(l, s.path))));
                   }
 
@@ -223,8 +219,8 @@ public class CodeEditor {
       CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalCode, String> codeAliases, List<Code> codes,
       F<Code, Unit> done) {
-    return make(context, code, codeLabelAliases, codeAliases, codes,
-        nil(), nil(), done);
+    return make(context, code, codeLabelAliases, codeAliases, codes, nil(),
+        nil(), done);
   }
 
   public static Pair<View, F<Unit, Bundle>> make(Context context, Bundle b,

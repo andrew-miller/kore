@@ -44,9 +44,7 @@ public class CompositionView {
               else
                 listener.select2();
               return unit();
-            }, o -> o instanceof SelectRelation
-                | o instanceof ExtendRelation
-        ));
+            }, o -> o instanceof SelectRelation | o instanceof ExtendRelation));
       first = false;
       ll.addView(make.f(Either3.y(i)));
       i++;

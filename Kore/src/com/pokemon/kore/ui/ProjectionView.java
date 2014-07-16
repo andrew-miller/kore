@@ -24,15 +24,14 @@ public class ProjectionView {
   public static View make(Context context, Integer color,
       Integer aliasTextColor, Relation relation,
       List<Either3<Label, Integer, Unit>> path,
-      CodeLabelAliasMap codeLabelAliases, Code argCode,
-      F<View, Unit> select) {
+      CodeLabelAliasMap codeLabelAliases, Code argCode, F<View, Unit> select) {
     Relation r = relationAt(path, relation).some().x;
     LinearLayout ll = new LinearLayout(context);
     ll.setBackgroundColor(color);
 
     F<View, Unit> setLCL = v -> {
-        v.setOnClickListener($ -> select.f(v));
-        return unit();
+      v.setOnClickListener($ -> select.f(v));
+      return unit();
     };
 
     List<Label> p = nil();

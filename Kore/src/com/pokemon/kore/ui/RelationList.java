@@ -49,21 +49,21 @@ public class RelationList {
       SARef<View> overlay = new SARef<>();
       overlay.set(Overlay.make(context, RelationView.make(context, rvc,
           new DragBro(), relation, nil(), emptyRelationViewListener,
-          codeLabelAliases, relationAliases,
-          relations), new Overlay.Listener() {
-        public boolean onLongClick() {
-          UIUtils.replaceWithTextEntry(fl, overlay.get(), context, "", s -> {
-              listener.changeAlias(relation, nil(), s);
-              return null;
+          codeLabelAliases, relationAliases, relations),
+          new Overlay.Listener() {
+            public boolean onLongClick() {
+              UIUtils.replaceWithTextEntry(fl, overlay.get(), context, "",
+                  s -> {
+                    listener.changeAlias(relation, nil(), s);
+                    return null;
+                  });
+              return true;
             }
-          );
-          return true;
-        }
 
-        public void onClick() {
-          listener.select(relation);
-        }
-      }));
+            public void onClick() {
+              listener.select(relation);
+            }
+          }));
       fl.addView(overlay.get());
       relationListLayout.addView(fl);
     }
