@@ -61,7 +61,7 @@ public class RunArea {
           if (or.isNothing()) {
             Button b = new Button(context);
             b.setBackgroundColor(0xFF000000);
-            ll.addView(b);
+            ll.addView(b, 0);
             children.set(ListUtils.append(nothing(), children.get()));
           } else {
             Pair<View, Pair<F<Optional<Relation>, Unit>, F<Unit, List<Tree<Unit, Optional<String>>>>>> cRA =
@@ -94,12 +94,12 @@ public class RunArea {
             default:
               throw boom();
             }
-            ll.addView(rE.x);
+            ll.addView(rE.x, 0);
             FrameLayout pad = new FrameLayout(context);
             pad.addView(cRA.x);
             pad.setPadding(10, 0, 0, 1);
             pad.setBackgroundColor(0xFF000000);
-            ll.addView(pad);
+            ll.addView(pad, 1);
             children.set(ListUtils.append(some(pair(rE.y, cRA.y.y)),
                 children.get()));
           }
