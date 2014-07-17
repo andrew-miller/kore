@@ -271,6 +271,7 @@ public class MainActivity extends FragmentActivity {
           return false;
         codeAliases = o.some().x;
         initRecentCodes();
+        initRunArea(some(getRunAreaState.f(unit())));
         return true;
       }
     };
@@ -300,6 +301,7 @@ public class MainActivity extends FragmentActivity {
           return false;
         relationAliases = o.some().x;
         initRecentRelations();
+        initRunArea(some(getRunAreaState.f(unit())));
         return true;
       }
     };
