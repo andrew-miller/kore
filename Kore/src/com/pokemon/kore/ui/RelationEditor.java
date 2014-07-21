@@ -199,7 +199,7 @@ public class RelationEditor {
     };
 
     F<Unit, Relation> getRelation = $ -> {
-      return relation;
+      return s.relation;
     };
 
     s.initNodeEditor.f(unit());
