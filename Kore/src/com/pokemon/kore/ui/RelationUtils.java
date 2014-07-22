@@ -688,13 +688,10 @@ public class RelationUtils {
 
   private static Relation insertIndexes(Relation r, Integer i,
       List<Either3<Label, Integer, Unit>> path) {
-    return mapPaths(r, p -> {
-      if (isPrefix(path, p)) {
-        List<Either3<Label, Integer, Unit>> l = drop(p, length(path));
-        return append(path, cons(Either3.y((i + 1) % 2), l));
-      }
-      return p;
-    });
+    return mapPaths(
+        r,
+        p -> isPrefix(path, p) ? append(path,
+            cons(Either3.y((i + 1) % 2), drop(p, length(path)))) : p);
   }
 
   /**
