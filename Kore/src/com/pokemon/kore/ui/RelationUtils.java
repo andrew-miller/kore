@@ -9,6 +9,7 @@ import static com.pokemon.kore.utils.CodeUtils.equal;
 import static com.pokemon.kore.utils.CodeUtils.reroot;
 import static com.pokemon.kore.utils.CodeUtils.unit;
 import static com.pokemon.kore.utils.LinkTreeUtils.canonicalLinkTree;
+import static com.pokemon.kore.utils.LinkTreeUtils.rebase;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.cons;
 import static com.pokemon.kore.utils.ListUtils.drop;
@@ -587,27 +588,36 @@ public class RelationUtils {
     Code c = codomain(r1);
 
     Composition comp;
+    Either<Relation, List<Either3<Label, Integer, Unit>>> r2rb =
+        r2.tag == r2.tag.X ? Either.x(linkTreeToRelation(rebase(
+            append(Either3.y(i), path), linkTree(r2.x())))) : r2;
     if (er.tag == er.tag.X && er.x().tag == Relation.Tag.COMPOSITION) {
-      comp = new Composition(insert(er.x().composition().l, i, r2), d, c);
+      comp =
+          new Composition(
+              insert(er.x().composition().l, i, Either.x(unit_unit)), d, c);
       return adaptComposition(
-          bumpIndexes(
-              replaceRelationOrPathAt(relation, path,
-                  Either.x(Relation.composition(comp))), i, path), path);
+          replaceRelationOrPathAt(
+              bumpIndexes(
+                  replaceRelationOrPathAt(relation, path,
+                      Either.x(Relation.composition(comp))), i, path),
+              append(Either3.y(i), path), r2rb), path);
     } else {
       switch (i) {
       case 0:
-        comp = new Composition(fromArray(r2, er), d, c);
+        comp = new Composition(fromArray(Either.x(unit_unit), er), d, c);
         break;
       case 1:
-        comp = new Composition(fromArray(er, r2), d, c);
+        comp = new Composition(fromArray(er, Either.x(unit_unit)), d, c);
         break;
       default:
         throw new RuntimeException("invalid index");
       }
       return adaptComposition(
-          insertIndexes(
-              replaceRelationOrPathAt(relation, path,
-                  Either.x(Relation.composition(comp))), i, path), path);
+          replaceRelationOrPathAt(
+              insertIndexes(
+                  replaceRelationOrPathAt(relation, path,
+                      Either.x(Relation.composition(comp))), i, path),
+              append(Either3.y(i), path), r2rb), path);
     }
   }
 
@@ -646,28 +656,35 @@ public class RelationUtils {
             Either.x(Relation.composition(new Composition(fromArray(er2,
                 Either.x(t)), d, c)));
     }
+    Either<Relation, List<Either3<Label, Integer, Unit>>> r2rb =
+        er2.tag == er2.tag.X ? Either.x(linkTreeToRelation(rebase(
+            append(Either3.y(i), path), linkTree(er2.x())))) : er2;
     Union union;
     if (er.tag == er.tag.X && er.x().tag == Relation.Tag.UNION) {
       union =
-          new Union(insert(er.x().union().l, i, er2), er.x().union().i, er.x()
-              .union().o);
-      return bumpIndexes(
-          replaceRelationOrPathAt(relation, path,
-              Either.x(Relation.union(union))), i, path);
+          new Union(insert(er.x().union().l, i, Either.x(unit_unit)), er.x()
+              .union().i, er.x().union().o);
+      return replaceRelationOrPathAt(
+          bumpIndexes(
+              replaceRelationOrPathAt(relation, path,
+                  Either.x(Relation.union(union))), i, path),
+          append(Either3.y(i), path), r2rb);
     } else {
       switch (i) {
       case 0:
-        union = new Union(fromArray(er2, er), d, c);
+        union = new Union(fromArray(Either.x(unit_unit), er), d, c);
         break;
       case 1:
-        union = new Union(fromArray(er, er2), d, c);
+        union = new Union(fromArray(er, Either.x(unit_unit)), d, c);
         break;
       default:
         throw new RuntimeException("invalid index");
       }
-      return insertIndexes(
-          replaceRelationOrPathAt(relation, path,
-              Either.x(Relation.union(union))), i, path);
+      return replaceRelationOrPathAt(
+          insertIndexes(
+              replaceRelationOrPathAt(relation, path,
+                  Either.x(Relation.union(union))), i, path),
+          append(Either3.y(i), path), r2rb);
     }
   }
 
