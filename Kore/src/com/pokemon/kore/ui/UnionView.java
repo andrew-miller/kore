@@ -22,8 +22,6 @@ public class UnionView {
     /** traverse into the composition */
     void select2();
 
-    void replace(Relation r);
-
     void select(View v);
   }
 

@@ -145,10 +145,6 @@ public final class RelationView {
                       p.set(makeMenu.f(pair(pair(true, rvr.get()), f)));
                     }
 
-                    public void replace(Relation r) {
-                      listener.replaceRelation(path, Either.x(r));
-                    }
-
                     public void select(View v) {
                       makeReplacementMenu.f(v);
                     }
