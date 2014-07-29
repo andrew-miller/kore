@@ -1,10 +1,12 @@
 package com.pokemon.kore.ui;
 
 import static com.pokemon.kore.ui.RelationUtils.linkTree;
+import static com.pokemon.kore.ui.RelationUtils.linkTreeToRelation;
 import static com.pokemon.kore.ui.RelationUtils.replaceRelationOrPathAt;
 import static com.pokemon.kore.ui.RelationUtils.resolve;
 import static com.pokemon.kore.ui.RelationUtils.subRelationOrPath;
 import static com.pokemon.kore.utils.CodeUtils.unit;
+import static com.pokemon.kore.utils.LinkTreeUtils.rebase;
 import static com.pokemon.kore.utils.LinkTreeUtils.validLinkTree;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.nil;
@@ -68,7 +70,9 @@ public class RelationPath {
             Either.x(RelationUtils.dummy(unit, unit)))))) {
           RelationMenu.make(context, root, before, v, rvc, codeLabelAliases,
               relationAliases, relations, !before.isEmpty(), er -> {
-                listener.replaceRelation(er);
+                listener.replaceRelation(er.tag == er.tag.X ? Either
+                    .x(linkTreeToRelation(rebase(before, linkTree(er.x()))))
+                    : er);
                 return unit();
               });
         }

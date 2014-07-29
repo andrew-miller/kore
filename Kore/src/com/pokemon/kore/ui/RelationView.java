@@ -4,10 +4,13 @@ import static com.pokemon.kore.ui.RelationUtils.codomain;
 import static com.pokemon.kore.ui.RelationUtils.defaultValue;
 import static com.pokemon.kore.ui.RelationUtils.enclosingAbstraction;
 import static com.pokemon.kore.ui.RelationUtils.getRelation;
+import static com.pokemon.kore.ui.RelationUtils.linkTree;
+import static com.pokemon.kore.ui.RelationUtils.linkTreeToRelation;
 import static com.pokemon.kore.utils.Boom.boom;
 import static com.pokemon.kore.utils.CodeUtils.equal;
 import static com.pokemon.kore.utils.CodeUtils.reroot;
 import static com.pokemon.kore.utils.CodeUtils.unit;
+import static com.pokemon.kore.utils.LinkTreeUtils.rebase;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.fromArray;
 import static com.pokemon.kore.utils.ListUtils.iter;
@@ -71,12 +74,16 @@ public final class RelationView {
     F<Pair<Pair<Boolean, View>, F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>>, Pair<PopupWindow, ViewGroup>> makeMenu =
         x -> RelationMenu.make(context, root, path, x.x.y, rvc,
             codeLabelAliases, relationAliases, relations, x.x.x, x.y);
-    F<View, Pair<PopupWindow, ViewGroup>> makeReplacementMenu = v -> {
-      return makeMenu.f(pair(pair(!path.isEmpty(), v), $er -> {
-        listener.replaceRelation(path, $er);
-        return unit();
-      }));
-    };
+    F<View, Pair<PopupWindow, ViewGroup>> makeReplacementMenu =
+        v -> {
+          return makeMenu.f(pair(pair(!path.isEmpty(), v), $er -> {
+            listener.replaceRelation(
+                path,
+                $er.tag == $er.tag.X ? Either.x(linkTreeToRelation(rebase(path,
+                    linkTree($er.x())))) : $er);
+            return unit();
+          }));
+        };
     if (alias.isNothing() | listener.dontAbbreviate(path)) {
       switch (er.tag) {
       case Y:

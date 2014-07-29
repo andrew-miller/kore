@@ -1,17 +1,7 @@
 package com.pokemon.kore.ui;
 
-import static com.pokemon.kore.ui.RelationUtils.adaptComposition;
-import static com.pokemon.kore.ui.RelationUtils.codomain;
-import static com.pokemon.kore.ui.RelationUtils.domain;
-import static com.pokemon.kore.ui.RelationUtils.linkTree;
-import static com.pokemon.kore.ui.RelationUtils.linkTreeToRelation;
 import static com.pokemon.kore.ui.RelationUtils.relationOrPathAt;
-import static com.pokemon.kore.ui.RelationUtils.replaceRelationOrPathAt;
-import static com.pokemon.kore.ui.RelationUtils.resolve;
-import static com.pokemon.kore.utils.CodeUtils.equal;
-import static com.pokemon.kore.utils.LinkTreeUtils.rebase;
 import static com.pokemon.kore.utils.ListUtils.append;
-import static com.pokemon.kore.utils.ListUtils.fromArray;
 import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Null.notNull;
 import static com.pokemon.kore.utils.PairUtils.pair;
@@ -28,7 +18,6 @@ import com.pokemon.kore.codes.CanonicalRelation;
 import com.pokemon.kore.codes.Code;
 import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Relation;
-import com.pokemon.kore.codes.Relation.Composition;
 import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
@@ -46,25 +35,6 @@ public class RelationEditor {
     private List<Either3<Label, Integer, Unit>> path;
     public F<Unit, Unit> initNodeEditor;
     public F<List<Either3<Label, Integer, Unit>>, Unit> selectPath;
-  }
-
-  private static Relation replaceRelation(Relation relation,
-      List<Either3<Label, Integer, Unit>> path,
-      Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
-    Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
-        relationOrPathAt(path, relation);
-    Relation r = resolve(relation, rp);
-    Relation r2 = resolve(relation, er);
-    return !equal(domain(r), domain(r2)) | !equal(codomain(r), codomain(r2)) ? adaptComposition(
-        replaceRelationOrPathAt(relation, path, Either.x(Relation
-            .composition(new Composition(fromArray(er.tag == er.tag.X ? Either
-                .x(linkTreeToRelation(rebase(append(Either3.y(0), path),
-                    linkTree(er.x())))) : er), domain(r), codomain(r))))), path)
-        : replaceRelationOrPathAt(
-            relation,
-            path,
-            er.tag == er.tag.X ? Either.x(linkTreeToRelation(rebase(path,
-                linkTree(er.x())))) : er);
   }
 
   private static Pair<View, Pair<F<Unit, Bundle>, F<Unit, Relation>>> make(
@@ -98,7 +68,7 @@ public class RelationEditor {
                   public void replaceRelation(
                       Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
                     s.relation =
-                        RelationEditor.replaceRelation(s.relation, s.path, er);
+                        RelationUtils.replaceRelation(s.relation, s.path, er);
                     s.initNodeEditor.f(unit());
                     f(s.path);
                   }
@@ -167,7 +137,7 @@ public class RelationEditor {
                       List<Either3<Label, Integer, Unit>> p,
                       Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
                     s.relation =
-                        RelationEditor.replaceRelation(s.relation,
+                        RelationUtils.replaceRelation(s.relation,
                             append(s.path, p), er);
                     f(unit());
                     setPath.f(s.path);

@@ -1067,4 +1067,26 @@ public class RelationUtils {
             Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
         }
       };
+
+  /**
+   * Replace the relation at <code>path</code> in <code>relation</code> with
+   * <code>er</code>, adapting the domain/codomain of <code>er</code> if
+   * necessary. <code>replaceRelationOrPathAt(relation, path, er)</code> must
+   * make <code>relation</code> a valid link tree
+   */
+  public static Relation replaceRelation(Relation relation,
+      List<Either3<Label, Integer, Unit>> path,
+      Either<Relation, List<Either3<Label, Integer, Unit>>> er) {
+    Either<Relation, List<Either3<Label, Integer, Unit>>> rp =
+        relationOrPathAt(path, relation);
+    Relation r = resolve(relation, rp);
+    Relation r2 = resolve(relation, er);
+    return !equal(domain(r), domain(r2)) | !equal(codomain(r), codomain(r2)) ? adaptComposition(
+        insertIndexes(
+            replaceRelationOrPathAt(relation, path, Either.x(Relation
+                .composition(new Composition(fromArray(er), domain(r),
+                    codomain(r))))), 1, path), path) : replaceRelationOrPathAt(
+        relation, path, er);
+  }
+
 }
