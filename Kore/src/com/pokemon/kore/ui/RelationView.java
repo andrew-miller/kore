@@ -71,15 +71,12 @@ public final class RelationView {
     F<Pair<Pair<Boolean, View>, F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>>, Pair<PopupWindow, ViewGroup>> makeMenu =
         x -> RelationMenu.make(context, root, path, x.x.y, rvc,
             codeLabelAliases, relationAliases, relations, x.x.x, x.y);
-    F<View, Pair<PopupWindow, ViewGroup>> makeReplacementMenu =
-        v -> {
-          F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
-              $er -> {
-                listener.replaceRelation(path, $er);
-                return unit();
-              };
-          return makeMenu.f(pair(pair(!path.isEmpty(), v), f));
-        };
+    F<View, Pair<PopupWindow, ViewGroup>> makeReplacementMenu = v -> {
+      return makeMenu.f(pair(pair(!path.isEmpty(), v), $er -> {
+        listener.replaceRelation(path, $er);
+        return unit();
+      }));
+    };
     if (alias.isNothing() | listener.dontAbbreviate(path)) {
       switch (er.tag) {
       case Y:
