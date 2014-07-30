@@ -75,15 +75,13 @@ public final class RelationView {
         x -> RelationMenu.make(context, root, path, x.x.y, rvc,
             codeLabelAliases, relationAliases, relations, x.x.x, x.y);
     F<View, Pair<PopupWindow, ViewGroup>> makeReplacementMenu =
-        v -> {
-          return makeMenu.f(pair(pair(!path.isEmpty(), v), $er -> {
-            listener.replaceRelation(
-                path,
-                $er.tag == $er.tag.X ? Either.x(linkTreeToRelation(rebase(path,
-                    linkTree($er.x())))) : $er);
-            return unit();
-          }));
-        };
+        v -> makeMenu.f(pair(pair(!path.isEmpty(), v), $er -> {
+          listener.replaceRelation(
+              path,
+              $er.tag == $er.tag.X ? Either.x(linkTreeToRelation(rebase(path,
+                  linkTree($er.x())))) : $er);
+          return unit();
+        }));
     if (alias.isNothing() | listener.dontAbbreviate(path)) {
       switch (er.tag) {
       case Y:
