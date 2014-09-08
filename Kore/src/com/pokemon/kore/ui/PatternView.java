@@ -16,6 +16,7 @@ import com.pokemon.kore.codes.CanonicalCode;
 import com.pokemon.kore.codes.Code;
 import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Pattern;
+import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.Optional;
@@ -24,15 +25,16 @@ import com.pokemon.kore.utils.Unit;
 
 public class PatternView {
   public static View make(Context context, Integer aliasTextColor,
-      Pattern rootPattern, Code rootCode, List<Label> codePath,
-      CodeLabelAliasMap codeLabelAliases, F<Pattern, Unit> replace) {
-    return make(context, aliasTextColor, rootPattern, nil(), rootCode,
-        codePath, codeLabelAliases, replace);
+      Integer labelTextColor, Pattern rootPattern, Code rootCode,
+      List<Label> codePath, CodeLabelAliasMap codeLabelAliases,
+      F<Pattern, Unit> replace) {
+    return make(context, aliasTextColor, labelTextColor, rootPattern, nil(),
+        rootCode, codePath, codeLabelAliases, replace);
   }
 
   private static View make(Context context, Integer aliasTextColor,
-      Pattern rootPattern, List<Label> patternPath, Code rootCode,
-      List<Label> codePath, CodeLabelAliasMap codeLabelAliases,
+      Integer labelTextColor, Pattern rootPattern, List<Label> patternPath,
+      Code rootCode, List<Label> codePath, CodeLabelAliasMap codeLabelAliases,
       F<Pattern, Unit> replace) {
     Pattern pattern = patternAt(rootPattern, patternPath).some().x;
     F<View, Unit> f =
@@ -49,17 +51,13 @@ public class PatternView {
     for (Pair<Label, ?> e : iter(pattern.fields.entrySet())) {
       LinearLayout ll2 = new LinearLayout(context);
       Optional<String> ola = las.xy.get(e.x);
-      View v;
-      if (ola.isNothing())
-        ll2.addView(v = LabelView.make(context, e.x, aliasTextColor));
-      else {
-        Button b = new Button(context);
-        b.setText(ola.some().x);
-        ll2.addView(b);
-        v = b;
-      }
+      View v =
+          LabelView.make(context,
+              ola.isNothing() ? Either.x(e.x) : Either.y(ola.some().x),
+              aliasTextColor, labelTextColor);
+      ll2.addView(v);
       f.f(v);
-      ll2.addView(make(context, aliasTextColor, rootPattern,
+      ll2.addView(make(context, aliasTextColor, labelTextColor, rootPattern,
           append(e.x, patternPath), rootCode,
           directPath(append(e.x, codePath), rootCode), codeLabelAliases,
           replace));

@@ -21,8 +21,8 @@ import android.util.Log;
 
 import com.pokemon.kore.codes.CanonicalCode;
 import com.pokemon.kore.codes.Code;
-import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Code.Tag;
+import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.ui.Bijection;
 import com.pokemon.kore.ui.CodeLabelAliasMap;
 import com.pokemon.kore.ui.LinkTree;
@@ -33,6 +33,26 @@ public final class CodeUtils {
   public final static Code unit = Code.newProduct(Map.empty());
 
   public final static Code empty = Code.newUnion(Map.empty());
+
+  public static CodeLabelAliasMap makeStaticCLAM(
+      Map<CanonicalCode, Bijection<Label, String>> m) {
+    return new CodeLabelAliasMap() {
+      public void setAliases(CanonicalCode c, Bijection<Label, String> aliases) {
+      }
+
+      public boolean setAlias(CanonicalCode c, Label l, String alias) {
+        return false;
+      }
+
+      public Bijection<Label, String> getAliases(CanonicalCode c) {
+        Optional<Bijection<Label, String>> ob = m.get(c);
+        return ob.isNothing() ? Bijection.empty() : ob.some().x;
+      }
+
+      public void deleteAlias(CanonicalCode c, Label l) {
+      }
+    };
+  }
 
   public static Code reroot(Code c, List<Label> p) {
     return linkTreeToCode(LinkTreeUtils.reroot(linkTree(c), p));
@@ -358,7 +378,7 @@ public final class CodeUtils {
    * map cyclic path over the graph represented by this <tt>Code</tt> (rooted at
    * this <tt>Code</tt>) to a simple path from this <tt>Code</tt> to another
    * <tt>Code</tt>
-   * 
+   *
    * @param code
    *          a <tt>Code</tt> that <tt>validCode</tt> maps to <tt>true</tt>
    */

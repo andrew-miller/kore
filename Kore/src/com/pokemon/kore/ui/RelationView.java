@@ -161,6 +161,7 @@ public final class RelationView {
                   root,
                   path,
                   rvc.aliasTextColor,
+                  rvc.labelTextColor,
                   codeLabelAliases,
                   v -> {
                     Pair<PopupWindow, ViewGroup> p = makeReplacementMenu.f(v);
@@ -192,7 +193,8 @@ public final class RelationView {
         case ABSTRACTION:
           rv =
               AbstractionView.make(context, make, cp.x, rvc.aliasTextColor,
-                  root, path, codeLabelAliases, new AbstractionView.Listener() {
+                  rvc.labelTextColor, root, path, codeLabelAliases,
+                  new AbstractionView.Listener() {
                     public void replace(Relation r) {
                       listener.replaceRelation(path, Either.x(r));
                     }
@@ -204,16 +206,17 @@ public final class RelationView {
           break;
         case PRODUCT:
           rv =
-              ProductView.make(context, make, cp.x, rvc.aliasTextColor, root,
-                  path, codeLabelAliases, v -> {
+              ProductView.make(context, make, cp.x, rvc.aliasTextColor,
+                  rvc.labelTextColor, root, path, codeLabelAliases, v -> {
                     makeReplacementMenu.f(v);
                     return unit();
                   });
           break;
         case PROJECTION:
           rv =
-              ProjectionView.make(context, cp.x, rvc.aliasTextColor, root,
-                  path, codeLabelAliases, argCode.some().x, v -> {
+              ProjectionView.make(context, cp.x, rvc.aliasTextColor,
+                  rvc.labelTextColor, root, path, codeLabelAliases, argCode
+                      .some().x, v -> {
                     Pair<PopupWindow, ViewGroup> p = makeReplacementMenu.f(v);
                     UIUtils.addProjectionsToMenu(p, context, v,
                         codeLabelAliases, argCode.some().x,

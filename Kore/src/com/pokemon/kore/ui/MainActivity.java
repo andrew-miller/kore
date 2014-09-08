@@ -10,8 +10,10 @@ import static com.pokemon.kore.utils.Unit.unit;
 
 import java.util.HashSet;
 
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ToggleButton;
@@ -22,7 +24,6 @@ import com.pokemon.kore.codes.CanonicalRelation;
 import com.pokemon.kore.codes.Code;
 import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Relation;
-import com.pokemon.kore.codes.Relation.Tag;
 import com.pokemon.kore.utils.CodeUtils;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
@@ -47,19 +48,10 @@ public class MainActivity extends FragmentActivity {
       "recent_codes_visible";
   private static final String STATE_RECENT_VISIBLE = "recent_visible";
   private static final String STATE_RUN_AREA = "run_area";
+  private static final String STATE_RELATION_VIEW_COLORS =
+      "relation_view_colors";
 
-  private final static RelationColors relationColors = new RelationColors(Map
-      .<Tag, Pair<Integer, Integer>> empty()
-      .put(Tag.ABSTRACTION, pair(0xFFAA00AA, 0xFFFF00FF))
-      .put(Tag.COMPOSITION, pair(0xFF0000AA, 0xFF0000FF))
-      .put(Tag.LABEL, pair(0xFF00AAAA, 0xFF00FFFF))
-      .put(Tag.PRODUCT, pair(0xFF00AAAA, 0xFF00FFFF))
-      .put(Tag.PROJECTION, pair(0xFFAA0000, 0xFFFF0000))
-      .put(Tag.UNION, pair(0xFF00AA00, 0xFF00FF00)));
-  private final static RelationViewColors relationViewColors =
-      new RelationViewColors(relationColors, 0xFFCCCCCC, pair(0xFF000000,
-          0xFF444444));
-
+  private static RelationViewColors relationViewColors;
   private HashSet<Code> codes = new HashSet<>();
   private List<Code> recentCodes = nil();
   private HashSet<Relation> relations = new HashSet<>();
@@ -79,6 +71,8 @@ public class MainActivity extends FragmentActivity {
   private boolean recentVisible = true;
   private F<Unit, Unit> addToRunArea;
   private F<Unit, Bundle> getRunAreaState;
+  private boolean editingColors;
+  private int previousOrientation;
 
   CodeLabelAliasMap codeLabelAliasMap = new CodeLabelAliasMap() {
     public boolean setAlias(CanonicalCode c, Label l, String alias) {
@@ -117,7 +111,7 @@ public class MainActivity extends FragmentActivity {
   @Override
   protected void onCreate(Bundle b) {
     super.onCreate(b);
-
+    relationViewColors = DB.getRelationColors(getBaseContext());
     this.getActionBar().hide();
     setContentView(R.layout.activity_main);
     mainLayout = findViewById(R.id.main_layout);
@@ -155,6 +149,8 @@ public class MainActivity extends FragmentActivity {
       recentCodesVisible = b.getBoolean(STATE_RECENT_CODES_VISIBLE);
       recentVisible = b.getBoolean(STATE_RECENT_VISIBLE);
       runAreaState = some(b.getBundle(STATE_RUN_AREA));
+      relationViewColors =
+          (RelationViewColors) b.getSerializable(STATE_RELATION_VIEW_COLORS);
     }
 
     initRecentCodes();
@@ -215,6 +211,7 @@ public class MainActivity extends FragmentActivity {
     b.putBoolean(STATE_RECENT_CODES_VISIBLE, recentCodesVisible);
     b.putBoolean(STATE_RECENT_VISIBLE, recentVisible);
     b.putBundle(STATE_RUN_AREA, getRunAreaState.f(unit()));
+    b.putSerializable(STATE_RELATION_VIEW_COLORS, relationViewColors);
   }
 
   private void switchRecent() {
@@ -233,6 +230,45 @@ public class MainActivity extends FragmentActivity {
       findViewById(R.id.container_recent_codes).setVisibility(View.GONE);
       findViewById(R.id.container_run).setVisibility(View.VISIBLE);
     }
+  }
+
+  @Override
+  public void onBackPressed() {
+    if (editingColors) {
+      setRequestedOrientation(previousOrientation);
+      recreate();
+    } else
+      super.onBackPressed();
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu m) {
+    m.add("colors").setOnMenuItemClickListener($ -> {
+      if (editingColors)
+        return false;
+      editingColors = true;
+      codeEditorContainer.removeAllViews();
+      codeEditorContainer.setVisibility(View.GONE);
+      relationEditorContainer.removeAllViews();
+      relationEditorContainer.setVisibility(View.GONE);
+      mainLayout.setVisibility(View.GONE);
+      previousOrientation = getRequestedOrientation();
+      // XXX doing this when in landscape switches to portrait, but then the
+      // activity is recreated and since the state for the color chooser isn't
+      // saved, the color chooser is lost
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+        ViewGroup c = (ViewGroup) findViewById(R.id.container_colors);
+        c.setVisibility(View.VISIBLE);
+        c.addView(Colors.make(getBaseContext(), relationViewColors, rvc -> {
+          DB.saveRelationColors(getBaseContext(), rvc);
+          relationViewColors = rvc;
+          setRequestedOrientation(previousOrientation);
+          recreate();
+          return unit();
+        }));
+        return false;
+      });
+    return true;
   }
 
   private void initRunArea(Optional<Bundle> ob) {

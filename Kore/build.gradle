@@ -23,6 +23,7 @@ retrolambda {
 }
 
 dependencies {
+    compile 'com.larswerkman:HoloColorPicker:1.4'
     compile fileTree(dir: 'libs', include: '*.jar')
 }
 

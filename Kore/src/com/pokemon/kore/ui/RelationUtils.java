@@ -67,6 +67,9 @@ public class RelationUtils {
       .abstraction(new Abstraction(emptyPattern, Either.x(Relation
           .product(new Product(Map.empty(), unit))), unit, unit));
 
+  public static final Relation emptyProduct = Relation.product(new Product(Map
+      .empty(), unit));
+
   /**
    * @param argCode
    *          required if there <tt>rx</tt> is a projection or <tt>rx</tt>

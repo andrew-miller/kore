@@ -20,6 +20,14 @@
 
 	</FrameLayout>
 	
+	<FrameLayout
+	    android:id="@+id/container_colors"
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:visibility="gone" >
+
+	</FrameLayout>
+	
 	<LinearLayout
 	    android:id="@+id/main_layout"
 	    android:layout_width="match_parent"

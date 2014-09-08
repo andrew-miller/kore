@@ -1,11 +1,13 @@
 package com.pokemon.kore.ui;
 
+import java.io.Serializable;
+
 import com.pokemon.kore.codes.Relation;
 import com.pokemon.kore.codes.Relation.Tag;
 import com.pokemon.kore.utils.Map;
 import com.pokemon.kore.utils.Pair;
 
-public final class RelationColors {
+public final class RelationColors implements Serializable {
   public final Map<Relation.Tag, Pair<Integer, Integer>> m;
 
   public RelationColors(Map<Tag, Pair<Integer, Integer>> m) {
