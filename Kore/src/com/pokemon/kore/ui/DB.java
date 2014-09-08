@@ -12,7 +12,7 @@ import com.pokemon.kore.utils.Map;
 import com.pokemon.kore.utils.Pair;
 
 public class DB {
-  public static class FuckYou extends SQLiteOpenHelper {
+  private static class FuckYou extends SQLiteOpenHelper {
     public FuckYou(Context context) {
       super(context, "db", null, 1);
     }
@@ -27,7 +27,8 @@ public class DB {
     }
   }
 
-  static void saveRelationColors(Context context, RelationViewColors rvc) {
+  public static void
+      saveRelationColors(Context context, RelationViewColors rvc) {
     SQLiteDatabase db = new FuckYou(context).getWritableDatabase();
     try {
       db.beginTransaction();
