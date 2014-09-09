@@ -11,10 +11,10 @@ import com.pokemon.kore.utils.Pair;
 import com.pokemon.kore.utils.Unit;
 
 public class RelationRefView {
-  public static View make(Context context,
+  public static View make(Context context, Integer color,
       Optional<Pair<Integer, String>> label, F<Unit, Unit> selected) {
     Button b = new Button(context);
-    b.setBackgroundColor(0xFF000000);
+    b.setBackgroundColor(color);
     if (!label.isNothing()) {
       b.setText(label.some().x.y);
       b.setTextColor(label.some().x.x);

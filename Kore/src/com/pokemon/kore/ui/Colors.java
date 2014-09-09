@@ -100,13 +100,9 @@ public class Colors {
                 .setOnColorChangedListener(
                     c -> {
                       RelationViewColors o = rRVC.get();
-                      float[] hsv = new float[3];
-                      c = c | 0xff000000;
-                      Color.colorToHSV(c, hsv);
-                      hsv[1] = (hsv[1] + 0.5f) % 1;
+                      c |= 0xff000000;
                       rRVC.set(new RelationViewColors(new RelationColors(
-                          o.relationcolors.m.put(p.x,
-                              pair(c, Color.HSVToColor(hsv)))),
+                          o.relationcolors.m.put(p.x, pair(c, saturate(c)))),
                           o.aliasTextColor, o.labelTextColor, o.referenceColors));
                       addRelations.get().f(unit());
                     });
@@ -155,12 +151,34 @@ public class Colors {
           makeRV.f(pair(Tag.LABEL,
               Relation.label(new Label_(t, Either.x(emptyProduct), unit)))),
           "label"));
+      constructs.addView(f(context, Overlay.make(context, RelationView.make(
+          context, rRVC.get(), new DragBro(), Relation
+              .abstraction(new Abstraction(emptyPattern, Either.y(nil()), unit,
+                  unit)), fromArray(Either3.z(unit())),
+          emptyRelationViewListener, clam, Bijection.empty(), nil()),
+          new Overlay.Listener() {
+            public boolean onLongClick() {
+              return false;
+            }
+
+            public void onClick() {
+              initCP.f(rRVC.get().aliasTextColor).setOnColorChangedListener(
+                  c -> {
+                    c |= 0xff000000;
+                    RelationViewColors o = rRVC.get();
+                    rRVC.set(new RelationViewColors(o.relationcolors,
+                        o.aliasTextColor, o.labelTextColor,
+                        pair(c, saturate(c))));
+                    addRelations.get().f(unit());
+                  });
+            }
+          }), "reference"));
       Button alias = new Button(context);
       alias.setOnClickListener($$ -> {
         initCP.f(rRVC.get().aliasTextColor).setOnColorChangedListener(
             c -> {
               RelationViewColors o = rRVC.get();
-              rRVC.set(new RelationViewColors(o.relationcolors, c,
+              rRVC.set(new RelationViewColors(o.relationcolors, c | 0xff000000,
                   o.labelTextColor, o.referenceColors));
               addRelations.get().f(unit());
             });
@@ -173,7 +191,7 @@ public class Colors {
             c -> {
               RelationViewColors o = rRVC.get();
               rRVC.set(new RelationViewColors(o.relationcolors,
-                  o.aliasTextColor, c, o.referenceColors));
+                  o.aliasTextColor, c | 0xff000000, o.referenceColors));
               addRelations.get().f(unit());
             });
       });
@@ -194,6 +212,13 @@ public class Colors {
     });
     addRelations.get().f(unit());
     return ll;
+  }
+
+  private static Integer saturate(Integer c) {
+    float[] hsv = new float[3];
+    Color.colorToHSV(c, hsv);
+    hsv[1] = (hsv[1] + 0.5f) % 1;
+    return Color.HSVToColor(hsv);
   }
 
   private static LinearLayout f(Context context, View v, String l) {

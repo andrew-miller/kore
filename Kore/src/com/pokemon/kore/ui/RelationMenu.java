@@ -33,11 +33,12 @@ public class RelationMenu {
     Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
     p.x.showAsDropDown(v);
     if (ref) {
-      p.y.addView(RelationRefView.make(context, nothing(), $ -> {
-        p.x.dismiss();
-        select.f(Either.y(nil()));
-        return unit();
-      }));
+      p.y.addView(RelationRefView.make(context,
+          relationViewColors.referenceColors.x, nothing(), $ -> {
+            p.x.dismiss();
+            select.f(Either.y(nil()));
+            return unit();
+          }));
       Space s = new Space(context);
       s.setMinimumHeight(1);
       p.y.addView(s);

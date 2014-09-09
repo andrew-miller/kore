@@ -86,10 +86,12 @@ public final class RelationView {
       switch (er.tag) {
       case Y:
         cp = rvc.referenceColors;
-        rv = RelationRefView.make(context, nothing(), $ -> {
-          listener.selectPath(path);
-          return unit();
-        });
+        rv =
+            RelationRefView.make(context, rvc.referenceColors.x, nothing(),
+                $ -> {
+                  listener.selectPath(path);
+                  return unit();
+                });
         break;
       case X:
         Optional<Abstraction> oea = enclosingAbstraction(path, root);
@@ -241,7 +243,7 @@ public final class RelationView {
     } else {
       cp = rvc.referenceColors;
       rv =
-          RelationRefView.make(context,
+          RelationRefView.make(context, rvc.referenceColors.x,
               some(pair(rvc.aliasTextColor, alias.some().x)), $ -> {
                 listener.select(path);
                 return unit();
