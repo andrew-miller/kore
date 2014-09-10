@@ -52,13 +52,13 @@ Bob publishes a relation that makes use of c1.
 Eve retrieves Bob's relation along with c1.
 Eve publishes some useful relations that use c1, but they refer to c1 by c1h2.
 Alice retrieves Eve's relations that use c1 via c1h2.
-Alice publishes some relations that make use of c1 via c1h2. Her implementation does not bother canonicalizing c1.
+Alice publishes some relations that make use of c1 via c1h2. Her implementation does not bother canonicalizing c1h2.
 Joe retrieves Bob's relations.
 Joe wants to find more relations that make use of c1. He only finds things that refer to c1 by c1h1, not the ones by c1h2.
 Bob is in the same situation as Joe.
-Alice's client would be able to derive c1h1 from c1h2 and search by both. This is not good though because if Alice knows n paths to c1, she must lookup using each hash by each of n paths.
+Bob's client would be able to derive c1h1 from c1h2 and search by both. This is not good though because if he knows n paths to c1, he must lookup using each hash by each of n paths.
 
-The other issue is that if Alice retreives a code cr that refers to c1h1, but the service only maps c1h2 to c1, then Alice wont be able to fully resolve cr. Ideally there would be only one hash for every code. If the service was run on 2 nodes, and each node had a different hash for the same code, it would be twice as likely that someone with only one of the hashes would be unable to obtain the code when one node goes down.
+The other issue is that if Alice retreives a code cr that refers to c1h1, but the service only maps c1h2 to c1, then Alice wont be able to fully resolve cr. Ideally there would be only one hash for every code.
 
 code is an abstract type:
 C:
