@@ -1,14 +1,23 @@
-Set the stack size as high as possible. the default 8K is unworkable and I don't feel like encoding the stack in the heap.
-One way to do this is run these commands in adb shell as root:
+Running:
+-Get Gradle 1.10 (other versions didn't work with this project when I tried them): http://www.gradle.org/downloads
+-From the Kore folder, run "gradle installDebug --stacktrace" to install Kore to your Android device. If you don't have internet, use "--offline" to make it not fail (you need internet the first time for Gradle to get the dependencies though).
+-Set the stack size on the Android device as high as possible. The default 8K is unworkable and I don't feel like encoding the stack in the heap.
+
+One way to set the stack size is to run these commands in adb shell as root:
 # setprop dalvik.vm.extra-opts "-Xss256k"
 # start
 # stop
 or permanently, by setting in /system/build.prop:
 dalvik.vm.extra-opts=-Xss256k
+(you might have to reboot the Android device for the build.prop change to take effect, I can't remember)
 
-But that's still not really enough stack. It's better to modify the dalvik vm to get rid of the stack size limit. There's a patch for this:
+256K was as high as it let me go, but that's still not really enough stack. It's better to modify the dalvik vm to get rid of the stack size limit. There's a patch for this:
 Kore/crap/dalvik-unlimit-stack-size.patch
 
 I've done most of the development with a 10MB stack, and have not run across any stack related problems so far. Here is the /system/build.prop line for 10MB:
 dalvik.vm.extra-opts=-Xss10M
 
+Development:
+I'm using eclipse "Luna Release (4.4.0)" with the android plugin: http://developer.android.com/sdk/installing/installing-adt.html
+You'll need to set the Java compiler compliance level to 1.8 every time you start eclipse.
+It sucks but so does every other IDE I tried. I think Assdroid Studio (which is based on Intellij IDEA) and netbeaner had trouble handling the new "type inference" in Java 8 and some of the uses of generics.
