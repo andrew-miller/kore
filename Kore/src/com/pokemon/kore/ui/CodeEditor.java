@@ -68,10 +68,10 @@ public class CodeEditor {
     s.path = path;
     s.code = code;
 
-    final F<List<Label>, Unit> setPath = $path -> {
-      pathContainer.removeAllViews();
-      pathContainer.addView(CodePath.make(context, new F<List<Label>, Unit>() {
-        public Unit f(List<Label> p) {
+    final F<List<Label>, Unit> setPath = new F<List<Label>, Unit>() {
+      public Unit f(List<Label> $path) {
+        pathContainer.removeAllViews();
+        pathContainer.addView(CodePath.make(context, p -> {
           notNull(p);
           Optional<Code> oc = codeAt(p, s.code);
           if (oc.isNothing())
@@ -83,9 +83,9 @@ public class CodeEditor {
           s.path = p;
           s.initNodeEditor.f(oc.some().x);
           return unit();
-        }
-      }, s.code, $path));
-      return unit();
+        }, s.code, $path));
+        return unit();
+      }
     };
 
     final F<Pair<Code, Optional<List<Label>>>, Unit> codeEdited =
