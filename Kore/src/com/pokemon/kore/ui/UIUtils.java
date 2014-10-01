@@ -9,7 +9,9 @@ import static com.pokemon.kore.ui.RelationUtils.relationOrPathAt;
 import static com.pokemon.kore.ui.RelationUtils.renderRelation;
 import static com.pokemon.kore.ui.RelationUtils.resolve;
 import static com.pokemon.kore.utils.CodeUtils.equal;
+import static com.pokemon.kore.utils.CodeUtils.hash;
 import static com.pokemon.kore.utils.CodeUtils.renderCode;
+import static com.pokemon.kore.utils.CodeUtils.renderCode3;
 import static com.pokemon.kore.utils.CodeUtils.reroot;
 import static com.pokemon.kore.utils.CodeUtils.unit;
 import static com.pokemon.kore.utils.ListUtils.append;
@@ -42,6 +44,7 @@ import android.widget.TextView.OnEditorActionListener;
 import com.pokemon.kore.codes.CanonicalCode;
 import com.pokemon.kore.codes.CanonicalRelation;
 import com.pokemon.kore.codes.Code;
+import com.pokemon.kore.codes.Code2;
 import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Relation;
 import com.pokemon.kore.codes.Relation.Abstraction;
@@ -49,6 +52,7 @@ import com.pokemon.kore.codes.Relation.Projection;
 import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
+import com.pokemon.kore.utils.ICode;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.Optional;
 import com.pokemon.kore.utils.Pair;
@@ -84,6 +88,68 @@ public class UIUtils {
     vg.addView(t);
     ((InputMethodManager) a.getSystemService(Context.INPUT_METHOD_SERVICE))
         .showSoftInput(t, 0);
+  }
+
+  public static void addCodeToMenu3(Menu m, ICode root, List<Label> path,
+      CodeLabelAliasMap2 codeLabelAliases,
+      Bijection<Code2.Link, String> codeAliases, F<List<Label>, Unit> f) {
+    addCodeToMenu3(m, root, path, Either.x(root), "", "", codeLabelAliases,
+        codeAliases, f);
+  }
+
+  private static void addCodeToMenu3(Menu m, ICode root, List<Label> path,
+      Either<ICode, List<Label>> cp, String ls, String space,
+      CodeLabelAliasMap2 codeLabelAliases,
+      Bijection<Code2.Link, String> codeAliases, F<List<Label>, Unit> f) {
+    MenuItem i =
+        m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
+            + renderCode3(root, path, codeLabelAliases, codeAliases, 1));
+    i.setOnMenuItemClickListener($ -> {
+      f.f(path);
+      return true;
+    });
+    if (cp.tag == cp.tag.X) {
+      Pair<Code2, List<Label>> p = cp.x().link();
+      Bijection<Label, String> las =
+          codeLabelAliases.getAliases(new Code2.Link(hash(p.x), p.y));
+      for (Pair<Label, Either<ICode, List<Label>>> e : iter(cp.x().labels()
+          .entrySet())) {
+        Optional<String> ls2 = las.xy.get(e.x);
+        addCodeToMenu3(m, root, append(e.x, path), e.y,
+            ls2.isNothing() ? e.x.label : ls2.some().x, space + "  ",
+            codeLabelAliases, codeAliases, f);
+      }
+    }
+  }
+
+  public static void addCodeToMenu2(Menu m, Code root, List<Label> path,
+      CodeLabelAliasMap codeLabelAliases,
+      Bijection<CanonicalCode, String> codeAliases, F<List<Label>, Unit> f) {
+    addCodeToMenu2(m, root, path, Either.x(root), "", "", codeLabelAliases,
+        codeAliases, f);
+  }
+
+  private static void addCodeToMenu2(Menu m, Code2 root, List<Label> path,
+      Either<Code2, List<Label>> cp, String ls, String space,
+      CodeLabelAliasMap2 codeLabelAliases,
+      Bijection<Code2.Link, String> codeAliases, F<List<Label>, Unit> f) {
+    MenuItem i =
+        m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
+            + renderCode(root, path, codeLabelAliases, codeAliases, 1));
+    i.setOnMenuItemClickListener($ -> {
+      f.f(path);
+      return true;
+    });
+    Bijection<Label, String> las =
+        codeLabelAliases.getAliases(new CanonicalCode(root, path));
+    if (cp.tag == cp.tag.X)
+      for (Pair<Label, Either<Code, List<Label>>> e : iter(cp.x().labels
+          .entrySet())) {
+        Optional<String> ls2 = las.xy.get(e.x);
+        addCodeToMenu2(m, root, append(e.x, path), e.y,
+            ls2.isNothing() ? e.x.label : ls2.some().x, space + "  ",
+            codeLabelAliases, codeAliases, f);
+      }
   }
 
   public static void addCodeToMenu(Menu m, Code root, List<Label> path,

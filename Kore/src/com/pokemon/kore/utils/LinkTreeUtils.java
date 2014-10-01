@@ -3,6 +3,7 @@ package com.pokemon.kore.utils;
 import static com.pokemon.kore.utils.Boom.boom;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.cons;
+import static com.pokemon.kore.utils.ListUtils.drop;
 import static com.pokemon.kore.utils.ListUtils.iter;
 import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.MapUtils.containsKey;
@@ -13,11 +14,198 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.jgrapht.alg.StrongConnectivityInspector;
 import org.jgrapht.graph.DirectedMultigraph;
 
+import com.pokemon.kore.codes.З2Bytes;
 import com.pokemon.kore.ui.LinkTree;
+import com.pokemon.kore.ui.LinkTree2;
+import com.pokemon.kore.ui.StrictLinkTree;
 
 public class LinkTreeUtils {
+
+  public interface Resolver<E, V> {
+    public Optional<LinkTree2<E, V>> resolve(Pair<З2Bytes, List<E>> l);
+  }
+
+  public interface Hasher<E, V> {
+    public З2Bytes hash(LinkTree<E, V> lt);
+  }
+
+  public interface Hasher2<E, V> {
+    public З2Bytes hash(StrictLinkTree<E, V> lt);
+  }
+
+  /**
+   * Decompose a <code>LinkTree</code> into strongly connected components with
+   * hash links to each other
+   */
+  public static
+      <E, V>
+      Pair<Map<З2Bytes, StrictLinkTree<E, Either<З2Bytes, V>>>, StrictLinkTree<E, Either<З2Bytes, V>>>
+      decompose3(LinkTree<E, V> lt, Hasher2<E, Either<З2Bytes, V>> h) {
+    Pair<DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>>, Identity<V>> gr =
+        linkTreeToGraph(lt);
+    return decompose3(Map.empty(), gr.x,
+        new StrongConnectivityInspector<>(gr.x).stronglyConnectedSets(), gr.y,
+        lt, lt, 0, 0, h);
+  }
+
+  private static
+      <E, V>
+      Pair<Map<З2Bytes, StrictLinkTree<E, Either<З2Bytes, V>>>, StrictLinkTree<E, Either<З2Bytes, V>>>
+      decompose3(Map<З2Bytes, StrictLinkTree<E, Either<З2Bytes, V>>> m,
+          DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g,
+          java.util.List<Set<Identity<V>>> sccs, Identity<V> v,
+          LinkTree<E, V> ltv, LinkTree<E, V> ltr, Integer height,
+          Integer sccRootHeight, Hasher2<E, Either<З2Bytes, V>> h) {
+    Set<Identity<V>> scc = containingSCC(sccs, v);
+    List<Pair<E, Either<StrictLinkTree<E, Either<З2Bytes, V>>, List<E>>>> edges =
+        nil();
+    for (Pair<E, Either<LinkTree<E, V>, List<E>>> e : iter(ltv.edges())) {
+      Identity<V> t = g.getEdgeTarget(pair(v, e.x));
+      Either<StrictLinkTree<E, Either<З2Bytes, V>>, List<E>> t2;
+      Pair<Map<З2Bytes, StrictLinkTree<E, Either<З2Bytes, V>>>, StrictLinkTree<E, Either<З2Bytes, V>>> p;
+      if (scc.contains(t)) {
+        if (e.y.tag == e.y.tag.Y)
+          t2 = Either.y(drop(e.y.y(), sccRootHeight));
+        else {
+          p =
+              decompose3(m, g, sccs, t, e.y.x(), ltr, height + 1,
+                  sccRootHeight, h);
+          m = p.x;
+          t2 = Either.x(p.y);
+        }
+      } else {
+        if (e.y.tag == e.y.tag.Y) {
+          p =
+              decompose3(m, g, sccs, t, linkTreeOrPathAt(ltr, e.y.y()).x(),
+                  ltr, height + 1, height + 1, h);
+          m = p.x;
+          t2 = Either.x(new StrictLinkTree<>(nil(), Either.x(h.hash(p.y))));
+        } else {
+          p =
+              decompose3(m, g, sccs, t, e.y.x(), ltr, height + 1, height + 1, h);
+          m = p.x;
+          t2 = Either.x(new StrictLinkTree<>(nil(), Either.x(h.hash(p.y))));
+        }
+      }
+      edges = cons(pair(e.x, t2), edges);
+    }
+    return pair(m,
+        new StrictLinkTree<E, Either<З2Bytes, V>>(edges, Either.y(v.t)));
+  }
+
+  /**
+   * Decompose a <code>LinkTree</code> into strongly connected components with
+   * hash links to each other
+   */
+  public static <E, V> StrictLinkTree<E, Either<З2Bytes, V>> decompose2(
+      LinkTree<E, V> lt, Hasher2<E, Either<З2Bytes, V>> h) {
+    Pair<DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>>, Identity<V>> gr =
+        linkTreeToGraph(lt);
+    return decompose2(gr.x,
+        new StrongConnectivityInspector<>(gr.x).stronglyConnectedSets(), gr.y,
+        lt, lt, 0, 0, h);
+  }
+
+  private static <E, V> StrictLinkTree<E, Either<З2Bytes, V>> decompose2(
+      DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g,
+      java.util.List<Set<Identity<V>>> sccs, Identity<V> v, LinkTree<E, V> ltv,
+      LinkTree<E, V> ltr, Integer height, Integer sccRootHeight,
+      Hasher2<E, Either<З2Bytes, V>> h) {
+    Set<Identity<V>> scc = containingSCC(sccs, v);
+    List<Pair<E, Either<StrictLinkTree<E, Either<З2Bytes, V>>, List<E>>>> edges =
+        nil();
+    for (Pair<E, Either<LinkTree<E, V>, List<E>>> e : iter(ltv.edges())) {
+      Identity<V> t = g.getEdgeTarget(pair(v, e.x));
+      Either<StrictLinkTree<E, Either<З2Bytes, V>>, List<E>> t2;
+      if (scc.contains(t)) {
+        if (e.y.tag == e.y.tag.Y)
+          t2 = Either.y(drop(e.y.y(), sccRootHeight));
+        else
+          t2 =
+              Either.x(decompose2(g, sccs, t, e.y.x(), ltr, height + 1,
+                  sccRootHeight, h));
+      } else {
+        if (e.y.tag == e.y.tag.Y)
+          t2 =
+              Either.x(new StrictLinkTree<>(nil(), Either.x(h.hash(decompose2(
+                  g, sccs, t, linkTreeOrPathAt(ltr, e.y.y()).x(), ltr,
+                  height + 1, height + 1, h)))));
+        else
+          t2 =
+              Either.x(new StrictLinkTree<>(nil(), Either.x(h.hash(decompose2(
+                  g, sccs, t, e.y.x(), ltr, height + 1, height + 1, h)))));
+      }
+      edges = cons(pair(e.x, t2), edges);
+    }
+    return new StrictLinkTree<E, Either<З2Bytes, V>>(edges, Either.y(v.t));
+  }
+
+  /**
+   * Decompose a <code>LinkTree</code> into strongly connected components with
+   * hash links to each other
+   */
+  public static <E, V> LinkTree<E, Either<З2Bytes, V>> decompose(
+      LinkTree<E, V> lt, Hasher<E, Either<З2Bytes, V>> h) {
+    Pair<DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>>, Identity<V>> gr =
+        linkTreeToGraph(lt);
+    return decompose(gr.x,
+        new StrongConnectivityInspector<>(gr.x).stronglyConnectedSets(), gr.y,
+        lt, lt, 0, 0, h);
+  }
+
+  private static <E, V> LinkTree<E, Either<З2Bytes, V>> decompose(
+      DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g,
+      java.util.List<Set<Identity<V>>> sccs, Identity<V> v, LinkTree<E, V> ltv,
+      LinkTree<E, V> ltr, Integer height, Integer sccRootHeight,
+      Hasher<E, Either<З2Bytes, V>> h) {
+    Set<Identity<V>> scc = containingSCC(sccs, v);
+    return new LinkTree<E, Either<З2Bytes, V>>() {
+      public List<Pair<E, Either<LinkTree<E, Either<З2Bytes, V>>, List<E>>>>
+          edges() {
+        List<Pair<E, Either<LinkTree<E, Either<З2Bytes, V>>, List<E>>>> es =
+            nil();
+        for (Pair<E, Either<LinkTree<E, V>, List<E>>> e : iter(ltv.edges())) {
+          Identity<V> t = g.getEdgeTarget(pair(v, e.x));
+          Either<LinkTree<E, Either<З2Bytes, V>>, List<E>> t2;
+          if (scc.contains(t)) {
+            if (e.y.tag == e.y.tag.Y)
+              t2 = Either.y(drop(e.y.y(), sccRootHeight));
+            else
+              t2 =
+                  Either.x(decompose(g, sccs, t, e.y.x(), ltr, height + 1,
+                      sccRootHeight, h));
+          } else {
+            if (e.y.tag == e.y.tag.Y)
+              t2 =
+                  Either.x(decompose(g, sccs, t, linkTreeOrPathAt(ltr, e.y.y())
+                      .x(), ltr, height + 1, height + 1, h));
+            else
+              t2 =
+                  Either.x(decompose(g, sccs, t, e.y.x(), ltr, height + 1,
+                      height + 1, h));
+          }
+          es = cons(pair(e.x, t2), es);
+        }
+        return es;
+      }
+
+      public Either<З2Bytes, V> vertex() {
+        return height != 0 & height == sccRootHeight ? Either.x(h.hash(this))
+            : Either.y(v.t);
+      }
+    };
+  }
+
+  private static <V> Set<Identity<V>> containingSCC(
+      java.util.List<Set<Identity<V>>> sccs, Identity<V> r) {
+    for (Set<Identity<V>> scc : sccs)
+      if (scc.contains(r))
+        return scc;
+    throw boom();
+  }
 
   /**
    * a <code>LinkTree</code> representing the same graph as <code>lt</code>, but
@@ -208,6 +396,26 @@ public class LinkTreeUtils {
         spanningTreeEdges.add(e);
       }
     }
+  }
+
+  public static <E, V> Either<LinkTree<E, V>, List<E>> linkTreeOrPathAt(
+      LinkTree<E, V> lt, List<E> p) {
+    return linkTreeOrPathAt_(Either.x(lt), p);
+  }
+
+  public static <E, V> Either<LinkTree<E, V>, List<E>> linkTreeOrPathAt_(
+      Either<LinkTree<E, V>, List<E>> ltp, List<E> p) {
+    if (p.isEmpty())
+      return ltp;
+    return linkTreeOrPathAt_(getEdge(ltp.x(), p.cons().x), p.cons().tail);
+  }
+
+  public static <E, V> Either<LinkTree<E, V>, List<E>> getEdge(
+      LinkTree<E, V> lt, E e) {
+    for (Pair<E, Either<LinkTree<E, V>, List<E>>> p : iter(lt.edges()))
+      if (p.x.equals(e))
+        return p.y;
+    throw boom();
   }
 
   public static <E, V> Identity<V> followPath(List<E> path,

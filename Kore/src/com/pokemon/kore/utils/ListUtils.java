@@ -209,4 +209,9 @@ public class ListUtils {
   public static <T> List<T> take(List<T> l, Integer n) {
     return n == 0 ? nil() : cons(l.cons().x, take(l.cons().tail, n - 1));
   }
+
+  public static <T> List<T> prefix(List<T> l1, List<T> l2) {
+    return l1.cons().x.equals(l2.cons().x) ? cons(l1.cons().x,
+        prefix(l1.cons().tail, l2.cons().tail)) : nil();
+  }
 }
