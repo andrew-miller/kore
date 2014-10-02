@@ -16,6 +16,9 @@ import static com.pokemon.kore.utils.OptionalUtils.nothing;
 import static com.pokemon.kore.utils.OptionalUtils.some;
 import static com.pokemon.kore.utils.PairUtils.pair;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -69,73 +72,61 @@ public final class CodeUtils {
     return linkTreeToCode(LinkTreeUtils.reroot(linkTree(c), p));
   }
 
+  public static byte[] labelBytes(Label l) {
+    if (l.label.length() != 64)
+      throw new RuntimeException("invalid string length");
+    try {
+      return l.label.getBytes("UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static З2Bytes hash(Code2 c) {
+    try {
+      MessageDigest md = MessageDigest.getInstance("SHA256");
+      hash(c, md);
+      return new З2Bytes(md.digest());
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public static String renderCode2(Code2 c, List<Label> p,
-      CodeLabelAliasMap codeLabelAliases,
-      Bijection<CanonicalCode, String> codeAliases, int depth, Resolver r) {
-    return renderCode2(p, c, codeOrPathAt(p, c), codeLabelAliases, codeAliases,
-        depth, r);
-  }
-
-  private static String renderCode2(List<Label> path, Code2 root,
-      Either<Code2, List<Label>> cp, CodeLabelAliasMap2 codeLabelAliases,
-      Bijection<Link, String> codeAliases, int depth, Resolver r) {
-    if (depth < 0)
-      throw new RuntimeException("negative depth");
-    if (depth == 0)
-      return "...";
-    Link link = new Link(hash(root), path);
-    Optional<String> codeAlias = codeAliases.xy.get(link);
-    if (!codeAlias.isNothing())
-      return codeAlias.some().x;
-    if (cp.tag == cp.tag.Y)
-      return "^";
-    Code2 c = cp.x();
-    String start;
-    String end;
+  public static void hash(Code2 c, MessageDigest md) {
+    byte cs, ce;
     switch (c.tag) {
-    case UNION:
-      start = "[";
-      end = "]";
-      break;
     case PRODUCT:
-      start = "{";
-      end = "}";
+      cs = 0;
+      ce = 1;
+      break;
+    case UNION:
+      cs = 2;
+      ce = 3;
       break;
     default:
-      throw Boom.boom();
+      throw boom();
     }
-    Bijection<Label, String> labelAliases = codeLabelAliases.getAliases(link);
-    String result = "";
+    md.update(cs);
     for (Pair<Label, Either3<Code2, List<Label>, Link>> e : iter(c.labels
-        .entrySet())) {
-      Label l = e.x;
-      if (result.equals(""))
-        result = "'";
-      else
-        result += ", '";
-      Optional<String> la = labelAliases.xy.get(l);
-      String ls = la.isNothing() ? l.label : la.some().x;
+        .entrySet()))
       switch (e.y.tag) {
       case X:
-        cp = Either.x(e.y.x());
+        hash(e.y.x(), md);
         break;
       case Y:
-        cp = Either.y(e.y.y());
+        md.update((byte) 4);
+        for (Label l : iter(e.y.y()))
+          md.update(labelBytes(l));
+        md.update((byte) 5);
         break;
       case Z:
-        cp = Either.x(resolve(e.y.z(), r).some().x);
+        md.update((byte) 6);
+        md.update(e.y.z().hash.getBytes());
         break;
       default:
         break;
       }
-      result +=
-          (ls + " " + renderCode2(append(l, path), root, cp, codeLabelAliases,
-              codeAliases, depth - 1, r));
-    }
-    return start + result + end;
+    md.update(ce);
   }
 
   public static String renderCode3(ICode c, List<Label> p,
@@ -560,9 +551,6 @@ public final class CodeUtils {
     public Optional<Code2> resolve(З2Bytes hash);
   }
 
-  public static Code2 reroot(Code2 c, List<Label> p) {
-  }
-
   public static Pair<Map<З2Bytes, Code2>, Code2> replaceCodeAt2(Code2 c,
       List<Label> path, Either3<Code2, List<Label>, Link> newCode, Resolver r) {
     Pair<Map<З2Bytes, StrictLinkTree<Label, Either<З2Bytes, Either<Link, Code2.Tag>>>>, StrictLinkTree<Label, Either<З2Bytes, Either<Link, Code2.Tag>>>> p =
@@ -577,46 +565,6 @@ public final class CodeUtils {
                 strictLinkTreeToCode(removeRedundantLinkEncoding($p.y))),
             p.x.entrySet())),
         strictLinkTreeToCode(removeRedundantLinkEncoding(p.y)));
-  }
-
-  private static LinkTree<Label, Either<Link, Code2.Tag>>
-      removeRedundantLinkEncoding(
-          LinkTree<Label, Either<З2Bytes, Either<Link, Code2.Tag>>> lt) {
-    return new LinkTree<Label, Either<Link, Code2.Tag>>() {
-      public
-          List<Pair<Label, Either<LinkTree<Label, Either<Link, Code2.Tag>>, List<Label>>>>
-          edges() {
-        List<Pair<Label, Either<LinkTree<Label, Either<Link, Code2.Tag>>, List<Label>>>> es =
-            nil();
-        for (Pair<Label, Either<LinkTree<Label, Either<З2Bytes, Either<Link, Code2.Tag>>>, List<Label>>> e : iter(lt
-            .edges())) {
-          Either<LinkTree<Label, Either<Link, Code2.Tag>>, List<Label>> v;
-          switch (e.y.tag) {
-          case X:
-            v = Either.x(removeRedundantLinkEncoding(e.y.x()));
-            break;
-          case Y:
-            v = Either.y(e.y.y());
-            break;
-          default:
-            throw boom();
-          }
-          es = cons(pair(e.x, v), es);
-        }
-        return es;
-      }
-
-      public Either<Link, Code2.Tag> vertex() {
-        switch (lt.vertex().tag) {
-        case X:
-          return Either.x(new Link(lt.vertex().x(), nil()));
-        case Y:
-          return lt.vertex().y();
-        default:
-          throw boom();
-        }
-      }
-    };
   }
 
   private static StrictLinkTree<Label, Either<Link, Code2.Tag>>
@@ -1073,29 +1021,6 @@ public final class CodeUtils {
     }
   }
 
-  public static Code2 linkTreeToCode2(
-      LinkTree<Label, Either<З2Bytes, Either<Link, Code2.Tag>>> lt) {
-    switch (lt.vertex().tag) {
-    case X:
-      З2Bytes a = lt.vertex().x();
-      break;
-    case Y:
-      switch (lt.vertex().y().tag) {
-      case X:
-        Link b = lt.vertex().y().x();
-        break;
-      case Y:
-        Code2.Tag c = lt.vertex().y().y();
-        break;
-      default:
-        throw boom();
-      }
-      break;
-    default:
-      throw boom();
-    }
-  }
-
   public static boolean canReplace(Code2 c, List<Label> p,
       Either3<Code2, List<Label>, Link> n, Resolver r) {
     return validCode2(inlineAndReplace(c, p, n, r));
@@ -1143,6 +1068,50 @@ public final class CodeUtils {
         return m;
       }
     };
+  }
+
+  public static Code code(ICode c) {
+    Map<Label, Either<Code, List<Label>>> ls = Map.empty();
+    for (Pair<Label, Either<ICode, List<Label>>> e : iter(c.labels().entrySet())) {
+      switch (e.y.tag) {
+      case X:
+        ls = ls.put(e.x, Either.x(code(e.y.x())));
+        break;
+      case Y:
+        ls = ls.put(e.x, Either.y(e.y.y()));
+        break;
+      }
+    }
+    switch (c.tag()) {
+    case PRODUCT:
+      return Code.newProduct(ls);
+    case UNION:
+      return Code.newUnion(ls);
+    default:
+      throw boom();
+
+    }
+  }
+
+  public static Code2 code2(Code c) {
+    Map<Label, Either3<Code2, List<Label>, Link>> ls = Map.empty();
+    for (Pair<Label, Either<Code, List<Label>>> e : iter(c.labels.entrySet())) {
+      switch (e.y.tag) {
+      case X:
+        ls = ls.put(e.x, Either3.x(code2(e.y.x())));
+        break;
+      case Y:
+        ls = ls.put(e.x, Either3.y(e.y.y()));
+      }
+    }
+    switch (c.tag) {
+    case PRODUCT:
+      return Code2.newProduct(ls);
+    case UNION:
+      return Code2.newUnion(ls);
+    default:
+      throw boom();
+    }
   }
 
 }

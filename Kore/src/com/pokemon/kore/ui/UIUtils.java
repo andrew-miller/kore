@@ -122,36 +122,6 @@ public class UIUtils {
     }
   }
 
-  public static void addCodeToMenu2(Menu m, Code root, List<Label> path,
-      CodeLabelAliasMap codeLabelAliases,
-      Bijection<CanonicalCode, String> codeAliases, F<List<Label>, Unit> f) {
-    addCodeToMenu2(m, root, path, Either.x(root), "", "", codeLabelAliases,
-        codeAliases, f);
-  }
-
-  private static void addCodeToMenu2(Menu m, Code2 root, List<Label> path,
-      Either<Code2, List<Label>> cp, String ls, String space,
-      CodeLabelAliasMap2 codeLabelAliases,
-      Bijection<Code2.Link, String> codeAliases, F<List<Label>, Unit> f) {
-    MenuItem i =
-        m.add(space + ls.substring(0, Math.min(10, ls.length())) + " "
-            + renderCode(root, path, codeLabelAliases, codeAliases, 1));
-    i.setOnMenuItemClickListener($ -> {
-      f.f(path);
-      return true;
-    });
-    Bijection<Label, String> las =
-        codeLabelAliases.getAliases(new CanonicalCode(root, path));
-    if (cp.tag == cp.tag.X)
-      for (Pair<Label, Either<Code, List<Label>>> e : iter(cp.x().labels
-          .entrySet())) {
-        Optional<String> ls2 = las.xy.get(e.x);
-        addCodeToMenu2(m, root, append(e.x, path), e.y,
-            ls2.isNothing() ? e.x.label : ls2.some().x, space + "  ",
-            codeLabelAliases, codeAliases, f);
-      }
-  }
-
   public static void addCodeToMenu(Menu m, Code root, List<Label> path,
       CodeLabelAliasMap codeLabelAliases,
       Bijection<CanonicalCode, String> codeAliases, F<List<Label>, Unit> f) {
