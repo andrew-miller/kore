@@ -1,13 +1,14 @@
 package com.pokemon.kore.ui;
 
 import static com.pokemon.kore.utils.Boom.boom;
-import static com.pokemon.kore.utils.CodeUtils.codeAt;
-import static com.pokemon.kore.utils.CodeUtils.disassociate;
-import static com.pokemon.kore.utils.CodeUtils.longestValidSubPath;
-import static com.pokemon.kore.utils.CodeUtils.mapPath;
-import static com.pokemon.kore.utils.CodeUtils.replaceCodeAt;
-import static com.pokemon.kore.utils.CodeUtils.unit;
-import static com.pokemon.kore.utils.CodeUtils.validCode;
+import static com.pokemon.kore.utils.CodeUtils.canReplace;
+import static com.pokemon.kore.utils.CodeUtils.codeAt2;
+import static com.pokemon.kore.utils.CodeUtils.hash;
+import static com.pokemon.kore.utils.CodeUtils.icode;
+import static com.pokemon.kore.utils.CodeUtils.longestValidSubPath2;
+import static com.pokemon.kore.utils.CodeUtils.replaceCodeAt2;
+import static com.pokemon.kore.utils.CodeUtils.resolve;
+import static com.pokemon.kore.utils.CodeUtils.unit2;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.isPrefix;
 import static com.pokemon.kore.utils.ListUtils.iter;
@@ -26,10 +27,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.pokemon.kore.R;
-import com.pokemon.kore.codes.CanonicalCode;
-import com.pokemon.kore.codes.Code;
+import com.pokemon.kore.codes.Code2;
+import com.pokemon.kore.codes.Code2.Link;
 import com.pokemon.kore.codes.Label;
-import com.pokemon.kore.utils.Either;
+import com.pokemon.kore.codes.З2Bytes;
+import com.pokemon.kore.utils.CodeUtils.Resolver;
+import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.Map;
@@ -45,17 +48,17 @@ public class CodeEditor2 {
 
   static class S {
     View nodeEditor;
-    Code code = unit;
+    Code2 code = unit2;
     List<Label> path;
     List<Label> pathShadow;
-    public F<Code, Unit> initNodeEditor;
+    public F<Code2, Unit> initNodeEditor;
   }
 
   private static Pair<View, F<Unit, Bundle>> make(final Context context,
-      Code code, final CodeLabelAliasMap codeLabelAliases,
-      final Bijection<CanonicalCode, String> codeAliases,
-      final List<Code> codes, List<Label> path, List<Label> pathShadow,
-      final F<Code, Unit> done) {
+      Code2 code, final CodeLabelAliasMap2 codeLabelAliases,
+      final Bijection<Link, String> codeAliases, final List<Code2> codes,
+      List<Label> path, List<Label> pathShadow, Resolver r,
+      final F<Code2, Unit> done) {
     notNull(context, code, codeLabelAliases, codeAliases, codes, path,
         pathShadow, done);
     final View v =
@@ -68,12 +71,12 @@ public class CodeEditor2 {
     s.path = path;
     s.code = code;
 
-    final F<List<Label>, Unit> setPath = $path -> {
-      pathContainer.removeAllViews();
-      pathContainer.addView(CodePath.make(context, new F<List<Label>, Unit>() {
-        public Unit f(List<Label> p) {
+    final F<List<Label>, Unit> setPath = new F<List<Label>, Unit>() {
+      public Unit f(List<Label> $path) {
+        pathContainer.removeAllViews();
+        pathContainer.addView(CodePath2.make(context, p -> {
           notNull(p);
-          Optional<Code> oc = codeAt(p, s.code);
+          Optional<Code2> oc = codeAt2(p, s.code, r);
           if (oc.isNothing())
             throw new RuntimeException("invalid path");
           if (!isPrefix(p, s.pathShadow)) {
@@ -83,40 +86,36 @@ public class CodeEditor2 {
           s.path = p;
           s.initNodeEditor.f(oc.some().x);
           return unit();
-        }
-      }, s.code, $path));
-      return unit();
+        }, icode(s.code, r), $path));
+        return unit();
+      }
     };
 
-    final F<Pair<Code, Optional<List<Label>>>, Unit> codeEdited =
+    final F<Pair<Code2, Optional<List<Label>>>, Unit> codeEdited =
         a -> {
-          Code code2 = replaceCodeAt(s.code, s.path, Either.x(a.x));
+          Pair<Map<З2Bytes, Code2>, Code2> p =
+              replaceCodeAt2(s.code, s.path, Either3.x(a.x), r);
+          Code2 code2 = p.y;
           remapAliases(s.code, code2, nil(), a.y, codeLabelAliases, s.code);
-          s.pathShadow = longestValidSubPath(s.pathShadow, code2);
-          Pair<Code, Map<List<Label>, Map<Label, Label>>> p =
-              disassociate(code2, s.path);
-          mapAliases(code2, nil(), p.x, nil(), code2, p.y, codeLabelAliases);
-          s.code = p.x;
-          s.path = mapPath(s.path, p.y);
-          s.pathShadow = mapPath(s.pathShadow, p.y);
-          setPath.f(s.pathShadow);
-          s.initNodeEditor.f(codeAt(s.path, s.code).some().x);
+          s.pathShadow = longestValidSubPath2(s.pathShadow, icode(code2, r));
+          s.code = code2;
+          s.initNodeEditor.f(codeAt2(s.path, s.code, r).some().x);
           return unit();
         };
 
-    s.initNodeEditor = new F<Code, Unit>() {
-      public Unit f(Code c) {
+    s.initNodeEditor = new F<Code2, Unit>() {
+      public Unit f(Code2 c) {
         s.nodeEditor =
-            CodeNodeEditor.make(context, c, s.code,
-                new CodeNodeEditor.Listener() {
+            CodeNodeEditor2.make(context, c, s.code,
+                new CodeNodeEditor2.Listener() {
                   public void switchCodeOp() {
-                    Code c = codeAt(s.path, s.code).some().x;
+                    Code2 c = codeAt2(s.path, s.code, r).some().x;
                     switch (c.tag) {
                     case PRODUCT:
-                      c = Code.newUnion(c.labels);
+                      c = Code2.newUnion(c.labels);
                       break;
                     case UNION:
-                      c = Code.newProduct(c.labels);
+                      c = Code2.newProduct(c.labels);
                       break;
                     default:
                       throw boom();
@@ -129,8 +128,8 @@ public class CodeEditor2 {
                   }
 
                   public void newField() {
-                    Code c = codeAt(s.path, s.code).some().x;
-                    Map<Label, Either<Code, List<Label>>> m = c.labels;
+                    Code2 c = codeAt2(s.path, s.code, r).some().x;
+                    Map<Label, Either3<Code2, List<Label>, Link>> m = c.labels;
                     Label l = null;
                     do {
                       if (l != null)
@@ -138,52 +137,57 @@ public class CodeEditor2 {
                             "generated duplicate label");
                       l = new Label(Random.randomId());
                     } while (containsKey(m, l));
-                    m = m.put(l, Either.x(unit));
-                    c = new Code(c.tag, m);
+                    m = m.put(l, Either3.x(unit2));
+                    c = new Code2(c.tag, m);
                     codeEdited.f(pair(c, nothing()));
                   }
 
                   public void changeLabelAlias(Label label, String alias) {
                     notNull(label, alias);
-                    Code c = codeAt(s.path, s.code).some().x;
+                    Code2 c = codeAt2(s.path, s.code, r).some().x;
                     if (!containsKey(c.labels, label))
                       throw new RuntimeException("non-existent label");
-                    CanonicalCode cc = new CanonicalCode(s.code, s.path);
-                    if (codeLabelAliases.setAlias(cc, label, alias))
+                    Link l = new Link(hash(s.code), s.path);
+                    if (codeLabelAliases.setAlias(l, label, alias))
                       f(c);
                   }
 
-                  public void
-                      replaceField(Either<Code, List<Label>> cp, Label l) {
-                    Code c = codeAt(s.path, s.code).some().x;
-                    notNull(cp, l);
-                    if (cp.tag == cp.tag.Y)
-                      if (codeAt(cp.y(), s.code).isNothing())
+                  public void replaceField(
+                      Either3<Code2, List<Label>, Link> cpl, Label l) {
+                    Code2 c = codeAt2(s.path, s.code, r).some().x;
+                    notNull(cpl, l);
+                    if (cpl.tag == cpl.tag.Y)
+                      if (codeAt2(cpl.y(), s.code, r).isNothing())
                         throw new RuntimeException("invalid path");
-                    c = new Code(c.tag, c.labels.put(l, cp));
+                    c = new Code2(c.tag, c.labels.put(l, cpl));
                     codeEdited.f(pair(c, some(append(l, s.path))));
                   }
 
                   public void deleteField(Label l) {
-                    Code c = codeAt(s.path, s.code).some().x;
-                    Code c2 = new Code(c.tag, c.labels.delete(l));
-                    if (validCode(replaceCodeAt(s.code, s.path, Either.x(c2))))
+                    Code2 c = codeAt2(s.path, s.code, r).some().x;
+                    Code2 c2 = new Code2(c.tag, c.labels.delete(l));
+                    if (canReplace(s.code, s.path, Either3.x(c2), r))
                       codeEdited.f(pair(c2, some(append(l, s.path))));
                   }
 
                   public void selectCode(Label l) {
                     notNull(l);
-                    Code c = codeAt(s.path, s.code).some().x;
-                    Either<Code, List<Label>> cp = c.labels.get(l).some().x;
-                    Code c2;
-                    switch (cp.tag) {
+                    Code2 c = codeAt2(s.path, s.code, r).some().x;
+                    Either3<Code2, List<Label>, Link> cpl =
+                        c.labels.get(l).some().x;
+                    Code2 c2;
+                    switch (cpl.tag) {
+                    case Z:
+                      s.path = append(l, s.path);
+                      c2 = resolve(cpl.z(), r).some().x;
+                      break;
                     case Y:
-                      s.path = cp.y();
-                      c2 = codeAt(s.path, s.code).some().x;
+                      s.path = cpl.y();
+                      c2 = codeAt2(s.path, s.code, r).some().x;
                       break;
                     case X:
                       s.path = append(l, s.path);
-                      c2 = cp.x();
+                      c2 = cpl.x();
                       break;
                     default:
                       throw boom();
@@ -194,7 +198,7 @@ public class CodeEditor2 {
                     }
                     f(c2);
                   }
-                }, codeAliases, codes, s.path, codeLabelAliases);
+                }, codeAliases, codes, s.path, codeLabelAliases, r);
         ViewGroup cont = (ViewGroup) v.findViewById(R.id.container_code_editor);
         cont.removeAllViews();
         cont.addView(s.nodeEditor);
@@ -210,58 +214,35 @@ public class CodeEditor2 {
       return b;
     };
 
-    s.initNodeEditor.f(codeAt(path, code).some().x);
+    s.initNodeEditor.f(codeAt2(path, code, r).some().x);
     setPath.f(s.pathShadow);
     return pair(v, getState);
   }
 
-  public static Pair<View, F<Unit, Bundle>> make(Context context, Code code,
-      CodeLabelAliasMap codeLabelAliases,
-      Bijection<CanonicalCode, String> codeAliases, List<Code> codes,
-      F<Code, Unit> done) {
+  public static Pair<View, F<Unit, Bundle>> make(Context context, Code2 code,
+      CodeLabelAliasMap2 codeLabelAliases, Bijection<Link, String> codeAliases,
+      List<Code2> codes, Resolver r, F<Code2, Unit> done) {
     return make(context, code, codeLabelAliases, codeAliases, codes, nil(),
-        nil(), done);
+        nil(), r, done);
   }
 
   public static Pair<View, F<Unit, Bundle>> make(Context context, Bundle b,
-      CodeLabelAliasMap codeLabelAliases,
-      Bijection<CanonicalCode, String> codeAliases, List<Code> codes,
-      F<Code, Unit> done) {
-    return make(context, (Code) b.get(STATE_CODE), codeLabelAliases,
+      CodeLabelAliasMap2 codeLabelAliases, Bijection<Link, String> codeAliases,
+      List<Code2> codes, Resolver r, F<Code2, Unit> done) {
+    return make(context, (Code2) b.get(STATE_CODE), codeLabelAliases,
         codeAliases, codes, (List<Label>) b.get(STATE_PATH),
-        (List<Label>) b.get(STATE_PATH_SHADOW), done);
+        (List<Label>) b.get(STATE_PATH_SHADOW), r, done);
   }
 
-  private static void mapAliases(Code cRoot, List<Label> cPath, Code c2root,
-      List<Label> c2Path, Code cNode, Map<List<Label>, Map<Label, Label>> i,
-      CodeLabelAliasMap codeLabelAliases) {
-    CanonicalCode cc = new CanonicalCode(cRoot, cPath);
-    CanonicalCode cc2 = new CanonicalCode(c2root, c2Path);
-    Bijection<Label, String> la = codeLabelAliases.getAliases(cc);
-    Bijection<Label, String> la2 = Bijection.empty();
-    Map<Label, Label> m = i.get(cPath).some().x;
-    for (Pair<Label, Either<Code, List<Label>>> e : iter(cNode.labels
-        .entrySet())) {
-      Label l = e.x;
-      Label l2 = m.get(l).some().x;
-      Optional<String> oa = la.xy.get(l);
-      if (!oa.isNothing())
-        la2 = la2.putX(l2, oa.some().x).some().x;
-      if (e.y.tag == e.y.tag.X)
-        mapAliases(cRoot, append(e.x, cPath), c2root, append(l2, c2Path),
-            e.y.x(), i, codeLabelAliases);
-    }
-    codeLabelAliases.setAliases(cc2, la2);
-  }
-
-  private static void remapAliases(Code c, Code c2, List<Label> path,
+  private static void remapAliases(Code2 c, Code2 c2, List<Label> path,
       Optional<List<Label>> invalidatedPath,
-      CodeLabelAliasMap codeLabelAliases, Code code) {
+      CodeLabelAliasMap2 codeLabelAliases, Code2 code) {
     if (some(path).equals(invalidatedPath))
       return;
-    codeLabelAliases.setAliases(new CanonicalCode(c2, path),
-        codeLabelAliases.getAliases(new CanonicalCode(code, path)));
-    for (Pair<Label, Either<Code, List<Label>>> e : iter(c.labels.entrySet()))
+    codeLabelAliases.setAliases(new Link(hash(c2), path),
+        codeLabelAliases.getAliases(new Link(hash(code), path)));
+    for (Pair<Label, Either3<Code2, List<Label>, Link>> e : iter(c.labels
+        .entrySet()))
       if (e.y.tag == e.y.tag.X)
         remapAliases(e.y.x(), c2, append(e.x, path), invalidatedPath,
             codeLabelAliases, code);

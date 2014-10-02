@@ -31,4 +31,11 @@ public class MapUtils {
     return m2;
   }
 
+  public static <K, V> Map<K, V> fromList(List<Pair<K, V>> l) {
+    Map<K, V> m = Map.empty();
+    for (Pair<K, V> p : iter(l))
+      m = m.put(p.x, p.y);
+    return m;
+  }
+
 }

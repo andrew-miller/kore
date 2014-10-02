@@ -72,7 +72,7 @@ public class CodeField3 {
       UIUtils.addCodeToMenu3(m, ir, nil(), codeLabelAliases, codeAliases,
           p -> {
             Either3<Code2, List<Label>, Link> n;
-            if (codeAt2(p, rootCode).isNothing()) {
+            if (codeAt2(p, rootCode, r).isNothing()) {
               Pair<Code2, List<Label>> cl = codeAt2(p, ir).some().x.link();
               n = Either3.z(new Link(hash(cl.x), cl.y));
             } else

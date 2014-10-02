@@ -10,6 +10,7 @@ import static com.pokemon.kore.utils.ListUtils.map;
 import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.ListUtils.take;
 import static com.pokemon.kore.utils.MapUtils.containsKey;
+import static com.pokemon.kore.utils.MapUtils.fromList;
 import static com.pokemon.kore.utils.MapUtils.values;
 import static com.pokemon.kore.utils.OptionalUtils.nothing;
 import static com.pokemon.kore.utils.OptionalUtils.some;
@@ -40,6 +41,7 @@ public final class CodeUtils {
   private final static String className = CodeUtils.class.getName();
 
   public final static Code unit = Code.newProduct(Map.empty());
+  public final static Code2 unit2 = Code2.newProduct(Map.empty());
 
   public final static Code empty = Code.newUnion(Map.empty());
 
@@ -258,13 +260,92 @@ public final class CodeUtils {
    *         components containing any node on <tt>path</tt> are randomized.
    *         <tt>i</tt> is the isomorphism itself.
    */
+  public static Pair<Code2, Map<List<Label>, Map<Label, Label>>> disassociate2(
+      ICode c, List<Label> path) {
+    throw boom();
+  }
+
+  private static
+      Pair<Code2, Map<List<Label>, Map<Label, Label>>>
+      disassociate2(Code2 c, List<Label> path,
+          Map<List<Label>, Map<Label, Label>> i, List<Label> before, Resolver r) {
+    Map<Label, Either3<Code2, List<Label>, Link>> ls = Map.empty();
+    Map<Label, Label> m = Map.empty();
+    for (Pair<Label, Either3<Code2, List<Label>, Link>> e : iter(c.labels
+        .entrySet())) {
+      Label l = null;
+      do {
+        if (l != null)
+          Log.e(className, "generated duplicate label");
+        l = new Label(Random.randomId());
+      } while (containsKey(ls, l));
+      m = m.put(e.x, l);
+      i = i.put(before, m);
+      if (e.equals(path.cons().x)) {
+        Pair<Code2, Map<List<Label>, Map<Label, Label>>> p;
+        switch (e.y.tag) {
+        case X:
+          p =
+              disassociate2(e.y.x(), path.cons().tail, i, append(e.x, before),
+                  r);
+          i = p.y;
+          ls = ls.put(e.x, Either3.x(p.x));
+          break;
+        case Z:
+          // fak. now we have to recurse in the middle of the SCC designated by
+          // e.y.z(), but we need to also randomize that entire SCC
+          // p =
+          // disassociate2(
+          // codeAt2(e.y.z().path, r.resolve(e.y.z().hash).some().x)
+          // .some().x, path.cons().tail, i, before, r);
+          // ls = ls.put(e.x, );
+          break;
+        case Y:
+        default:
+          throw boom();
+        }
+      } else {
+
+      }
+      switch (e.y.tag) {
+      case X:
+        if (path.isEmpty())
+          ls = ls.put(e.x, e.y);
+        else {
+          Pair<Code2, Map<List<Label>, Map<Label, Label>>> p =
+              disassociate2(c, path.cons().tail, i, append(e.x, before), r);
+          i = p.y;
+          ls = ls.put(e.x, Either3.x(p.x));
+        }
+        break;
+      case Y:
+      case Z:
+        ls.put(l, e.y);
+        break;
+      }
+    }
+    switch (c.tag) {
+    case PRODUCT:
+      return pair(Code2.newProduct(ls), i);
+    case UNION:
+      return pair(Code2.newUnion(ls), i);
+    default:
+      throw boom();
+
+    }
+  }
+
+  /**
+   * @return a pair <tt>(c', i)</tt> where <tt>c'</tt> is isomorphic to
+   *         <tt>c</tt>. All labels of the nodes within the strongly connected
+   *         components containing any node on <tt>path</tt> are randomized.
+   *         <tt>i</tt> is the isomorphism itself.
+   */
   public static Pair<Code, Map<List<Label>, Map<Label, Label>>> disassociate(
       Code c, List<Label> path) {
     Pair<DirectedMultigraph<Identity<Tag>, Pair<Identity<Tag>, Label>>, Identity<Tag>> p =
         codeToGraph(c);
     Set<Identity<Tag>> vs = new HashSet<>();
-    StrongConnectivityInspector<Identity<Tag>, Pair<Identity<Tag>, Label>> wat =
-        new StrongConnectivityInspector<>(p.x);
     for (Set<Identity<Tag>> scc : new StrongConnectivityInspector<>(p.x)
         .stronglyConnectedSets()) {
       Identity<Tag> v = p.y;
@@ -426,6 +507,21 @@ public final class CodeUtils {
     return cp;
   }
 
+  public static List<Label> longestValidSubPath2(List<Label> path, ICode c) {
+    List<Label> p = nil();
+    for (Label l : iter(path)) {
+      Optional<Either<ICode, List<Label>>> ocp = c.labels().get(l);
+      if (ocp.isNothing())
+        return p;
+      Either<ICode, List<Label>> cp = ocp.some().x;
+      if (cp.tag != cp.tag.X)
+        return p;
+      c = cp.x();
+      p = append(l, p);
+    }
+    return p;
+  }
+
   public static List<Label> longestValidSubPath(List<Label> path, Code c) {
     List<Label> p = nil();
     for (Label l : iter(path)) {
@@ -467,7 +563,7 @@ public final class CodeUtils {
   public static Code2 reroot(Code2 c, List<Label> p) {
   }
 
-  public static Pair<List<Pair<З2Bytes, Code2>>, Code2> replaceCodeAt2(Code2 c,
+  public static Pair<Map<З2Bytes, Code2>, Code2> replaceCodeAt2(Code2 c,
       List<Label> path, Either3<Code2, List<Label>, Link> newCode, Resolver r) {
     Pair<Map<З2Bytes, StrictLinkTree<Label, Either<З2Bytes, Either<Link, Code2.Tag>>>>, StrictLinkTree<Label, Either<З2Bytes, Either<Link, Code2.Tag>>>> p =
         decompose3(
@@ -476,9 +572,10 @@ public final class CodeUtils {
                     r)) : Either.x(c), path, newCode, r).x()),
             lt -> hash(strictLinkTreeToCode(removeRedundantLinkEncoding(lt))));
     return pair(
-        map($p -> pair($p.x,
-            strictLinkTreeToCode(removeRedundantLinkEncoding($p.y))),
-            p.x.entrySet()),
+        fromList(map(
+            $p -> pair($p.x,
+                strictLinkTreeToCode(removeRedundantLinkEncoding($p.y))),
+            p.x.entrySet())),
         strictLinkTreeToCode(removeRedundantLinkEncoding(p.y)));
   }
 
