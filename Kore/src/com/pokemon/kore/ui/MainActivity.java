@@ -1,6 +1,8 @@
 package com.pokemon.kore.ui;
 
+import static com.pokemon.kore.utils.CodeUtils.hash;
 import static com.pokemon.kore.utils.ListUtils.cons;
+import static com.pokemon.kore.utils.ListUtils.iter;
 import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.Null.notNull;
 import static com.pokemon.kore.utils.OptionalUtils.nothing;
@@ -13,6 +15,7 @@ import java.util.HashSet;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,9 +25,13 @@ import com.pokemon.kore.R;
 import com.pokemon.kore.codes.CanonicalCode;
 import com.pokemon.kore.codes.CanonicalRelation;
 import com.pokemon.kore.codes.Code;
+import com.pokemon.kore.codes.Code2;
+import com.pokemon.kore.codes.Code2.Link;
 import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Relation;
+import com.pokemon.kore.codes.З2Bytes;
 import com.pokemon.kore.utils.CodeUtils;
+import com.pokemon.kore.utils.CodeUtils.Resolver;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
 import com.pokemon.kore.utils.List;
@@ -36,10 +43,13 @@ import com.pokemon.kore.utils.Unit;
 public class MainActivity extends FragmentActivity {
 
   private static final String STATE_CODES = "codes";
+  private static final String STATE_RECENT_CODES2 = "recent_codes2";
   private static final String STATE_RECENT_CODES = "recent_codes";
   private static final String STATE_RELATIONS = "relations";
   private static final String STATE_RECENT_RELATIONS = "recent_relations";
   private static final String STATE_CODE_LABEL_ALIASES = "code_label_aliases";
+  private static final String STATE_CODE_LABEL_ALIASES2 = "code_label_aliases2";
+  private static final String STATE_CODE_ALIASES2 = "code_aliases2";
   private static final String STATE_CODE_ALIASES = "code_aliases";
   private static final String STATE_RELATION_ALIASES = "relation_aliases";
   private static final String STATE_CODE_EDITOR = "code_editor";
@@ -52,19 +62,23 @@ public class MainActivity extends FragmentActivity {
       "relation_view_colors";
 
   private static RelationViewColors relationViewColors;
-  private HashSet<Code> codes = new HashSet<>();
+  private HashSet<Code2> codes = new HashSet<>();
+  private List<Code2> recentCodes2 = nil();
   private List<Code> recentCodes = nil();
   private HashSet<Relation> relations = new HashSet<>();
   private List<Relation> recentRelations = nil();
+  private Map<Link, Bijection<Label, String>> codeLabelAliases2 = Map.empty();
   private Map<CanonicalCode, Bijection<Label, String>> codeLabelAliases = Map
       .empty();
+  private Bijection<Link, String> codeAliases2 = Bijection.empty();
   private Bijection<CanonicalCode, String> codeAliases = Bijection.empty();
   private Bijection<CanonicalRelation, String> relationAliases = Bijection
       .empty();
   private View mainLayout;
   private ViewGroup codeEditorContainer;
   private ViewGroup relationEditorContainer;
-  private Optional<Pair<F<Unit, Bundle>, F<Code, Unit>>> codeEditor = nothing();
+  private Optional<Pair<F<Unit, Bundle>, F<Pair<Code2, Map<З2Bytes, Code2>>, Unit>>> codeEditor =
+      nothing();
   private Optional<Pair<F<Unit, Bundle>, F<Relation, Unit>>> relationEditor =
       nothing();
   private boolean recentCodesVisible;
@@ -73,6 +87,49 @@ public class MainActivity extends FragmentActivity {
   private F<Unit, Bundle> getRunAreaState;
   private boolean editingColors;
   private int previousOrientation;
+  private Map<З2Bytes, Code2> rootCodes = Map.empty();
+
+  Resolver r = new Resolver() {
+    public Optional<Code2> resolve(З2Bytes hash) {
+      Log.e("GNOIWENGIOWENGOIWNEGIONWEOIGNWEGWEGWEGWEGWEG", "trying " + hash
+          + "; map: " + rootCodes);
+      return rootCodes.get(hash);
+    }
+  };
+
+  CodeLabelAliasMap2 codeLabelAliasMap2 = new CodeLabelAliasMap2() {
+    public boolean setAlias(Link link, Label l, String alias) {
+      Optional<Bijection<Label, String>> o = codeLabelAliases2.get(link);
+      if (o.isNothing())
+        codeLabelAliases2 =
+            codeLabelAliases2.put(link,
+                Bijection.<Label, String> empty().putX(l, alias).some().x);
+      else {
+        Optional<Bijection<Label, String>> oo = o.some().x.putX(l, alias);
+        if (oo.isNothing())
+          return false;
+        codeLabelAliases2 = codeLabelAliases2.put(link, oo.some().x);
+      }
+      return true;
+    }
+
+    public void deleteAlias(Link link, Label l) {
+      Optional<Bijection<Label, String>> o = codeLabelAliases2.get(link);
+      if (!o.isNothing())
+        codeLabelAliases2 = codeLabelAliases2.put(link, o.some().x.deleteX(l));
+    }
+
+    public Bijection<Label, String> getAliases(Link link) {
+      Optional<Bijection<Label, String>> o = codeLabelAliases2.get(link);
+      if (o.isNothing())
+        return Bijection.empty();
+      return o.some().x;
+    }
+
+    public void setAliases(Link link, Bijection<Label, String> aliases) {
+      codeLabelAliases2 = codeLabelAliases2.put(link, aliases);
+    }
+  };
 
   CodeLabelAliasMap codeLabelAliasMap = new CodeLabelAliasMap() {
     public boolean setAlias(CanonicalCode c, Label l, String alias) {
@@ -120,7 +177,7 @@ public class MainActivity extends FragmentActivity {
         (ViewGroup) findViewById(R.id.container_relation_editor);
 
     findViewById(R.id.button_new_code).setOnClickListener(
-        $ -> startCodeEditor(CodeUtils.unit));
+        $ -> startCodeEditor(CodeUtils.unit2));
 
     findViewById(R.id.button_new_relation).setOnClickListener($ -> {
       if (recentVisible)
@@ -133,13 +190,18 @@ public class MainActivity extends FragmentActivity {
     Bundle relationEditorState = null;
     Optional<Bundle> runAreaState = nothing();
     if (b != null) {
-      codes = (HashSet<Code>) b.get(STATE_CODES);
+      codes = (HashSet<Code2>) b.get(STATE_CODES);
+      recentCodes2 = (List<Code2>) b.get(STATE_RECENT_CODES);
       recentCodes = (List<Code>) b.get(STATE_RECENT_CODES);
       relations = (HashSet<Relation>) b.get(STATE_RELATIONS);
       recentRelations = (List<Relation>) b.get(STATE_RECENT_RELATIONS);
       codeLabelAliases =
           (Map<CanonicalCode, Bijection<Label, String>>) b
               .get(STATE_CODE_LABEL_ALIASES);
+      codeLabelAliases2 =
+          (Map<Link, Bijection<Label, String>>) b
+              .get(STATE_CODE_LABEL_ALIASES2);
+      codeAliases2 = (Bijection<Link, String>) b.get(STATE_CODE_ALIASES2);
       codeAliases =
           (Bijection<CanonicalCode, String>) b.get(STATE_CODE_ALIASES);
       relationAliases =
@@ -166,10 +228,11 @@ public class MainActivity extends FragmentActivity {
     });
 
     if (codeEditorState != null) {
-      F<Code, Unit> doneListener = newCodeEditorDoneListener();
+      F<Pair<Code2, Map<З2Bytes, Code2>>, Unit> doneListener =
+          newCodeEditorDoneListener();
       Pair<View, F<Unit, Bundle>> p =
-          CodeEditor.make(this, codeEditorState, codeLabelAliasMap,
-              codeAliases, recentCodes, doneListener);
+          CodeEditor2.make(this, codeEditorState, codeLabelAliasMap2,
+              codeAliases2, recentCodes2, r, doneListener);
       codeEditor = some(pair(p.y, doneListener));
       mainLayout.setVisibility(View.GONE);
       codeEditorContainer.addView(p.x);
@@ -198,10 +261,13 @@ public class MainActivity extends FragmentActivity {
   public void onSaveInstanceState(Bundle b) {
     super.onSaveInstanceState(b);
     b.putSerializable(STATE_CODES, codes);
+    b.putSerializable(STATE_RECENT_CODES2, recentCodes2);
     b.putSerializable(STATE_RECENT_CODES, recentCodes);
     b.putSerializable(STATE_RELATIONS, relations);
     b.putSerializable(STATE_RECENT_RELATIONS, recentRelations);
     b.putSerializable(STATE_CODE_LABEL_ALIASES, codeLabelAliases);
+    b.putSerializable(STATE_CODE_LABEL_ALIASES2, codeLabelAliases2);
+    b.putSerializable(STATE_CODE_ALIASES2, codeAliases2);
     b.putSerializable(STATE_CODE_ALIASES, codeAliases);
     b.putSerializable(STATE_RELATION_ALIASES, relationAliases);
     if (!codeEditor.isNothing())
@@ -290,29 +356,31 @@ public class MainActivity extends FragmentActivity {
   }
 
   private void initRecentCodes() {
-    CodeList.Listener cll = new CodeList.Listener() {
-      public void select(Code c) {
+    CodeList2.Listener cll = new CodeList2.Listener() {
+
+      public void select(Code2 c) {
         notNull(c);
         startCodeEditor(c);
       }
 
-      public boolean changeAlias(Code code, List<Label> path, String alias) {
+      public boolean changeAlias(Code2 code, List<Label> path, String alias) {
         notNull(code, alias);
         if (!codeEditor.isNothing())
           throw new RuntimeException(
               "code list tried to change alias while code editor was open");
-        Optional<Bijection<CanonicalCode, String>> o =
-            codeAliases.putX(new CanonicalCode(code, path), alias);
+        Optional<Bijection<Link, String>> o =
+            codeAliases2.putX(new Link(hash(code), path), alias);
         if (o.isNothing())
           return false;
-        codeAliases = o.some().x;
+        codeAliases2 = o.some().x;
         initRecentCodes();
         initRunArea(some(getRunAreaState.f(unit())));
         return true;
       }
     };
     View cl =
-        CodeList.make(this, cll, recentCodes, codeLabelAliasMap, codeAliases);
+        CodeList2.make(this, cll, recentCodes2, codeLabelAliasMap2,
+            codeAliases2, r);
     ViewGroup v = (ViewGroup) findViewById(R.id.container_recent_codes);
     v.removeAllViews();
     v.addView(cl);
@@ -349,7 +417,7 @@ public class MainActivity extends FragmentActivity {
     v.addView(rl);
   }
 
-  private void startCodeEditor(Code c) {
+  private void startCodeEditor(Code2 c) {
     /*
      * Workaround android behavior (can't tell if bug or feature): Without this,
      * a user could create multiple superimposed CodeEditors. He could do this
@@ -358,10 +426,11 @@ public class MainActivity extends FragmentActivity {
      */
     if (!(codeEditor.isNothing() & relationEditor.isNothing()))
       return;
-    F<Code, Unit> doneListener = newCodeEditorDoneListener();
+    F<Pair<Code2, Map<З2Bytes, Code2>>, Unit> doneListener =
+        newCodeEditorDoneListener();
     Pair<View, F<Unit, Bundle>> p =
-        CodeEditor.make(this, c, codeLabelAliasMap, codeAliases, recentCodes,
-            doneListener);
+        CodeEditor2.make(this, c, codeLabelAliasMap2, codeAliases2,
+            recentCodes2, r, doneListener);
     codeEditor = some(pair(p.y, doneListener));
     mainLayout.setVisibility(View.GONE);
     codeEditorContainer.addView(p.x);
@@ -383,19 +452,22 @@ public class MainActivity extends FragmentActivity {
     relationEditorContainer.setVisibility(View.VISIBLE);
   }
 
-  private F<Code, Unit> newCodeEditorDoneListener() {
-    return new F<Code, Unit>() {
-      public Unit f(Code c) {
+  private F<Pair<Code2, Map<З2Bytes, Code2>>, Unit> newCodeEditorDoneListener() {
+    return new F<Pair<Code2, Map<З2Bytes, Code2>>, Unit>() {
+      public Unit f(Pair<Code2, Map<З2Bytes, Code2>> p) {
         if (codeEditor.isNothing() || this != codeEditor.some().x.y)
           throw new RuntimeException(
               "got \"done editing\" event from non-current code editor");
-        notNull(c);
+        notNull(p);
         codeEditorContainer.removeAllViews();
         codeEditorContainer.setVisibility(View.GONE);
         mainLayout.setVisibility(View.VISIBLE);
-        if (!codes.contains(c))
-          recentCodes = cons(c, recentCodes);
-        codes.add(c);
+        if (!codes.contains(p.x))
+          recentCodes2 = cons(p.x, recentCodes2);
+        codes.add(p.x);
+        Log.e("AWTGUINWEIUWEHWEBIUWEHIWEHWEH", "fucking you" + p);
+        for (Pair<З2Bytes, Code2> e : iter(p.y.entrySet()))
+          rootCodes = rootCodes.put(e.x, e.y);
         initRecentCodes();
         codeEditor = nothing();
         initRecentRelations();

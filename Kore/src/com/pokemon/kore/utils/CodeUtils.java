@@ -597,7 +597,7 @@ public final class CodeUtils {
     default:
       throw boom();
     }
-    return new StrictLinkTree<Label, Either<Link, Code2.Tag>>(es, v);
+    return new StrictLinkTree<>(es, v);
   }
 
   private static Code2 inline(Code2 c, List<Label> p, Resolver r) {
@@ -889,6 +889,7 @@ public final class CodeUtils {
                 return Either.x(e.y.z());
               }
             });
+            break;
           default:
             throw boom();
           }
@@ -952,6 +953,8 @@ public final class CodeUtils {
 
   public static Code2 strictLinkTreeToCode(
       StrictLinkTree<Label, Either<Link, Code2.Tag>> lt) {
+    Log.e("GWENUIGNWEIUGNWEIUGNIUWENGIUWENGUINWEGIWENGWEG",
+        "Strictklinktreettocode" + lt);
     Map<Label, Either3<Code2, List<Label>, Link>> m = Map.empty();
     for (Pair<Label, Either<StrictLinkTree<Label, Either<Link, Code2.Tag>>, List<Label>>> e : iter(lt.edges)) {
       Either3<Code2, List<Label>, Link> v;
@@ -967,6 +970,7 @@ public final class CodeUtils {
         default:
           throw boom();
         }
+        break;
       case Y:
         v = Either3.y(e.y.y());
         break;
@@ -1059,7 +1063,9 @@ public final class CodeUtils {
             break;
           case Z:
             Code2 c2 = r.resolve(e.y.z().hash).some().x;
-            m = m.put(e.x, Either.x(icode(c2, append(e.x, p), c, r)));
+            m =
+                m.put(e.x, Either.x(icode(codeAt2(e.y.z().path, c2).some().x,
+                    e.y.z().path, c2, r)));
             break;
           default:
             break;

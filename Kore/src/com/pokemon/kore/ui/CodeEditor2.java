@@ -51,14 +51,15 @@ public class CodeEditor2 {
     Code2 code = unit2;
     List<Label> path;
     List<Label> pathShadow;
-    public F<Code2, Unit> initNodeEditor;
+    F<Code2, Unit> initNodeEditor;
+    Map<З2Bytes, Code2> newCodes = Map.empty();
   }
 
   private static Pair<View, F<Unit, Bundle>> make(final Context context,
       Code2 code, final CodeLabelAliasMap2 codeLabelAliases,
       final Bijection<Link, String> codeAliases, final List<Code2> codes,
-      List<Label> path, List<Label> pathShadow, Resolver r,
-      final F<Code2, Unit> done) {
+      List<Label> path, List<Label> pathShadow, Resolver rs,
+      final F<Pair<Code2, Map<З2Bytes, Code2>>, Unit> done) {
     notNull(context, code, codeLabelAliases, codeAliases, codes, path,
         pathShadow, done);
     final View v =
@@ -70,6 +71,13 @@ public class CodeEditor2 {
     s.pathShadow = pathShadow;
     s.path = path;
     s.code = code;
+
+    Resolver r = new Resolver() {
+      public Optional<Code2> resolve(З2Bytes hash) {
+        Optional<Code2> oh = rs.resolve(hash);
+        return oh.isNothing() ? s.newCodes.get(hash) : oh;
+      }
+    };
 
     final F<List<Label>, Unit> setPath = new F<List<Label>, Unit>() {
       public Unit f(List<Label> $path) {
@@ -95,6 +103,9 @@ public class CodeEditor2 {
         a -> {
           Pair<Map<З2Bytes, Code2>, Code2> p =
               replaceCodeAt2(s.code, s.path, Either3.x(a.x), r);
+          Log.e("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW", "new hashes?" + p.x);
+          for (Pair<З2Bytes, Code2> e : iter(p.x.entrySet()))
+            s.newCodes = s.newCodes.put(e.x, e.y);
           Code2 code2 = p.y;
           remapAliases(s.code, code2, nil(), a.y, codeLabelAliases, s.code);
           s.pathShadow = longestValidSubPath2(s.pathShadow, icode(code2, r));
@@ -124,7 +135,7 @@ public class CodeEditor2 {
                   }
 
                   public void done() {
-                    done.f(s.code);
+                    done.f(pair(s.code, s.newCodes));
                   }
 
                   public void newField() {
@@ -221,14 +232,16 @@ public class CodeEditor2 {
 
   public static Pair<View, F<Unit, Bundle>> make(Context context, Code2 code,
       CodeLabelAliasMap2 codeLabelAliases, Bijection<Link, String> codeAliases,
-      List<Code2> codes, Resolver r, F<Code2, Unit> done) {
+      List<Code2> codes, Resolver r,
+      F<Pair<Code2, Map<З2Bytes, Code2>>, Unit> done) {
     return make(context, code, codeLabelAliases, codeAliases, codes, nil(),
         nil(), r, done);
   }
 
   public static Pair<View, F<Unit, Bundle>> make(Context context, Bundle b,
       CodeLabelAliasMap2 codeLabelAliases, Bijection<Link, String> codeAliases,
-      List<Code2> codes, Resolver r, F<Code2, Unit> done) {
+      List<Code2> codes, Resolver r,
+      F<Pair<Code2, Map<З2Bytes, Code2>>, Unit> done) {
     return make(context, (Code2) b.get(STATE_CODE), codeLabelAliases,
         codeAliases, codes, (List<Label>) b.get(STATE_PATH),
         (List<Label>) b.get(STATE_PATH_SHADOW), r, done);

@@ -81,13 +81,15 @@ public class LinkTreeUtils {
           p =
               decompose3(m, g, sccs, t, linkTreeOrPathAt(ltr, e.y.y()).x(),
                   ltr, height + 1, height + 1, h);
-          m = p.x;
-          t2 = Either.x(new StrictLinkTree<>(nil(), Either.x(h.hash(p.y))));
+          З2Bytes hash = h.hash(p.y);
+          t2 = Either.x(new StrictLinkTree<>(nil(), Either.x(hash)));
+          m = p.x.put(hash, p.y);
         } else {
           p =
               decompose3(m, g, sccs, t, e.y.x(), ltr, height + 1, height + 1, h);
-          m = p.x;
-          t2 = Either.x(new StrictLinkTree<>(nil(), Either.x(h.hash(p.y))));
+          З2Bytes hash = h.hash(p.y);
+          t2 = Either.x(new StrictLinkTree<>(nil(), Either.x(hash)));
+          m = p.x.put(hash, p.y);
         }
       }
       edges = cons(pair(e.x, t2), edges);
@@ -200,9 +202,9 @@ public class LinkTreeUtils {
   }
 
   private static <V> Set<Identity<V>> containingSCC(
-      java.util.List<Set<Identity<V>>> sccs, Identity<V> r) {
+      java.util.List<Set<Identity<V>>> sccs, Identity<V> v) {
     for (Set<Identity<V>> scc : sccs)
-      if (scc.contains(r))
+      if (scc.contains(v))
         return scc;
     throw boom();
   }

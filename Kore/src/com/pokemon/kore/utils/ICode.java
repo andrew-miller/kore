@@ -8,7 +8,7 @@ public interface ICode {
 
   /**
    * <code>(r, p)</code> where <code>r</code> is the root of the SCC containing
-   * this code and <code>p</code> is the path from r to this code
+   * this code and <code>p</code> is the path from <code>r</code> to this code
    */
   public Pair<Code2, List<Label>> link();
 
