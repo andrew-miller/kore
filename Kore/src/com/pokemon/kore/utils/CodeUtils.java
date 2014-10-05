@@ -558,8 +558,9 @@ public final class CodeUtils {
             linkTree(inlineAndReplace(
                 newCode.tag == Either3.Tag.Y ? Either.x(inline(c, newCode.y(),
                     r)) : Either.x(c), path, newCode, r).x()),
-            lt -> hash(strictLinkTreeToCode(lt)), h -> new StrictLinkTree<>(
-                nil(), Either.x(new Link(h, nil()))));
+            lt -> hash(strictLinkTreeToCode(lt)),
+            h -> new StrictLinkTree<Label, Either<Link, Code2.Tag>>(nil(),
+                Either.x(new Link(h, nil()))));
     return pair(
         fromList(map($p -> pair($p.x, strictLinkTreeToCode($p.y)),
             p.x.entrySet())), strictLinkTreeToCode(p.y));
