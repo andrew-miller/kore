@@ -553,51 +553,16 @@ public final class CodeUtils {
 
   public static Pair<Map<З2Bytes, Code2>, Code2> replaceCodeAt2(Code2 c,
       List<Label> path, Either3<Code2, List<Label>, Link> newCode, Resolver r) {
-    Pair<Map<З2Bytes, StrictLinkTree<Label, Either<З2Bytes, Either<Link, Code2.Tag>>>>, StrictLinkTree<Label, Either<З2Bytes, Either<Link, Code2.Tag>>>> p =
+    Pair<Map<З2Bytes, StrictLinkTree<Label, Either<Link, Code2.Tag>>>, StrictLinkTree<Label, Either<Link, Code2.Tag>>> p =
         decompose3(
             linkTree(inlineAndReplace(
                 newCode.tag == Either3.Tag.Y ? Either.x(inline(c, newCode.y(),
                     r)) : Either.x(c), path, newCode, r).x()),
-            lt -> hash(strictLinkTreeToCode(removeRedundantLinkEncoding(lt))));
+            lt -> hash(strictLinkTreeToCode(lt)), h -> new StrictLinkTree<>(
+                nil(), Either.x(new Link(h, nil()))));
     return pair(
-        fromList(map(
-            $p -> pair($p.x,
-                strictLinkTreeToCode(removeRedundantLinkEncoding($p.y))),
-            p.x.entrySet())),
-        strictLinkTreeToCode(removeRedundantLinkEncoding(p.y)));
-  }
-
-  private static StrictLinkTree<Label, Either<Link, Code2.Tag>>
-      removeRedundantLinkEncoding(
-          StrictLinkTree<Label, Either<З2Bytes, Either<Link, Code2.Tag>>> lt) {
-    List<Pair<Label, Either<StrictLinkTree<Label, Either<Link, Code2.Tag>>, List<Label>>>> es =
-        nil();
-    for (Pair<Label, Either<StrictLinkTree<Label, Either<З2Bytes, Either<Link, Code2.Tag>>>, List<Label>>> e : iter(lt.edges)) {
-      Either<StrictLinkTree<Label, Either<Link, Code2.Tag>>, List<Label>> v;
-      switch (e.y.tag) {
-      case X:
-        v = Either.x(removeRedundantLinkEncoding(e.y.x()));
-        break;
-      case Y:
-        v = Either.y(e.y.y());
-        break;
-      default:
-        throw boom();
-      }
-      es = cons(pair(e.x, v), es);
-    }
-    Either<Link, Code2.Tag> v;
-    switch (lt.vertex.tag) {
-    case X:
-      v = Either.x(new Link(lt.vertex.x(), nil()));
-      break;
-    case Y:
-      v = lt.vertex.y();
-      break;
-    default:
-      throw boom();
-    }
-    return new StrictLinkTree<>(es, v);
+        fromList(map($p -> pair($p.x, strictLinkTreeToCode($p.y)),
+            p.x.entrySet())), strictLinkTreeToCode(p.y));
   }
 
   private static Code2 inline(Code2 c, List<Label> p, Resolver r) {

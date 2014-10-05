@@ -41,38 +41,43 @@ public class LinkTreeUtils {
    * hash links to each other
    */
   public static
-      <E, V>
-      Pair<Map<З2Bytes, StrictLinkTree<E, Either<З2Bytes, V>>>, StrictLinkTree<E, Either<З2Bytes, V>>>
-      decompose3(LinkTree<E, V> lt, Hasher2<E, Either<З2Bytes, V>> h) {
-    Pair<DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>>, Identity<V>> gr =
+      <E, V, L>
+      Pair<Map<З2Bytes, StrictLinkTree<E, Either<L, V>>>, StrictLinkTree<E, Either<L, V>>>
+      decompose3(LinkTree<E, Either<L, V>> lt, Hasher2<E, Either<L, V>> h,
+          F<З2Bytes, StrictLinkTree<E, Either<L, V>>> makeLink) {
+    Pair<DirectedMultigraph<Identity<Either<L, V>>, Pair<Identity<Either<L, V>>, E>>, Identity<Either<L, V>>> gr =
         linkTreeToGraph(lt);
     return decompose3(Map.empty(), gr.x,
         new StrongConnectivityInspector<>(gr.x).stronglyConnectedSets(), gr.y,
-        lt, lt, 0, 0, h);
+        lt, lt, 0, 0, h, makeLink);
   }
 
   private static
-      <E, V>
-      Pair<Map<З2Bytes, StrictLinkTree<E, Either<З2Bytes, V>>>, StrictLinkTree<E, Either<З2Bytes, V>>>
-      decompose3(Map<З2Bytes, StrictLinkTree<E, Either<З2Bytes, V>>> m,
-          DirectedMultigraph<Identity<V>, Pair<Identity<V>, E>> g,
-          java.util.List<Set<Identity<V>>> sccs, Identity<V> v,
-          LinkTree<E, V> ltv, LinkTree<E, V> ltr, Integer height,
-          Integer sccRootHeight, Hasher2<E, Either<З2Bytes, V>> h) {
-    Set<Identity<V>> scc = containingSCC(sccs, v);
-    List<Pair<E, Either<StrictLinkTree<E, Either<З2Bytes, V>>, List<E>>>> edges =
+      <E, V, L>
+      Pair<Map<З2Bytes, StrictLinkTree<E, Either<L, V>>>, StrictLinkTree<E, Either<L, V>>>
+      decompose3(
+          Map<З2Bytes, StrictLinkTree<E, Either<L, V>>> m,
+          DirectedMultigraph<Identity<Either<L, V>>, Pair<Identity<Either<L, V>>, E>> g,
+          java.util.List<Set<Identity<Either<L, V>>>> sccs,
+          Identity<Either<L, V>> v, LinkTree<E, Either<L, V>> ltv,
+          LinkTree<E, Either<L, V>> ltr, Integer height, Integer sccRootHeight,
+          Hasher2<E, Either<L, V>> h,
+          F<З2Bytes, StrictLinkTree<E, Either<L, V>>> makeLink) {
+    Set<Identity<Either<L, V>>> scc = containingSCC(sccs, v);
+    List<Pair<E, Either<StrictLinkTree<E, Either<L, V>>, List<E>>>> edges =
         nil();
-    for (Pair<E, Either<LinkTree<E, V>, List<E>>> e : iter(ltv.edges())) {
-      Identity<V> t = g.getEdgeTarget(pair(v, e.x));
-      Either<StrictLinkTree<E, Either<З2Bytes, V>>, List<E>> t2;
-      Pair<Map<З2Bytes, StrictLinkTree<E, Either<З2Bytes, V>>>, StrictLinkTree<E, Either<З2Bytes, V>>> p;
+    for (Pair<E, Either<LinkTree<E, Either<L, V>>, List<E>>> e : iter(ltv
+        .edges())) {
+      Identity<Either<L, V>> t = g.getEdgeTarget(pair(v, e.x));
+      Either<StrictLinkTree<E, Either<L, V>>, List<E>> t2;
+      Pair<Map<З2Bytes, StrictLinkTree<E, Either<L, V>>>, StrictLinkTree<E, Either<L, V>>> p;
       if (scc.contains(t)) {
         if (e.y.tag == e.y.tag.Y)
           t2 = Either.y(drop(e.y.y(), sccRootHeight));
         else {
           p =
               decompose3(m, g, sccs, t, e.y.x(), ltr, height + 1,
-                  sccRootHeight, h);
+                  sccRootHeight, h, makeLink);
           m = p.x;
           t2 = Either.x(p.y);
         }
@@ -80,22 +85,31 @@ public class LinkTreeUtils {
         if (e.y.tag == e.y.tag.Y) {
           p =
               decompose3(m, g, sccs, t, linkTreeOrPathAt(ltr, e.y.y()).x(),
-                  ltr, height + 1, height + 1, h);
+                  ltr, height + 1, height + 1, h, makeLink);
           З2Bytes hash = h.hash(p.y);
-          t2 = Either.x(new StrictLinkTree<>(nil(), Either.x(hash)));
+          t2 = Either.x(makeLink.f(hash));
           m = p.x.put(hash, p.y);
         } else {
-          p =
-              decompose3(m, g, sccs, t, e.y.x(), ltr, height + 1, height + 1, h);
-          З2Bytes hash = h.hash(p.y);
-          t2 = Either.x(new StrictLinkTree<>(nil(), Either.x(hash)));
-          m = p.x.put(hash, p.y);
+          switch (e.y.x().vertex().tag) {
+          case X:
+            t2 = Either.x(new StrictLinkTree<>(nil(), e.y.x().vertex()));
+            break;
+          case Y:
+            p =
+                decompose3(m, g, sccs, t, e.y.x(), ltr, height + 1, height + 1,
+                    h, makeLink);
+            З2Bytes hash = h.hash(p.y);
+            t2 = Either.x(makeLink.f(hash));
+            m = p.x.put(hash, p.y);
+            break;
+          default:
+            throw boom();
+          }
         }
       }
       edges = cons(pair(e.x, t2), edges);
     }
-    return pair(m,
-        new StrictLinkTree<E, Either<З2Bytes, V>>(edges, Either.y(v.t)));
+    return pair(m, new StrictLinkTree<E, Either<L, V>>(edges, v.t));
   }
 
   /**
