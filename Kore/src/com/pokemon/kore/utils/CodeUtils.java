@@ -613,7 +613,7 @@ public final class CodeUtils {
       throw boom();
     }
     return Either3.x(new Code2(c.x().tag, c.x().labels.put(p.cons().x,
-        inlineAndReplace(cp, p, newCode, r))));
+        inlineAndReplace(cp, p.cons().tail, newCode, r))));
   }
 
   public static Code replaceCodeAt(Code c, List<Label> p,
