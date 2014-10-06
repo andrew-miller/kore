@@ -108,7 +108,8 @@ public final class CodeUtils {
     }
     md.update(cs);
     for (Pair<Label, Either3<Code2, List<Label>, Link>> e : iter(c.labels
-        .entrySet()))
+        .entrySet())) {
+      md.update(labelBytes(e.x));
       switch (e.y.tag) {
       case X:
         hash(e.y.x(), md);
@@ -126,6 +127,7 @@ public final class CodeUtils {
       default:
         break;
       }
+    }
     md.update(ce);
   }
 
@@ -919,8 +921,6 @@ public final class CodeUtils {
 
   public static Code2 strictLinkTreeToCode(
       StrictLinkTree<Label, Either<Link, Code2.Tag>> lt) {
-    Log.e("GWENUIGNWEIUGNWEIUGNIUWENGIUWENGUINWEGIWENGWEG",
-        "Strictklinktreettocode" + lt);
     Map<Label, Either3<Code2, List<Label>, Link>> m = Map.empty();
     for (Pair<Label, Either<StrictLinkTree<Label, Either<Link, Code2.Tag>>, List<Label>>> e : iter(lt.edges)) {
       Either3<Code2, List<Label>, Link> v;

@@ -103,7 +103,6 @@ public class CodeEditor2 {
         a -> {
           Pair<Map<З2Bytes, Code2>, Code2> p =
               replaceCodeAt2(s.code, s.path, Either3.x(a.x), r);
-          Log.e("WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW", "new hashes?" + p.x);
           for (Pair<З2Bytes, Code2> e : iter(p.x.entrySet()))
             s.newCodes = s.newCodes.put(e.x, e.y);
           Code2 code2 = p.y;

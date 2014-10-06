@@ -15,7 +15,6 @@ import java.util.HashSet;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -91,8 +90,6 @@ public class MainActivity extends FragmentActivity {
 
   Resolver r = new Resolver() {
     public Optional<Code2> resolve(З2Bytes hash) {
-      Log.e("GNOIWENGIOWENGOIWNEGIONWEOIGNWEGWEGWEGWEGWEG", "trying " + hash
-          + "; map: " + rootCodes);
       return rootCodes.get(hash);
     }
   };
@@ -465,7 +462,6 @@ public class MainActivity extends FragmentActivity {
         if (!codes.contains(p.x))
           recentCodes2 = cons(p.x, recentCodes2);
         codes.add(p.x);
-        Log.e("AWTGUINWEIUWEHWEBIUWEHIWEHWEH", "fucking you" + p);
         for (Pair<З2Bytes, Code2> e : iter(p.y.entrySet()))
           rootCodes = rootCodes.put(e.x, e.y);
         initRecentCodes();
