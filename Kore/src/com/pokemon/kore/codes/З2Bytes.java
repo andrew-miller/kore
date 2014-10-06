@@ -1,8 +1,9 @@
 package com.pokemon.kore.codes;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public final class З2Bytes {
+public final class З2Bytes implements Serializable {
   private final byte[] bytes;
 
   public З2Bytes(byte[] bytes) {
