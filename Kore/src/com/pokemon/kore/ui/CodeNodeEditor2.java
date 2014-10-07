@@ -46,11 +46,10 @@ public class CodeNodeEditor2 {
     void done();
   }
 
-  public static View make(Context context, Code2 code, Code2 rootCode,
-      Listener listener, Bijection<Link, String> codeAliases,
-      List<Code2> codes, List<Label> path, CodeLabelAliasMap2 codeLabelAliases,
-      Resolver r) {
-    notNull(context, code, rootCode, listener, codeAliases, codes, path,
+  public static View make(Context context, Code2 rootCode, Listener listener,
+      Bijection<Link, String> codeAliases, List<Code2> codes, List<Label> path,
+      CodeLabelAliasMap2 codeLabelAliases, Resolver r) {
+    notNull(context, rootCode, listener, codeAliases, codes, path,
         codeLabelAliases, r);
 
     View v =
@@ -70,7 +69,7 @@ public class CodeNodeEditor2 {
     ICode ic = codeAt2(path, icode(rootCode, r)).some().x;
     F<Unit, Unit> render = new F<Unit, Unit>() {
       public Unit f(Unit $) {
-        switch (code.tag) {
+        switch (ic.tag()) {
         case PRODUCT:
           switchCodeOpButton.setText("{}");
           break;

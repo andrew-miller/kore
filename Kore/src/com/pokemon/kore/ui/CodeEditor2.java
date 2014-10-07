@@ -116,7 +116,7 @@ public class CodeEditor2 {
     s.initNodeEditor = new F<Code2, Unit>() {
       public Unit f(Code2 c) {
         s.nodeEditor =
-            CodeNodeEditor2.make(context, c, s.code,
+            CodeNodeEditor2.make(context, s.code,
                 new CodeNodeEditor2.Listener() {
                   public void switchCodeOp() {
                     Code2 c = codeAt2(s.path, s.code, r).some().x;
