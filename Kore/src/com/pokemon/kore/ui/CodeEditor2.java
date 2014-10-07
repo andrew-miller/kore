@@ -7,7 +7,6 @@ import static com.pokemon.kore.utils.CodeUtils.hash;
 import static com.pokemon.kore.utils.CodeUtils.icode;
 import static com.pokemon.kore.utils.CodeUtils.longestValidSubPath2;
 import static com.pokemon.kore.utils.CodeUtils.replaceCodeAt2;
-import static com.pokemon.kore.utils.CodeUtils.resolve;
 import static com.pokemon.kore.utils.CodeUtils.unit2;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.isPrefix;
@@ -51,7 +50,7 @@ public class CodeEditor2 {
     Code2 code = unit2;
     List<Label> path;
     List<Label> pathShadow;
-    F<Code2, Unit> initNodeEditor;
+    F<Unit, Unit> initNodeEditor;
     Map<З2Bytes, Code2> newCodes = Map.empty();
   }
 
@@ -92,7 +91,7 @@ public class CodeEditor2 {
             f(s.pathShadow);
           }
           s.path = p;
-          s.initNodeEditor.f(oc.some().x);
+          s.initNodeEditor.f(unit());
           return unit();
         }, icode(s.code, r), $path));
         return unit();
@@ -109,12 +108,12 @@ public class CodeEditor2 {
           remapAliases(s.code, code2, nil(), a.y, codeLabelAliases, s.code);
           s.pathShadow = longestValidSubPath2(s.pathShadow, icode(code2, r));
           s.code = code2;
-          s.initNodeEditor.f(codeAt2(s.path, s.code, r).some().x);
+          s.initNodeEditor.f(unit());
           return unit();
         };
 
-    s.initNodeEditor = new F<Code2, Unit>() {
-      public Unit f(Code2 c) {
+    s.initNodeEditor = new F<Unit, Unit>() {
+      public Unit f(Unit _) {
         s.nodeEditor =
             CodeNodeEditor2.make(context, s.code,
                 new CodeNodeEditor2.Listener() {
@@ -159,7 +158,7 @@ public class CodeEditor2 {
                       throw new RuntimeException("non-existent label");
                     Link l = new Link(hash(s.code), s.path);
                     if (codeLabelAliases.setAlias(l, label, alias))
-                      f(c);
+                      f(unit());
                   }
 
                   public void replaceField(
@@ -185,28 +184,22 @@ public class CodeEditor2 {
                     Code2 c = codeAt2(s.path, s.code, r).some().x;
                     Either3<Code2, List<Label>, Link> cpl =
                         c.labels.get(l).some().x;
-                    Code2 c2;
                     switch (cpl.tag) {
                     case Z:
                       s.path = append(l, s.path);
-                      c2 = resolve(cpl.z(), r).some().x;
                       break;
                     case Y:
                       s.path = cpl.y();
-                      c2 = codeAt2(s.path, s.code, r).some().x;
                       break;
                     case X:
                       s.path = append(l, s.path);
-                      c2 = cpl.x();
                       break;
-                    default:
-                      throw boom();
                     }
                     if (!isPrefix(s.path, s.pathShadow)) {
                       s.pathShadow = s.path;
                       setPath.f(s.pathShadow);
                     }
-                    f(c2);
+                    f(unit());
                   }
                 }, codeAliases, codes, s.path, codeLabelAliases, r);
         ViewGroup cont = (ViewGroup) v.findViewById(R.id.container_code_editor);
@@ -224,7 +217,7 @@ public class CodeEditor2 {
       return b;
     };
 
-    s.initNodeEditor.f(codeAt2(path, code, r).some().x);
+    s.initNodeEditor.f(unit());
     setPath.f(s.pathShadow);
     return pair(v, getState);
   }
