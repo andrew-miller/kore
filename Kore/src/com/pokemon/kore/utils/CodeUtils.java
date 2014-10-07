@@ -558,64 +558,99 @@ public final class CodeUtils {
     Pair<Map<З2Bytes, StrictLinkTree<Label, Either<Link, Code2.Tag>>>, StrictLinkTree<Label, Either<Link, Code2.Tag>>> p =
         decompose3(
             linkTree(inlineAndReplace(
-                newCode.tag == Either3.Tag.Y ? Either.x(inline(c, newCode.y(),
-                    r)) : Either.x(c), path, newCode, r).x()),
-            lt -> hash(strictLinkTreeToCode(lt)),
+                newCode.tag == Either3.Tag.Y ? inline(c, newCode.y(), r) : c,
+                path, newCode, r)), lt -> hash(strictLinkTreeToCode(lt)),
             h -> new StrictLinkTree<Label, Either<Link, Code2.Tag>>(nil(),
                 Either.x(new Link(h, nil()))));
+    Code2 c2 = strictLinkTreeToCode(p.y);
     return pair(
         fromList(map($p -> pair($p.x, strictLinkTreeToCode($p.y)),
-            p.x.entrySet())), strictLinkTreeToCode(p.y));
+            p.x.put(hash(c2), p.y).entrySet())), c2);
   }
 
   private static Code2 inline(Code2 c, List<Label> p, Resolver r) {
-    if (p.isEmpty())
+    return inline(c, nil(), nil(), p, r);
+  }
+
+  private static Code2 inline(Code2 c, List<Label> beforeRoot,
+      List<Label> before, List<Label> after, Resolver r) {
+    if (after.isEmpty())
       return c;
-    Either3<Code2, List<Label>, Link> cpl = c.labels.get(p.cons().x).some().x;
+    Either3<Code2, List<Label>, Link> cpl =
+        c.labels.get(after.cons().x).some().x;
     Code2 c2;
     switch (cpl.tag) {
     case X:
-      c2 = inline(cpl.x(), p.cons().tail, r);
+      c2 =
+          inline(cpl.x(), beforeRoot, append(after.cons().x, before),
+              after.cons().tail, r);
       break;
     case Y:
       return c;
-    case Z:
-      c2 = inline(resolve(cpl.z(), r).some().x, p.cons().tail, r);
+    case Z: {
+      List<Label> before2 = append(after.cons().x, before);
+      c2 =
+          inline(rebase(beforeRoot, resolve(cpl.z(), r).some().x), before2,
+              before2, after.cons().tail, r);
       break;
+    }
     default:
       throw boom();
     }
-    return new Code2(c.tag, c.labels.put(p.cons().x, Either3.x(c2)));
+    return new Code2(c.tag, c.labels.put(after.cons().x, Either3.x(c2)));
+  }
+
+  private static Code2 rebase(List<Label> p, Code2 c) {
+    Map<Label, Either3<Code2, List<Label>, Link>> es = Map.empty();
+    for (Pair<Label, Either3<Code2, List<Label>, Link>> e : iter(c.labels
+        .entrySet()))
+      switch (e.y.tag) {
+      case X:
+        es = es.put(e.x, Either3.x(rebase(p, e.y.x())));
+        break;
+      case Y:
+        es = es.put(e.x, Either3.y(append(p, e.y.y())));
+        break;
+      case Z:
+        es = es.put(e.x, e.y);
+        break;
+      }
+    return new Code2(c.tag, es);
   }
 
   public static Code2 inlineAndReplace(Code2 c, List<Label> p,
       Either3<Code2, List<Label>, Link> newCode, Resolver r) {
-    return inlineAndReplace(Either.x(c), p, newCode, r).x();
+    return inlineAndReplace(Either.x(c), nil(), nil(), p, newCode, r).x();
   }
 
   private static Either3<Code2, List<Label>, Link> inlineAndReplace(
-      Either<Code2, List<Label>> c, List<Label> p,
-      Either3<Code2, List<Label>, Link> newCode, Resolver r) {
-    if (p.isEmpty())
+      Either<Code2, List<Label>> c, List<Label> beforeRoot, List<Label> before,
+      List<Label> after, Either3<Code2, List<Label>, Link> newCode, Resolver r) {
+    if (after.isEmpty())
       return newCode;
     Either3<Code2, List<Label>, Link> cpl =
-        c.x().labels.get(p.cons().x).some().x;
+        c.x().labels.get(after.cons().x).some().x;
     Either<Code2, List<Label>> cp;
+    List<Label> b2 = append(after.cons().x, before);
+    List<Label> br2;
     switch (cpl.tag) {
     case X:
       cp = Either.x(cpl.x());
+      br2 = beforeRoot;
       break;
     case Y:
       cp = Either.y(cpl.y());
+      br2 = beforeRoot;
       break;
     case Z:
-      cp = Either.x(resolve(cpl.z(), r).some().x);
+      cp = Either.x(rebase(beforeRoot, resolve(cpl.z(), r).some().x));
+      br2 = b2;
       break;
     default:
       throw boom();
     }
-    return Either3.x(new Code2(c.x().tag, c.x().labels.put(p.cons().x,
-        inlineAndReplace(cp, p.cons().tail, newCode, r))));
+    return Either3.x(new Code2(c.x().tag, c.x().labels.put(after.cons().x,
+        inlineAndReplace(cp, br2, b2, after.cons().tail, newCode, r))));
   }
 
   public static Code replaceCodeAt(Code c, List<Label> p,
