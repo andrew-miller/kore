@@ -22,7 +22,9 @@ import com.pokemon.kore.R;
 import com.pokemon.kore.codes.Code2;
 import com.pokemon.kore.codes.Code2.Link;
 import com.pokemon.kore.codes.Label;
+import com.pokemon.kore.utils.CodeAtErr;
 import com.pokemon.kore.utils.CodeUtils.Resolver;
+import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.ICode;
 import com.pokemon.kore.utils.List;
@@ -72,7 +74,7 @@ public class CodeField3 {
       UIUtils.addCodeToMenu3(m, ir, nil(), codeLabelAliases, codeAliases,
           p -> {
             Either3<Code2, List<Label>, Link> n;
-            if (codeAt2(p, rootCode, r).isNothing()) {
+            if (codeAt2(p, rootCode).equals(Either.y(CodeAtErr.HitLink))) {
               Pair<Code2, List<Label>> cl = codeAt2(p, ir).some().x.link();
               n = Either3.z(new Link(hash(cl.x), cl.y));
             } else

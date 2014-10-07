@@ -433,18 +433,17 @@ public final class CodeUtils {
    * Code at the end of the path <tt>p</tt> along the spanning tree from
    * <tt>c</tt>
    */
-  public static Optional<Code2> codeAt2(List<Label> p, Code2 c) {
+  public static Either<Code2, CodeAtErr> codeAt2(List<Label> p, Code2 c) {
     if (p.isEmpty())
-      return some(c);
+      return Either.x(c);
     Optional<Either3<Code2, List<Label>, Link>> ocp = c.labels.get(p.cons().x);
-    if (ocp.isNothing())
-      return nothing();
     switch (ocp.some().x.tag) {
     case X:
       return codeAt2(p.cons().tail, ocp.some().x.x());
     case Y:
-    case Z:
       throw new RuntimeException();
+    case Z:
+      return Either.y(CodeAtErr.HitLink);
     default:
       throw boom();
     }
@@ -755,7 +754,7 @@ public final class CodeUtils {
     for (Either3<Code2, List<Label>, Link> cp : iter(values(c.labels))) {
       switch (cp.tag) {
       case Y:
-        if (codeAt2(cp.y(), root).isNothing())
+        if (codeAt2(cp.y(), root).tag == Either.Tag.Y)
           return false;
         break;
       case X:
@@ -1033,8 +1032,7 @@ public final class CodeUtils {
 
   public static Optional<Code2> resolve(Link l, Resolver r) {
     Optional<Code2> oc = r.resolve(l.hash);
-    return oc.isNothing() ? nothing() : some(codeAt2(l.path, oc.some().x)
-        .some().x);
+    return oc.isNothing() ? nothing() : some(codeAt2(l.path, oc.some().x).x());
   }
 
   public static ICode icode(Code2 c, Resolver r) {
@@ -1065,7 +1063,7 @@ public final class CodeUtils {
           case Z:
             Code2 c2 = r.resolve(e.y.z().hash).some().x;
             m =
-                m.put(e.x, Either.x(icode(codeAt2(e.y.z().path, c2).some().x,
+                m.put(e.x, Either.x(icode(codeAt2(e.y.z().path, c2).x(),
                     e.y.z().path, c2, r)));
             break;
           default:
