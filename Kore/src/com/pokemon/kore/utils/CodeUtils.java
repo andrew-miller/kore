@@ -441,7 +441,7 @@ public final class CodeUtils {
     case X:
       return codeAt2(p.cons().tail, ocp.some().x.x());
     case Y:
-      throw new RuntimeException();
+      return Either.y(CodeAtErr.InvalidPath);
     case Z:
       return Either.y(CodeAtErr.HitLink);
     default:
