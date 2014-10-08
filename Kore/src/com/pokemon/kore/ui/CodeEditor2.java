@@ -119,7 +119,7 @@ public class CodeEditor2 {
         };
 
     s.initNodeEditor = new F<Unit, Unit>() {
-      public Unit f(Unit _) {
+      public Unit f(Unit $) {
         s.nodeEditor =
             CodeNodeEditor2.make(context, s.code,
                 new CodeNodeEditor2.Listener() {
