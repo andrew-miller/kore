@@ -1119,4 +1119,28 @@ public final class CodeUtils {
     }
   }
 
+  public static List<Label> rootPath(List<Label> path, Code2 c, Resolver r) {
+    return rootPath(nil(), nil(), path, c, r);
+  }
+
+  private static List<Label> rootPath(List<Label> rootPath, List<Label> before,
+      List<Label> path, Code2 c, Resolver r) {
+    if (path.isEmpty())
+      return rootPath;
+    Either3<Code2, List<Label>, Link> cpl =
+        c.labels.get(path.cons().x).some().x;
+    switch (cpl.tag) {
+    case X:
+      return rootPath(rootPath, append(path.cons().x, before),
+          path.cons().tail, cpl.x(), r);
+    case Y:
+      throw new RuntimeException("path points to a self-reference");
+    case Z:
+      Code2 c2 = resolve(cpl.z(), r).some().x;
+      before = append(path.cons().x, before);
+      return rootPath(before, before, path.cons().tail, c2, r);
+    default:
+      throw boom();
+    }
+  }
 }

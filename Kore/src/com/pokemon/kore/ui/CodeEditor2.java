@@ -7,6 +7,7 @@ import static com.pokemon.kore.utils.CodeUtils.hash;
 import static com.pokemon.kore.utils.CodeUtils.icode;
 import static com.pokemon.kore.utils.CodeUtils.longestValidSubPath2;
 import static com.pokemon.kore.utils.CodeUtils.replaceCodeAt2;
+import static com.pokemon.kore.utils.CodeUtils.rootPath;
 import static com.pokemon.kore.utils.CodeUtils.unit2;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.isPrefix;
@@ -189,7 +190,7 @@ public class CodeEditor2 {
                       s.path = append(l, s.path);
                       break;
                     case Y:
-                      s.path = cpl.y();
+                      s.path = append(rootPath(s.path, s.code, r), cpl.y());
                       break;
                     case X:
                       s.path = append(l, s.path);
