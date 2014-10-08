@@ -3,10 +3,12 @@ package com.pokemon.kore.ui;
 import static com.pokemon.kore.utils.Boom.boom;
 import static com.pokemon.kore.utils.CodeUtils.canReplace;
 import static com.pokemon.kore.utils.CodeUtils.codeAt2;
+import static com.pokemon.kore.utils.CodeUtils.foreach;
 import static com.pokemon.kore.utils.CodeUtils.hash;
 import static com.pokemon.kore.utils.CodeUtils.icode;
 import static com.pokemon.kore.utils.CodeUtils.longestValidSubPath2;
 import static com.pokemon.kore.utils.CodeUtils.replaceCodeAt2;
+import static com.pokemon.kore.utils.CodeUtils.resolve;
 import static com.pokemon.kore.utils.CodeUtils.rootPath;
 import static com.pokemon.kore.utils.CodeUtils.unit2;
 import static com.pokemon.kore.utils.ListUtils.append;
@@ -107,7 +109,8 @@ public class CodeEditor2 {
           for (Pair<З2Bytes, Code2> e : iter(p.x.entrySet()))
             s.newCodes = s.newCodes.put(e.x, e.y);
           Code2 code2 = p.y;
-          remapAliases(s.code, code2, nil(), a.y, codeLabelAliases, s.code);
+          remapAliases(s.code, icode(code2, r), nil(), s.path, a.y,
+              codeLabelAliases, r);
           s.pathShadow = longestValidSubPath2(s.pathShadow, icode(code2, r));
           s.code = code2;
           setPath.f(s.pathShadow);
@@ -243,17 +246,31 @@ public class CodeEditor2 {
         (List<Label>) b.get(STATE_PATH_SHADOW), r, done);
   }
 
-  private static void remapAliases(Code2 c, Code2 c2, List<Label> path,
-      Optional<List<Label>> invalidatedPath,
-      CodeLabelAliasMap2 codeLabelAliases, Code2 code) {
-    if (some(path).equals(invalidatedPath))
-      return;
-    codeLabelAliases.setAliases(new Link(hash(c2), path),
-        codeLabelAliases.getAliases(new Link(hash(code), path)));
-    for (Pair<Label, Either3<Code2, List<Label>, Link>> e : iter(c.labels
-        .entrySet()))
-      if (e.y.tag == e.y.tag.X)
-        remapAliases(e.y.x(), c2, append(e.x, path), invalidatedPath,
-            codeLabelAliases, code);
+  private static void remapAliases(Code2 c, ICode c2, List<Label> before,
+      List<Label> path, Optional<List<Label>> invalidatedPath,
+      CodeLabelAliasMap2 codeLabelAliases, Resolver r) {
+    foreach(
+        c,
+        p -> {
+          if (!invalidatedPath.isNothing()
+              && isPrefix(invalidatedPath.some().x, append(before, p.x)))
+            return unit();
+          switch (p.y.tag) {
+          case X:
+            Pair<Code2, List<Label>> c2l = codeAt2(p.x, c2).some().x.link();
+            codeLabelAliases.setAliases(new Link(hash(c2l.x), c2l.y),
+                codeLabelAliases.getAliases(new Link(hash(c), p.x)));
+            break;
+          case Y:
+            break;
+          case Z:
+            if (isPrefix(append(before, p.x), path))
+              remapAliases(resolve(p.y.z(), r).some().x, codeAt2(p.x, c2)
+                  .some().x, append(before, p.x), path, invalidatedPath,
+                  codeLabelAliases, r);
+            break;
+          }
+          return unit();
+        });
   }
 }

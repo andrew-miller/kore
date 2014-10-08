@@ -1145,4 +1145,21 @@ public final class CodeUtils {
       throw boom();
     }
   }
+
+  public static void foreach(Code2 c,
+      F<Pair<List<Label>, Either3<Code2, List<Label>, Link>>, Unit> f) {
+    foreach(Either3.x(c), nil(), f);
+  }
+
+  public static void foreach(Either3<Code2, List<Label>, Link> cpl,
+      List<Label> p,
+      F<Pair<List<Label>, Either3<Code2, List<Label>, Link>>, Unit> f) {
+    f.f(pair(p, cpl));
+    if (cpl.tag == Either3.Tag.X)
+      for (Pair<Label, Either3<Code2, List<Label>, Link>> e : iter(cpl.x().labels
+          .entrySet()))
+        foreach(e.y, append(e.x, p), f);
+
+  }
+
 }
