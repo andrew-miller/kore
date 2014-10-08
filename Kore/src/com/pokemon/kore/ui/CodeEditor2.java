@@ -109,6 +109,7 @@ public class CodeEditor2 {
           remapAliases(s.code, code2, nil(), a.y, codeLabelAliases, s.code);
           s.pathShadow = longestValidSubPath2(s.pathShadow, icode(code2, r));
           s.code = code2;
+          setPath.f(s.pathShadow);
           s.initNodeEditor.f(unit());
           return unit();
         };
