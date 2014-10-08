@@ -437,11 +437,13 @@ public final class CodeUtils {
     if (p.isEmpty())
       return Either.x(c);
     Optional<Either3<Code2, List<Label>, Link>> ocp = c.labels.get(p.cons().x);
+    if (ocp.isNothing())
+      return Either.y(CodeAtErr.InvalidPath);
     switch (ocp.some().x.tag) {
     case X:
       return codeAt2(p.cons().tail, ocp.some().x.x());
     case Y:
-      return Either.y(CodeAtErr.InvalidPath);
+      return Either.y(CodeAtErr.HitSelfReference);
     case Z:
       return Either.y(CodeAtErr.HitLink);
     default:
