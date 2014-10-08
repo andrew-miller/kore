@@ -34,6 +34,7 @@ import com.pokemon.kore.codes.З2Bytes;
 import com.pokemon.kore.utils.CodeUtils.Resolver;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
+import com.pokemon.kore.utils.ICode;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.Map;
 import com.pokemon.kore.utils.Optional;
@@ -155,10 +156,11 @@ public class CodeEditor2 {
 
                   public void changeLabelAlias(Label label, String alias) {
                     notNull(label, alias);
-                    Code2 c = codeAt2(s.path, s.code, r).some().x;
-                    if (!containsKey(c.labels, label))
+                    ICode c = codeAt2(s.path, icode(s.code, r)).some().x;
+                    Pair<Code2, List<Label>> cl = c.link();
+                    if (!containsKey(c.labels(), label))
                       throw new RuntimeException("non-existent label");
-                    Link l = new Link(hash(s.code), s.path);
+                    Link l = new Link(hash(cl.x), cl.y);
                     if (codeLabelAliases.setAlias(l, label, alias))
                       f(unit());
                   }
