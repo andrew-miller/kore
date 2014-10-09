@@ -1081,19 +1081,33 @@ public final class CodeUtils {
     };
   }
 
-  public static Code code(ICode c) {
+  public static Code code(Code2 c, Resolver r) {
+    return code(c, nil(), nil(), r);
+  }
+
+  private static Code code(Code2 c, List<Label> beforeRoot, List<Label> before,
+      Resolver r) {
     Map<Label, Either<Code, List<Label>>> ls = Map.empty();
-    for (Pair<Label, Either<ICode, List<Label>>> e : iter(c.labels().entrySet())) {
+    for (Pair<Label, Either3<Code2, List<Label>, Link>> e : iter(c.labels
+        .entrySet())) {
+      Either<Code, List<Label>> t;
       switch (e.y.tag) {
       case X:
-        ls = ls.put(e.x, Either.x(code(e.y.x())));
+        t = Either.x(code(e.y.x(), beforeRoot, append(e.x, before), r));
         break;
       case Y:
-        ls = ls.put(e.x, Either.y(e.y.y()));
+        t = Either.y(append(beforeRoot, e.y.y()));
         break;
+      case Z:
+        List<Label> before2 = append(e.x, before);
+        t = Either.x(code(resolve(e.y.z(), r).some().x, before2, before2, r));
+        break;
+      default:
+        throw boom();
       }
+      ls = ls.put(e.x, t);
     }
-    switch (c.tag()) {
+    switch (c.tag) {
     case PRODUCT:
       return Code.newProduct(ls);
     case UNION:

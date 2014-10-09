@@ -2,7 +2,6 @@ package com.pokemon.kore.ui;
 
 import static com.pokemon.kore.utils.CodeUtils.code;
 import static com.pokemon.kore.utils.CodeUtils.hash;
-import static com.pokemon.kore.utils.CodeUtils.icode;
 import static com.pokemon.kore.utils.ListUtils.cons;
 import static com.pokemon.kore.utils.ListUtils.iter;
 import static com.pokemon.kore.utils.ListUtils.nil;
@@ -468,7 +467,7 @@ public class MainActivity extends FragmentActivity {
           rootCodes = rootCodes.put(e.x, e.y);
         if (!codes.contains(p.x)) {
           recentCodes2 = cons(p.x, recentCodes2);
-          recentCodes = cons(code(icode(p.x, r)), recentCodes);
+          recentCodes = cons(code(p.x, r), recentCodes);
         }
         codes.add(p.x);
         initRecentCodes();
