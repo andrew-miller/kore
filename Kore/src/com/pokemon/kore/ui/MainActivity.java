@@ -188,7 +188,7 @@ public class MainActivity extends FragmentActivity {
     Optional<Bundle> runAreaState = nothing();
     if (b != null) {
       codes = (HashSet<Code2>) b.get(STATE_CODES);
-      recentCodes2 = (List<Code2>) b.get(STATE_RECENT_CODES);
+      recentCodes2 = (List<Code2>) b.get(STATE_RECENT_CODES2);
       recentCodes = (List<Code>) b.get(STATE_RECENT_CODES);
       relations = (HashSet<Relation>) b.get(STATE_RELATIONS);
       recentRelations = (List<Relation>) b.get(STATE_RECENT_RELATIONS);
