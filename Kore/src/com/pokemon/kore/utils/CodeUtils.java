@@ -134,14 +134,16 @@ public final class CodeUtils {
   public static String renderCode3(ICode c, List<Label> p,
       CodeLabelAliasMap2 codeLabelAliases, Bijection<Link, String> codeAliases,
       int depth) {
-    return renderCode3(p,
-        p.isEmpty() ? c : codeOrPathAt2(take(p, length(p) - 1), c).x(),
-        codeOrPathAt2(p, c), codeLabelAliases, codeAliases, depth);
+    Either<ICode, List<Label>> cp = codeOrPathAt2(p, c);
+    return renderCode3(
+        cp.tag == Either.Tag.X ? Either.x(cp.x()) : Either.y(pair(
+            codeOrPathAt2(take(p, length(p) - 1), c).x(), cp.y())),
+        codeLabelAliases, codeAliases, depth);
   }
 
-  private static String renderCode3(List<Label> path, ICode parent,
-      Either<ICode, List<Label>> cp, CodeLabelAliasMap2 codeLabelAliases,
-      Bijection<Link, String> codeAliases, int depth) {
+  private static String renderCode3(Either<ICode, Pair<ICode, List<Label>>> cp,
+      CodeLabelAliasMap2 codeLabelAliases, Bijection<Link, String> codeAliases,
+      int depth) {
     if (depth < 0)
       throw new RuntimeException("negative depth");
     if (depth == 0)
@@ -153,7 +155,8 @@ public final class CodeUtils {
       link = new Link(hash(p.x), p.y);
       break;
     case Y:
-      link = new Link(hash(parent.link().x), path);
+      ICode parent = cp.y().x;
+      link = new Link(hash(parent.link().x), cp.y().y);
       break;
     default:
       throw boom();
@@ -189,8 +192,9 @@ public final class CodeUtils {
       Optional<String> la = labelAliases.xy.get(l);
       String ls = la.isNothing() ? l.label : la.some().x;
       result +=
-          (ls + " " + renderCode3(append(l, link.path), c, e.y,
-              codeLabelAliases, codeAliases, depth - 1));
+          (ls + " " + renderCode3(e.y.tag == Either.Tag.X ? Either.x(e.y.x())
+              : Either.y(pair(c, e.y.y())), codeLabelAliases, codeAliases,
+              depth - 1));
     }
     return start + result + end;
   }
