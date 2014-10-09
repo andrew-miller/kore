@@ -59,6 +59,7 @@ public class MainActivity extends FragmentActivity {
   private static final String STATE_RUN_AREA = "run_area";
   private static final String STATE_RELATION_VIEW_COLORS =
       "relation_view_colors";
+  private static final String STATE_ROOT_CODES = "root_codes";
 
   private static RelationViewColors relationViewColors;
   private HashSet<Code2> codes = new HashSet<>();
@@ -210,6 +211,7 @@ public class MainActivity extends FragmentActivity {
       runAreaState = some(b.getBundle(STATE_RUN_AREA));
       relationViewColors =
           (RelationViewColors) b.getSerializable(STATE_RELATION_VIEW_COLORS);
+      rootCodes = (Map<З2Bytes, Code2>) b.getSerializable(STATE_ROOT_CODES);
     }
 
     initRecentCodes();
@@ -275,6 +277,7 @@ public class MainActivity extends FragmentActivity {
     b.putBoolean(STATE_RECENT_VISIBLE, recentVisible);
     b.putBundle(STATE_RUN_AREA, getRunAreaState.f(unit()));
     b.putSerializable(STATE_RELATION_VIEW_COLORS, relationViewColors);
+    b.putSerializable(STATE_ROOT_CODES, rootCodes);
   }
 
   private void switchRecent() {
