@@ -1,6 +1,8 @@
 package com.pokemon.kore.ui;
 
+import static com.pokemon.kore.utils.CodeUtils.code;
 import static com.pokemon.kore.utils.CodeUtils.hash;
+import static com.pokemon.kore.utils.CodeUtils.icode;
 import static com.pokemon.kore.utils.ListUtils.cons;
 import static com.pokemon.kore.utils.ListUtils.iter;
 import static com.pokemon.kore.utils.ListUtils.nil;
@@ -462,11 +464,13 @@ public class MainActivity extends FragmentActivity {
         codeEditorContainer.removeAllViews();
         codeEditorContainer.setVisibility(View.GONE);
         mainLayout.setVisibility(View.VISIBLE);
-        if (!codes.contains(p.x))
-          recentCodes2 = cons(p.x, recentCodes2);
-        codes.add(p.x);
         for (Pair<З2Bytes, Code2> e : iter(p.y.entrySet()))
           rootCodes = rootCodes.put(e.x, e.y);
+        if (!codes.contains(p.x)) {
+          recentCodes2 = cons(p.x, recentCodes2);
+          recentCodes = cons(code(icode(p.x, r)), recentCodes);
+        }
+        codes.add(p.x);
         initRecentCodes();
         codeEditor = nothing();
         initRecentRelations();
