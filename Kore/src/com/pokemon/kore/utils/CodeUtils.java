@@ -497,7 +497,7 @@ public final class CodeUtils {
     return cp;
   }
 
-  private static Either<ICode, List<Label>> codeOrPathAt2(List<Label> path,
+  public static Either<ICode, List<Label>> codeOrPathAt2(List<Label> path,
       ICode c) {
     Either<ICode, List<Label>> cp = Either.x(c);
     for (Label l : iter(path))

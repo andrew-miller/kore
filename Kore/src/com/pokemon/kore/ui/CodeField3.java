@@ -1,13 +1,17 @@
 package com.pokemon.kore.ui;
 
+import static com.pokemon.kore.utils.Boom.boom;
 import static com.pokemon.kore.utils.CodeUtils.canReplace;
 import static com.pokemon.kore.utils.CodeUtils.codeAt2;
+import static com.pokemon.kore.utils.CodeUtils.codeOrPathAt2;
 import static com.pokemon.kore.utils.CodeUtils.hash;
 import static com.pokemon.kore.utils.CodeUtils.icode;
 import static com.pokemon.kore.utils.CodeUtils.renderCode3;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.iter;
+import static com.pokemon.kore.utils.ListUtils.length;
 import static com.pokemon.kore.utils.ListUtils.nil;
+import static com.pokemon.kore.utils.ListUtils.take;
 import static com.pokemon.kore.utils.Null.notNull;
 import static com.pokemon.kore.utils.Unit.unit;
 import android.content.Context;
@@ -74,10 +78,9 @@ public class CodeField3 {
       UIUtils.addCodeToMenu3(m, ir, nil(), codeLabelAliases, codeAliases,
           p -> {
             Either3<Code2, List<Label>, Link> n;
-            if (codeAt2(p, rootCode).equals(Either.y(CodeAtErr.HitLink))) {
-              Pair<Code2, List<Label>> cl = codeAt2(p, ir).some().x.link();
-              n = Either3.z(new Link(hash(cl.x), cl.y));
-            } else
+            if (codeAt2(p, rootCode).equals(Either.y(CodeAtErr.HitLink)))
+              n = hashPathToCodeOrPath(p, ir);
+            else
               n = Either3.y(p);
             if (canReplace(rootCode, append(label, path), n, r))
               listener.replaceField(n);
@@ -86,16 +89,9 @@ public class CodeField3 {
       m.add("---");
       for (Code2 c : iter(codes)) {
         ICode ic = icode(c, r);
-        UIUtils.addCodeToMenu3(
-            m,
-            ic,
-            nil(),
-            codeLabelAliases,
-            codeAliases,
+        UIUtils.addCodeToMenu3(m, ic, nil(), codeLabelAliases, codeAliases,
             p -> {
-              Pair<Code2, List<Label>> cl = codeAt2(p, ic).some().x.link();
-              Either3<Code2, List<Label>, Link> n =
-                  Either3.z(new Link(hash(cl.x), cl.y));
+              Either3<Code2, List<Label>, Link> n = hashPathToCodeOrPath(p, ic);
               if (canReplace(rootCode, append(label, path), n, r))
                 listener.replaceField(n);
               return unit();
@@ -109,4 +105,17 @@ public class CodeField3 {
     return v;
   }
 
+  private static Either3<Code2, List<Label>, Link> hashPathToCodeOrPath(List<Label> p, ICode c) {
+    Either<ICode, List<Label>> cp = codeOrPathAt2(p, c);
+    switch (cp.tag) {
+    case X:
+      Pair<Code2, List<Label>> cl = cp.x().link();
+      return Either3.z(new Link(hash(cl.x), cl.y));
+    case Y:
+      cl = codeAt2(take(p, length(p) - 1), c).some().x.link();
+      return Either3.z(new Link(hash(cl.x), cp.y()));
+    default:
+      throw boom();
+    }
+  }
 }
