@@ -3,9 +3,12 @@ package com.pokemon.kore.ui;
 import static com.pokemon.kore.ui.PatternUtils.emptyPattern;
 import static com.pokemon.kore.ui.PatternUtils.renderPattern;
 import static com.pokemon.kore.utils.Boom.boom;
+import static com.pokemon.kore.utils.CodeUtils.codeAt2;
 import static com.pokemon.kore.utils.CodeUtils.codeToGraph;
 import static com.pokemon.kore.utils.CodeUtils.directPath;
 import static com.pokemon.kore.utils.CodeUtils.equal;
+import static com.pokemon.kore.utils.CodeUtils.hashLink;
+import static com.pokemon.kore.utils.CodeUtils.iunit;
 import static com.pokemon.kore.utils.CodeUtils.reroot;
 import static com.pokemon.kore.utils.CodeUtils.unit;
 import static com.pokemon.kore.utils.LinkTreeUtils.canonicalLinkTree;
@@ -36,6 +39,7 @@ import org.jgrapht.graph.DirectedMultigraph;
 
 import com.pokemon.kore.codes.CanonicalCode;
 import com.pokemon.kore.codes.Code;
+import com.pokemon.kore.codes.Code2;
 import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.RVertex;
 import com.pokemon.kore.codes.Relation;
@@ -45,11 +49,14 @@ import com.pokemon.kore.codes.Relation.Label_;
 import com.pokemon.kore.codes.Relation.Product;
 import com.pokemon.kore.codes.Relation.Projection;
 import com.pokemon.kore.codes.Relation.Union;
+import com.pokemon.kore.codes.Relation2;
+import com.pokemon.kore.codes.Relation2.Link;
 import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.Either3.Tag;
 import com.pokemon.kore.utils.Either3Comparer;
 import com.pokemon.kore.utils.F;
+import com.pokemon.kore.utils.ICode;
 import com.pokemon.kore.utils.Identity;
 import com.pokemon.kore.utils.IntegerComparer;
 import com.pokemon.kore.utils.LabelComparer;
@@ -405,8 +412,107 @@ public class RelationUtils {
   }
 
   /** Empty relation from <tt>i</tt> to <tt>o</tt> */
+  public static Relation2 dummy2(ICode i, ICode o) {
+    return Relation2.union(new Relation2.Union(nil(), hashLink(i.link()),
+        hashLink(o.link())));
+  }
+
+  /** Empty relation from <tt>i</tt> to <tt>o</tt> */
   public static Relation dummy(Code i, Code o) {
     return Relation.union(new Union(nil(), i, o));
+  }
+
+  public static Optional<Relation2.Projection> projection2(ICode i, ICode o) {
+    Optional<Pair<List<Label>, List<Label>>> op = f(i, i.link().x, nil(), o);
+    if (op.isNothing())
+      return nothing();
+    Pair<Code2, List<Label>> il = i.link();
+    return some(new Relation2.Projection(append(
+        path(il.x, il.y, op.some().x.x), op.some().x.y), hashLink(o.link())));
+  }
+
+  /*
+   * (x,y): y is a path from somewhere within the SCC `c` to the SCC of `o`. `x`
+   * is the path from `i` to where `y` starts
+   */
+  private static Optional<Pair<List<Label>, List<Label>>> f(ICode i, Code2 c,
+      List<Label> p, ICode o) {
+    Optional<Pair<List<Label>, List<Label>>> op = g(i.codeAt(p), o.link().x);
+    if (!op.isNothing()) {
+      Pair<Code2, List<Label>> ol = o.link();
+      return some(pair(p,
+          append(op.some().x.x, path(ol.x, op.some().x.y, ol.y))));
+    }
+    for (Pair<Label, Either3<Code2, List<Label>, Code2.Link>> e : iter(c.labels
+        .entrySet()))
+      if (e.y.tag == Either3.Tag.X) {
+        op = f(i, e.y.x(), append(e.x, p), o);
+        if (!op.isNothing())
+          return op;
+      }
+    return nothing();
+  }
+
+  /*
+   * (x,y): `y` is a path from `c` to anywhere within `scc`. `x` is the path
+   * from `scc` to wherever `y` points
+   */
+  private static Optional<Pair<List<Label>, List<Label>>> g(ICode c, Code2 scc) {
+    if (c.link().x.equals(scc))
+      return some(pair(c.link().y, nil()));
+    for (Pair<Label, Either<ICode, List<Label>>> e : iter(c.labels().entrySet()))
+      if (e.y.tag == Either.Tag.X) {
+        Optional<Pair<List<Label>, List<Label>>> op = g(e.y.x(), scc);
+        if (!op.isNothing())
+          return some(pair(op.some().x.x, cons(e.x, op.some().x.y)));
+      }
+    return nothing();
+  }
+
+  /**
+   * A path from the code at <code>source</code> within <code>c</code> to the
+   * code at <code>dest</code> within <code>c</code>. <code>c</code> is the root
+   * of an SCC. The path may go through a self reference in the SCC.
+   */
+  public static List<Label> path(Code2 c, List<Label> source, List<Label> dest) {
+    if (isPrefix(source, dest))
+      return drop(source, length(source));
+    return append(pathToRoot(c, source), dest);
+  }
+
+  /**
+   * A path from the code at <code>p</code> within <code>c</code> to the root of
+   * <code>c</code>. <code>c</code> is the root of an SCC.
+   */
+  public static List<Label> pathToRoot(Code2 c, List<Label> p) {
+    if (p.isEmpty())
+      return nil();
+    return pathToRoot(codeAt2(p, c).x(), new HashSet<>()).some().x;
+  }
+
+  private static Optional<List<Label>> pathToRoot(Code2 c, Set<List<Label>> v) {
+    for (Pair<Label, Either3<Code2, List<Label>, Code2.Link>> e : iter(c.labels
+        .entrySet())) {
+      switch (e.y.tag) {
+      case X: {
+        Optional<List<Label>> ol = pathToRoot(e.y.x(), v);
+        if (!ol.isNothing())
+          return some(cons(e.x, ol.some().x));
+      }
+      case Y:
+        if (e.y.y().isEmpty())
+          return some(fromArray(e.x));
+        if (!v.contains(e.y.y())) {
+          v.add(e.y.y());
+          Optional<List<Label>> ol = pathToRoot(codeAt2(e.y.y(), c).x(), v);
+          if (!ol.isNothing())
+            return some(cons(e.x, ol.some().x));
+        }
+      case Z:
+        break;
+      }
+    }
+    return nothing();
   }
 
   public static Optional<Projection> projection(Code i, Code o) {
@@ -718,6 +824,51 @@ public class RelationUtils {
    * <code>d</code> is the argument code when <code>t</code> is
    * <code>Projection</code>
    */
+  public static Relation2 emptyRelation2(ICode d, ICode c, Relation2.Tag t) {
+    switch (t) {
+    case ABSTRACTION:
+      return Relation2.abstraction(new Relation2.Abstraction(emptyPattern,
+          Either3.x(defaultValue2(iunit, c)), hashLink(d.link()), hashLink(c
+              .link())));
+    case COMPOSITION:
+      return Relation2.composition(new Relation2.Composition(nil(), hashLink(d
+          .link()), hashLink(c.link())));
+    case PRODUCT:
+      if (!isUnit(d))
+        throw new RuntimeException("cannot make product with non-unit domain");
+      Map<Label, Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link>> m =
+          Map.empty();
+      for (Pair<Label, Either<ICode, List<Label>>> e : iter(c.labels()
+          .entrySet())) {
+        ICode c2 = e.y.tag == Either.Tag.X ? e.y.x() : c.codeAt(e.y.y());
+        m = m.put(e.x, Either3.x(defaultValue2(iunit, c2)));
+      }
+      return Relation2.product(new Relation2.Product(m, hashLink(c.link())));
+    case LABEL:
+      if (!isUnit(d))
+        throw new RuntimeException("cannot make label with non-unit domain");
+      for (Pair<Label, Either<ICode, List<Label>>> e : iter(c.labels()
+          .entrySet())) {
+        ICode c2 = e.y.tag == Either.Tag.X ? e.y.x() : c.codeAt(e.y.y());
+        return Relation2.label(new Relation2.Label_(e.x, Either3
+            .x(defaultValue2(iunit, c2)), hashLink(c.link())));
+      }
+      return defaultValue2(d, c);
+    case PROJECTION:
+      Optional<Relation2.Projection> or2 = projection2(d, c);
+      return or2.isNothing() ? defaultValue2(d, c) : Relation2.projection(or2
+          .some().x);
+    case UNION:
+      return dummy2(d, c);
+    default:
+      throw boom();
+    }
+  }
+
+  /**
+   * <code>d</code> is the argument code when <code>t</code> is
+   * <code>Projection</code>
+   */
   public static Relation emptyRelation(Code d, Code c, Relation.Tag t) {
     switch (t) {
     case ABSTRACTION:
@@ -992,6 +1143,59 @@ public class RelationUtils {
       return Either.x(linkTreeToRelation(e.x()));
     case Y:
       return Either.y(e.y());
+    default:
+      throw boom();
+    }
+  }
+
+  public static boolean isUnit(ICode c) {
+    return c.tag() == Code2.Tag.PRODUCT & c.labels().entrySet().isEmpty();
+  }
+
+  public static Relation2 defaultValue2(ICode i, ICode o) {
+    if (isUnit(i)) {
+      Optional<Relation2> od = defaultValue2(o);
+      return od.isNothing() ? dummy2(i, o) : od.some().x;
+    }
+    return dummy2(i, o);
+  }
+
+  /** if <code>c</code> has only one possible value, return that value */
+  public static Optional<Relation2> defaultValue2(ICode c) {
+    switch (c.tag()) {
+    case PRODUCT:
+      Map<Label, Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link>> fields =
+          Map.empty();
+      for (Pair<Label, Either<ICode, List<Label>>> e : iter(c.labels()
+          .entrySet()))
+        switch (e.y.tag) {
+        case X:
+          Optional<Relation2> od = defaultValue2(e.y.x());
+          if (od.isNothing())
+            return nothing();
+          fields = fields.put(e.x, Either3.x(od.some().x));
+          break;
+        case Y:
+          return nothing();
+        }
+      return some(Relation2.product(new Relation2.Product(fields, hashLink(c
+          .link()))));
+    case UNION:
+      List<Pair<Label, Either<ICode, List<Label>>>> es = c.labels().entrySet();
+      if (!es.isEmpty() && es.cons().tail.isEmpty()) {
+        Pair<Label, Either<ICode, List<Label>>> e = es.cons().x;
+        switch (e.y.tag) {
+        case X:
+          Optional<Relation2> od = defaultValue2(e.y.x());
+          if (od.isNothing())
+            return nothing();
+          return some(Relation2.label(new Relation2.Label_(e.x, Either3.x(od
+              .some().x), hashLink(c.link()))));
+        case Y:
+          return nothing();
+        }
+      }
+      return nothing();
     default:
       throw boom();
     }

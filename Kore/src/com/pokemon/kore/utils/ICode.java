@@ -13,4 +13,10 @@ public interface ICode {
   public Pair<Code2, List<Label>> link();
 
   public Code2.Tag tag();
+
+  /**
+   * The code within this SCC at then end of <code>path</code> starting from the
+   * root of this SCC
+   */
+  public ICode codeAt(List<Label> path);
 }

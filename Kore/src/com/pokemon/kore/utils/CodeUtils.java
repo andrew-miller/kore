@@ -45,6 +45,25 @@ public final class CodeUtils {
 
   public final static Code unit = Code.newProduct(Map.empty());
   public final static Code2 unit2 = Code2.newProduct(Map.empty());
+  public final static ICode iunit = new ICode() {
+    public Code2.Tag tag() {
+      return Code2.Tag.PRODUCT;
+    }
+
+    public Pair<Code2, List<Label>> link() {
+      return pair(unit2, nil());
+    }
+
+    public Map<Label, Either<ICode, List<Label>>> labels() {
+      return Map.empty();
+    }
+
+    public ICode codeAt(List<Label> path) {
+      if (path.isEmpty())
+        return this;
+      throw new RuntimeException("invalid path");
+    }
+  };
 
   public final static Code empty = Code.newUnion(Map.empty());
 
@@ -1078,6 +1097,10 @@ public final class CodeUtils {
         }
         return m;
       }
+
+      public ICode codeAt(List<Label> path) {
+        return icode(CodeUtils.codeAt2(path, root).x(), r);
+      }
     };
   }
 
@@ -1180,4 +1203,7 @@ public final class CodeUtils {
 
   }
 
+  public static Link hashLink(Pair<Code2, List<Label>> l) {
+    return new Link(hash(l.x), l.y);
+  }
 }

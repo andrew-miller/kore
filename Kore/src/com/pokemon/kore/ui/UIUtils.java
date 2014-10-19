@@ -49,6 +49,7 @@ import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Relation;
 import com.pokemon.kore.codes.Relation.Abstraction;
 import com.pokemon.kore.codes.Relation.Projection;
+import com.pokemon.kore.codes.Relation2;
 import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
@@ -150,6 +151,77 @@ public class UIUtils {
             ls2.isNothing() ? e.x.label : ls2.some().x, space + "  ",
             codeLabelAliases, codeAliases, f);
       }
+  }
+
+  public static void addEmptyRelationsToMenu2(Context context,
+      RelationViewColors rvc, ViewGroup vg, F<Relation, Unit> f, Relation root,
+      List<Either3<Label, Integer, Unit>> path,
+      CodeLabelAliasMap codeLabelAliases,
+      Bijection<Relation2.Link, String> relationAliases,
+      List<Relation> relations) {
+    F<Unit, Unit> addSpace = x -> {
+      Space s = new Space(context);
+      s.setMinimumHeight(1);
+      vg.addView(s);
+      return unit();
+    };
+    F<Relation, Unit> add =
+        r -> {
+          List<Either3<Label, Integer, Unit>> n = nil();
+          vg.addView(Overlay.make(context, RelationView.make(context, rvc,
+              new DragBro(), r, n, emptyRelationViewListener, codeLabelAliases,
+              relationAliases, relations), new Overlay.Listener() {
+            public boolean onLongClick() {
+              return false;
+            }
+
+            public void onClick() {
+              f.f(r);
+            }
+          }));
+          return unit();
+        };
+    Relation r = resolve(root, relationOrPathAt(path, root));
+    Code d = domain(r);
+    Code c = codomain(r);
+    add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.UNION));
+    addSpace.f(unit());
+    if (equal(domain(r), unit)) {
+      if (codomain(r).tag == Code.Tag.PRODUCT) {
+        add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.PRODUCT));
+        addSpace.f(unit());
+      }
+      if (codomain(r).tag == Code.Tag.UNION)
+        if (!codomain(r).labels.entrySet().isEmpty()) {
+          add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.LABEL));
+          addSpace.f(unit());
+        }
+    }
+    add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.ABSTRACTION));
+    addSpace.f(unit());
+    add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.COMPOSITION));
+    Optional<Abstraction> oea = enclosingAbstraction(path, root);
+    if (!oea.isNothing()) {
+      addSpace.f(unit());
+      Relation p =
+          RelationUtils.emptyRelation(oea.some().x.i, c,
+              Relation.Tag.PROJECTION);
+      Relation a =
+          Relation.abstraction(new Abstraction(emptyPattern, Either.x(p), oea
+              .some().x.i, c));
+      vg.addView(Overlay.make(context, RelationView.make(context, rvc,
+          new DragBro(), a, fromArray(Either3.z(unit())),
+          emptyRelationViewListener, codeLabelAliases, relationAliases,
+          relations), new Overlay.Listener() {
+        public boolean onLongClick() {
+          return false;
+        }
+
+        public void onClick() {
+          f.f(p);
+        }
+      }));
+    }
   }
 
   public static void addEmptyRelationsToMenu(Context context,
