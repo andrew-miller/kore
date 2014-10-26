@@ -5,11 +5,13 @@ import static com.pokemon.kore.ui.RelationUtils.codomain;
 import static com.pokemon.kore.ui.RelationUtils.domain;
 import static com.pokemon.kore.ui.RelationUtils.emptyRelationViewListener;
 import static com.pokemon.kore.ui.RelationUtils.enclosingAbstraction;
+import static com.pokemon.kore.ui.RelationUtils.isUnit;
 import static com.pokemon.kore.ui.RelationUtils.relationOrPathAt;
 import static com.pokemon.kore.ui.RelationUtils.renderRelation;
 import static com.pokemon.kore.ui.RelationUtils.resolve;
 import static com.pokemon.kore.utils.CodeUtils.equal;
 import static com.pokemon.kore.utils.CodeUtils.hash;
+import static com.pokemon.kore.utils.CodeUtils.hashLink;
 import static com.pokemon.kore.utils.CodeUtils.renderCode;
 import static com.pokemon.kore.utils.CodeUtils.renderCode3;
 import static com.pokemon.kore.utils.CodeUtils.reroot;
@@ -45,6 +47,8 @@ import com.pokemon.kore.codes.CanonicalCode;
 import com.pokemon.kore.codes.CanonicalRelation;
 import com.pokemon.kore.codes.Code;
 import com.pokemon.kore.codes.Code2;
+import com.pokemon.kore.codes.IRelation;
+import com.pokemon.kore.codes.IRelation.IR;
 import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Relation;
 import com.pokemon.kore.codes.Relation.Abstraction;
@@ -154,18 +158,17 @@ public class UIUtils {
   }
 
   public static void addEmptyRelationsToMenu2(Context context,
-      RelationViewColors rvc, ViewGroup vg, F<Relation, Unit> f, Relation root,
-      List<Either3<Label, Integer, Unit>> path,
-      CodeLabelAliasMap codeLabelAliases,
+      RelationViewColors2 rvc, ViewGroup vg, F<Relation2, Unit> f, IRelation r,
+      CodeLabelAliasMap2 codeLabelAliases,
       Bijection<Relation2.Link, String> relationAliases,
-      List<Relation> relations) {
+      List<Relation2> relations) {
     F<Unit, Unit> addSpace = x -> {
       Space s = new Space(context);
       s.setMinimumHeight(1);
       vg.addView(s);
       return unit();
     };
-    F<Relation, Unit> add =
+    F<Relation2, Unit> add =
         r -> {
           List<Either3<Label, Integer, Unit>> n = nil();
           vg.addView(Overlay.make(context, RelationView.make(context, rvc,
@@ -181,34 +184,33 @@ public class UIUtils {
           }));
           return unit();
         };
-    Relation r = resolve(root, relationOrPathAt(path, root));
-    Code d = domain(r);
-    Code c = codomain(r);
-    add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.UNION));
+    ICode d = domain(r);
+    ICode c = codomain(r);
+    add.f(RelationUtils.emptyRelation2(d, c, Relation2.Tag.UNION));
     addSpace.f(unit());
-    if (equal(domain(r), unit)) {
-      if (codomain(r).tag == Code.Tag.PRODUCT) {
-        add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.PRODUCT));
+    if (isUnit(domain(r))) {
+      if (codomain(r).tag() == Code2.Tag.PRODUCT) {
+        add.f(RelationUtils.emptyRelation2(d, c, Relation2.Tag.PRODUCT));
         addSpace.f(unit());
       }
-      if (codomain(r).tag == Code.Tag.UNION)
-        if (!codomain(r).labels.entrySet().isEmpty()) {
-          add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.LABEL));
+      if (codomain(r).tag() == Code2.Tag.UNION)
+        if (!codomain(r).labels().entrySet().isEmpty()) {
+          add.f(RelationUtils.emptyRelation2(d, c, Relation2.Tag.LABEL));
           addSpace.f(unit());
         }
     }
-    add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.ABSTRACTION));
+    add.f(RelationUtils.emptyRelation2(d, c, Relation2.Tag.ABSTRACTION));
     addSpace.f(unit());
-    add.f(RelationUtils.emptyRelation(d, c, Relation.Tag.COMPOSITION));
-    Optional<Abstraction> oea = enclosingAbstraction(path, root);
+    add.f(RelationUtils.emptyRelation2(d, c, Relation2.Tag.COMPOSITION));
+    Optional<IR.Abstraction> oea = enclosingAbstraction(r);
     if (!oea.isNothing()) {
       addSpace.f(unit());
-      Relation p =
-          RelationUtils.emptyRelation(oea.some().x.i, c,
-              Relation.Tag.PROJECTION);
-      Relation a =
-          Relation.abstraction(new Abstraction(emptyPattern, Either.x(p), oea
-              .some().x.i, c));
+      Relation2 p =
+          RelationUtils.emptyRelation2(oea.some().x.i, c,
+              Relation2.Tag.PROJECTION);
+      Relation2 a =
+          Relation2.abstraction(new Relation2.Abstraction(emptyPattern, Either3
+              .x(p), hashLink(oea.some().x.i.link()), hashLink(c.link())));
       vg.addView(Overlay.make(context, RelationView.make(context, rvc,
           new DragBro(), a, fromArray(Either3.z(unit())),
           emptyRelationViewListener, codeLabelAliases, relationAliases,

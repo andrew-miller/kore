@@ -11,9 +11,10 @@ import android.view.ViewGroup;
 import android.widget.PopupWindow;
 import android.widget.Space;
 
-import com.pokemon.kore.codes.CanonicalRelation;
+import com.pokemon.kore.codes.IRelation;
 import com.pokemon.kore.codes.Label;
-import com.pokemon.kore.codes.Relation;
+import com.pokemon.kore.codes.Relation2;
+import com.pokemon.kore.codes.Relation2.Link;
 import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
@@ -24,12 +25,11 @@ import com.pokemon.kore.utils.Unit;
 public class RelationMenu2 {
 
   public static Pair<PopupWindow, ViewGroup> make(Context context,
-      Relation relation, List<Either3<Label, Integer, Unit>> path, View v,
-      RelationViewColors relationViewColors,
-      CodeLabelAliasMap codeLabelAliases,
-      Bijection<CanonicalRelation, String> relationAliases,
-      List<Relation> relations, boolean ref,
-      F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> select) {
+      IRelation relation, View v, RelationViewColors2 relationViewColors,
+      CodeLabelAliasMap2 codeLabelAliases,
+      Bijection<Link, String> relationAliases, List<Relation2> relations,
+      boolean ref,
+      F<Either<Relation2, List<Either3<Label, Integer, Unit>>>, Unit> select) {
     Pair<PopupWindow, ViewGroup> p = UIUtils.makePopupWindow(context);
     p.x.showAsDropDown(v);
     if (ref) {
@@ -43,16 +43,16 @@ public class RelationMenu2 {
       s.setMinimumHeight(1);
       p.y.addView(s);
     }
-    UIUtils.addEmptyRelationsToMenu(context, relationViewColors, p.y, r -> {
+    UIUtils.addEmptyRelationsToMenu2(context, relationViewColors, p.y, r -> {
       p.x.dismiss();
       select.f(Either.x(r));
       return unit();
-    }, relation, path, codeLabelAliases, relationAliases, relations);
+    }, relation, codeLabelAliases, relationAliases, relations);
     Space s = new Space(context);
     s.setMinimumHeight(1);
     p.y.addView(s);
     boolean first = true;
-    for (Relation r : iter(relations)) {
+    for (Relation2 r : iter(relations)) {
       if (!first) {
         Space s2 = new Space(context);
         s2.setMinimumHeight(1);

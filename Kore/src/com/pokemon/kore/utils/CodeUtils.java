@@ -1060,6 +1060,10 @@ public final class CodeUtils {
     return oc.isNothing() ? nothing() : some(codeAt2(l.path, oc.some().x).x());
   }
 
+  public static ICode icode(Link l, Resolver r) {
+    return icode(resolve(l, r).some().x, r);
+  }
+
   public static ICode icode(Code2 c, Resolver r) {
     return icode(c, nil(), c, r);
   }

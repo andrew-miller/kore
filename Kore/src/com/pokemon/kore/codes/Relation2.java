@@ -16,10 +16,9 @@ public final class Relation2 implements Serializable {
 
   public static final class Link implements Serializable {
     public final З2Bytes hash;
-    public final List<Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link>> path;
+    public final List<Either3<Label, Integer, Unit>> path;
 
-    public Link(З2Bytes hash,
-        List<Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link>> path) {
+    public Link(З2Bytes hash, List<Either3<Label, Integer, Unit>> path) {
       this.hash = hash;
       this.path = path;
     }

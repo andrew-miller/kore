@@ -8,6 +8,7 @@ import static com.pokemon.kore.utils.CodeUtils.codeToGraph;
 import static com.pokemon.kore.utils.CodeUtils.directPath;
 import static com.pokemon.kore.utils.CodeUtils.equal;
 import static com.pokemon.kore.utils.CodeUtils.hashLink;
+import static com.pokemon.kore.utils.CodeUtils.icode;
 import static com.pokemon.kore.utils.CodeUtils.iunit;
 import static com.pokemon.kore.utils.CodeUtils.reroot;
 import static com.pokemon.kore.utils.CodeUtils.unit;
@@ -40,6 +41,8 @@ import org.jgrapht.graph.DirectedMultigraph;
 import com.pokemon.kore.codes.CanonicalCode;
 import com.pokemon.kore.codes.Code;
 import com.pokemon.kore.codes.Code2;
+import com.pokemon.kore.codes.IRelation;
+import com.pokemon.kore.codes.IRelation.IR;
 import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.RVertex;
 import com.pokemon.kore.codes.Relation;
@@ -51,6 +54,8 @@ import com.pokemon.kore.codes.Relation.Projection;
 import com.pokemon.kore.codes.Relation.Union;
 import com.pokemon.kore.codes.Relation2;
 import com.pokemon.kore.codes.Relation2.Link;
+import com.pokemon.kore.codes.З2Bytes;
+import com.pokemon.kore.utils.CodeUtils;
 import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.Either3.Tag;
@@ -170,6 +175,18 @@ public class RelationUtils {
   }
 
   /** Relation at the end of the edge <tt>e</tt> in the tree */
+  public static Optional<Relation2> subRelation(Relation2 r,
+      Either3<Label, Integer, Unit> e) {
+    Optional<Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link>> oe =
+        subRelationOrPath(r, e);
+    if (oe.isNothing())
+      return nothing();
+    if (oe.some().x.tag != Either3.Tag.X)
+      return nothing();
+    return some(oe.some().x.x());
+  }
+
+  /** Relation at the end of the edge <tt>e</tt> in the tree */
   public static Optional<Relation> subRelation(Relation r,
       Either3<Label, Integer, Unit> e) {
     Optional<Either<Relation, List<Either3<Label, Integer, Unit>>>> oe =
@@ -179,6 +196,18 @@ public class RelationUtils {
     if (oe.some().x.tag == Either.Tag.Y)
       return nothing();
     return some(oe.some().x.x());
+  }
+
+  /** Relation at the end of the simple path <tt>p</tt> from <tt>r</tt> */
+  public static Optional<Relation2> relationAt(
+      List<Either3<Label, Integer, Unit>> p, Relation2 r) {
+    for (Either3<Label, Integer, Unit> e : iter(p)) {
+      Optional<Relation2> or = subRelation(r, e);
+      if (or.isNothing())
+        return nothing();
+      r = or.some().x;
+    }
+    return some(r);
   }
 
   /** Relation at the end of the simple path <tt>p</tt> from <tt>r</tt> */
@@ -199,6 +228,84 @@ public class RelationUtils {
     for (Either3<Label, Integer, Unit> e : iter(p))
       rp = subRelationOrPath(rp.x(), e).some().x;
     return rp;
+  }
+
+  public static
+      Optional<Either<IRelation, List<Either3<Label, Integer, Unit>>>>
+      subRelationOrPath(IRelation r, Either3<Label, Integer, Unit> e) {
+    switch (r.ir.tag) {
+    case ABSTRACTION:
+      if (e.tag != Tag.Z)
+        return nothing();
+      return f2(some(r.ir.abstraction().r.f(unit())));
+    case COMPOSITION:
+      if (e.tag != Tag.Y)
+        return nothing();
+      return f2(nth(r.ir.composition().l.f(unit()), e.y()));
+    case PRODUCT:
+      if (e.tag != Tag.X)
+        return nothing();
+      return f2(r.ir.product().m.f(unit()).get(e.x()));
+    case PROJECTION:
+      return nothing();
+    case LABEL:
+      if (e.tag != Tag.Z)
+        return nothing();
+      return f2(some(r.ir.label().r.f(unit())));
+    case UNION:
+      if (e.tag != Tag.Y)
+        return nothing();
+      return f2(nth(r.ir.union().l.f(unit()), e.y()));
+    default:
+      throw boom();
+    }
+  }
+
+  private static
+      Optional<Either<IRelation, List<Either3<Label, Integer, Unit>>>> f2(
+          Optional<Either<IRelation, List<Either3<Label, Integer, Unit>>>> r) {
+    if (r.isNothing())
+      return nothing();
+    return some(r.some().x);
+  }
+
+  public static
+      Optional<Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link>>
+      subRelationOrPath(Relation2 r, Either3<Label, Integer, Unit> e) {
+    switch (r.tag) {
+    case ABSTRACTION:
+      if (e.tag != Tag.Z)
+        return nothing();
+      return f3(some(r.abstraction().r));
+    case COMPOSITION:
+      if (e.tag != Tag.Y)
+        return nothing();
+      return f3(nth(r.composition().l, e.y()));
+    case PRODUCT:
+      if (e.tag != Tag.X)
+        return nothing();
+      return f3(r.product().m.get(e.x()));
+    case PROJECTION:
+      return nothing();
+    case LABEL:
+      if (e.tag != Tag.Z)
+        return nothing();
+      return f3(some(r.label().r));
+    case UNION:
+      if (e.tag != Tag.Y)
+        return nothing();
+      return f3(nth(r.union().l, e.y()));
+    default:
+      throw boom();
+    }
+  }
+
+  private static
+      Optional<Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link>>
+      f3(Optional<Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link>> r) {
+    if (r.isNothing())
+      return nothing();
+    return some(r.some().x);
   }
 
   public static Optional<Either<Relation, List<Either3<Label, Integer, Unit>>>>
@@ -299,6 +406,25 @@ public class RelationUtils {
     }
   }
 
+  public static ICode domain(IRelation r) {
+    switch (r.ir.tag) {
+    case COMPOSITION:
+      return r.ir.composition().i;
+    case ABSTRACTION:
+      return r.ir.abstraction().i;
+    case LABEL:
+      return iunit;
+    case PRODUCT:
+      return iunit;
+    case PROJECTION:
+      return iunit;
+    case UNION:
+      return r.ir.union().i;
+    default:
+      throw boom();
+    }
+  }
+
   public static Code domain(Relation r) {
     switch (r.tag) {
     case COMPOSITION:
@@ -313,6 +439,25 @@ public class RelationUtils {
       return unit;
     case UNION:
       return r.union().i;
+    default:
+      throw boom();
+    }
+  }
+
+  public static ICode codomain(IRelation r) {
+    switch (r.ir.tag) {
+    case COMPOSITION:
+      return r.ir.composition().o;
+    case ABSTRACTION:
+      return r.ir.abstraction().o;
+    case LABEL:
+      return r.ir.label().o;
+    case PRODUCT:
+      return r.ir.product().o;
+    case PROJECTION:
+      return r.ir.projection().o;
+    case UNION:
+      return r.ir.union().o;
     default:
       throw boom();
     }
@@ -335,6 +480,36 @@ public class RelationUtils {
     default:
       throw boom();
     }
+  }
+
+  public static Optional<IRelation.IR.Abstraction> enclosingAbstraction(
+      IRelation relation) {
+    Optional<List<Either3<Label, Integer, Unit>>> op =
+        enclosingAbstraction(relation.link.y, nil(), relation.link.x, nothing());
+    if (op.isNothing())
+      return nothing();
+    return some(relation.relationAt.f(op.some().x).ir.abstraction());
+  }
+
+  private static Optional<List<Either3<Label, Integer, Unit>>>
+      enclosingAbstraction(List<Either3<Label, Integer, Unit>> target,
+          List<Either3<Label, Integer, Unit>> path, Relation2 relation,
+          Optional<List<Either3<Label, Integer, Unit>>> ap) {
+    if (target.isEmpty())
+      return ap;
+    Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link> srop =
+        subRelationOrPath(relation, target.cons().x).some().x;
+    Optional<List<Either3<Label, Integer, Unit>>> a2 =
+        relation.tag == Relation2.Tag.ABSTRACTION ? some(path) : ap;
+    switch (srop.tag) {
+    case X:
+      return enclosingAbstraction(target.cons().tail,
+          append(target.cons().x, path), srop.x(), a2);
+    case Y:
+    case Z:
+      throw new RuntimeException("invalid path");
+    }
+    throw boom();
   }
 
   public static Optional<Abstraction> enclosingAbstraction(
@@ -1294,6 +1469,106 @@ public class RelationUtils {
                 .composition(new Composition(fromArray(er), domain(r),
                     codomain(r))))), 1, path), path) : replaceRelationOrPathAt(
         relation, path, er);
+  }
+
+  public interface Resolver {
+    public Optional<Relation2> resolve(З2Bytes hash);
+  }
+
+  public static Relation2 resolve(Link l, Resolver r) {
+    return relationAt(l.path, r.resolve(l.hash).some().x).some().x;
+  }
+
+  public static IRelation irelation(Relation2 r, Resolver rr,
+      CodeUtils.Resolver cr) {
+    return irelation(r, rr, cr, nil(), r);
+  }
+
+  private static Either<IRelation, List<Either3<Label, Integer, Unit>>> fz(
+      Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link> cpl,
+      CodeUtils.Resolver cr, Resolver rr,
+      List<Either3<Label, Integer, Unit>> path, Relation2 root,
+      Either3<Label, Integer, Unit> e) {
+    switch (cpl.tag) {
+    case X:
+      return Either.x(irelation(cpl.x(), rr, cr, append(e, path), root));
+    case Y:
+      return Either.y(cpl.y());
+    case Z:
+      Relation2 r = resolve(cpl.z(), rr);
+      return Either.x(irelation(r, rr, cr, nil(), r));
+    default:
+      throw boom();
+    }
+  }
+
+  private static IRelation irelation(Relation2 r, Resolver rr,
+      CodeUtils.Resolver cr, List<Either3<Label, Integer, Unit>> path,
+      Relation2 root) {
+    IR ir;
+    switch (r.tag) {
+    case ABSTRACTION:
+      Relation2.Abstraction a = r.abstraction();
+      ir =
+          IR.abstraction(new IR.Abstraction(a.pattern, $ -> fz(a.r, cr, rr,
+              path, root, Either3.z(unit())), icode(a.i, cr), icode(a.o, cr)));
+      break;
+    case COMPOSITION:
+      Relation2.Composition c = r.composition();
+      ir =
+          IR.composition(new IR.Composition(
+              $ -> {
+                List<Either<IRelation, List<Either3<Label, Integer, Unit>>>> l =
+                    nil();
+                int i = 0;
+                for (Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link> e : iter(c.l))
+                  l = append(fz(e, cr, rr, path, root, Either3.y(i++)), l);
+                return l;
+              }, icode(c.i, cr), icode(c.o, cr)));
+      break;
+    case LABEL: {
+      Relation2.Label_ l = r.label();
+      ir =
+          IR.label(new IR.Label_(l.label, icode(l.o, cr), $ -> fz(l.r, cr, rr,
+              path, root, Either3.z(unit()))));
+      break;
+    }
+    case PRODUCT: {
+      Relation2.Product p = r.product();
+      ir =
+          IR.product(new IR.Product(
+              $ -> {
+                Map<Label, Either<IRelation, List<Either3<Label, Integer, Unit>>>> m =
+                    Map.empty();
+                for (Pair<Label, Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link>> e : iter(p.m
+                    .entrySet()))
+                  m = m.put(e.x, fz(e.y, cr, rr, path, root, Either3.x(e.x)));
+                return m;
+              }, icode(p.o, cr)));
+      break;
+    }
+    case PROJECTION:
+      Relation2.Projection p = r.projection();
+      ir = IR.projection(new IR.Projection(p.path, icode(p.o, cr)));
+      break;
+    case UNION:
+      Relation2.Union u = r.union();
+      ir =
+          IR.union(new IR.Union(
+              $ -> {
+                List<Either<IRelation, List<Either3<Label, Integer, Unit>>>> l =
+                    nil();
+                int i = 0;
+                for (Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link> e : iter(u.l))
+                  l = append(fz(e, cr, rr, path, root, Either3.y(i++)), l);
+                return l;
+              }, icode(u.i, cr), icode(u.o, cr)));
+      break;
+    default:
+      throw boom();
+    }
+    return new IRelation(pair(root, path), p -> irelation(relationAt(p, root)
+        .some().x, rr, cr), ir);
   }
 
 }
