@@ -143,6 +143,13 @@ public class ListUtils {
     return some(l.cons().x);
   }
 
+  public static <T> Optional<List<T>> replaceT(List<T> l, int i, T x) {
+    if (l.isEmpty())
+      return nothing();
+    return i == 0 ? some(cons(x, l.cons().tail)) : replaceT(l.cons().tail,
+        i - 1, x);
+  }
+
   public static <T> List<T> replace(List<T> l, int i, T x) {
     return i == 0 ? l.isEmpty() ? fromArray(x) : cons(x, l.cons().tail) : cons(
         l.cons().x, replace(l.cons().tail, i - 1, x));

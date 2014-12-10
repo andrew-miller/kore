@@ -2,6 +2,7 @@ package com.pokemon.kore.codes;
 
 import static com.pokemon.kore.utils.Null.notNull;
 
+import com.pokemon.kore.codes.Relation2.Tag;
 import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
@@ -13,9 +14,6 @@ import com.pokemon.kore.utils.Unit;
 
 public final class IRelation {
   public static final class IR {
-    public enum Tag {
-      UNION, PRODUCT, PROJECTION, ABSTRACTION, COMPOSITION, LABEL
-    }
 
     public final Tag tag;
     private final Union union;
