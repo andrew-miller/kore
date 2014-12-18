@@ -850,6 +850,23 @@ public final class CodeUtils {
     return some(c);
   }
 
+  public static ICode followPath(List<Label> path, ICode c) {
+    return path.isEmpty() ? c : followPath(path.cons().tail,
+        child(c, path.cons().x));
+  }
+
+  public static ICode child(ICode c, Label l) {
+    Either<ICode, List<Label>> cp = c.labels().get(l).some().x;
+    switch (cp.tag) {
+    case X:
+      return cp.x();
+    case Y:
+      return c.codeAt(cp.y());
+    default:
+      throw boom();
+    }
+  }
+
   /**
    * map cyclic path over the graph represented by this <tt>Code</tt> (rooted at
    * this <tt>Code</tt>) to a simple path from this <tt>Code</tt> to another
@@ -1209,5 +1226,9 @@ public final class CodeUtils {
 
   public static Link hashLink(Pair<Code2, List<Label>> l) {
     return new Link(hash(l.x), l.y);
+  }
+
+  public static boolean equal(ICode a, ICode b) {
+    return a.link().equals(b.link());
   }
 }

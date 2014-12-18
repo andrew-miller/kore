@@ -1,7 +1,9 @@
 package com.pokemon.kore.ui;
 
 import static com.pokemon.kore.utils.Boom.boom;
+import static com.pokemon.kore.utils.CodeUtils.child;
 import static com.pokemon.kore.utils.CodeUtils.followPath;
+import static com.pokemon.kore.utils.CodeUtils.hashLink;
 import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.iter;
 import static com.pokemon.kore.utils.OptionalUtils.nothing;
@@ -11,6 +13,7 @@ import com.pokemon.kore.codes.CanonicalCode;
 import com.pokemon.kore.codes.Code;
 import com.pokemon.kore.codes.Label;
 import com.pokemon.kore.codes.Pattern;
+import com.pokemon.kore.utils.ICode;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.Map;
 import com.pokemon.kore.utils.Optional;
@@ -40,6 +43,46 @@ public class PatternUtils {
     if (r.isNothing())
       return nothing();
     return some(new Pattern(pattern.fields.put(path.cons().x, r.some().x)));
+  }
+
+  public static String renderPattern(Pattern pattern, ICode c,
+      CodeLabelAliasMap2 codeLabelAliases) {
+    String start;
+    String end;
+    switch (c.tag()) {
+    case PRODUCT:
+      start = "{";
+      end = "}";
+      break;
+    case UNION:
+      start = "[";
+      end = "]";
+      break;
+    default:
+      throw boom();
+    }
+    List<Pair<Label, Pattern>> es = pattern.fields.entrySet();
+    if (es.isEmpty())
+      return start + end;
+    String s;
+    {
+      Pair<Label, Pattern> e = es.cons().x;
+      Optional<String> a =
+          codeLabelAliases.getAliases(hashLink(c.link())).xy.get(e.x);
+      s =
+          start + (a.isNothing() ? e.x : a.some().x) + " "
+              + renderPattern(e.y, child(c, e.x), codeLabelAliases);
+    }
+    if (es.cons().tail.isEmpty())
+      return s + end;
+    for (Pair<Label, Pattern> e : iter(es.cons().tail)) {
+      Optional<String> a =
+          codeLabelAliases.getAliases(hashLink(c.link())).xy.get(e.x);
+      s +=
+          "," + (a.isNothing() ? e.x : a.some().x) + " "
+              + renderPattern(e.y, child(c, e.x), codeLabelAliases);
+    }
+    return s + end;
   }
 
   public static String renderPattern(Pattern pattern, Code root,

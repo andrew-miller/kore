@@ -1,18 +1,18 @@
 package com.pokemon.kore.ui;
 
+import static com.pokemon.kore.ui.RelationUtils.child;
 import static com.pokemon.kore.ui.RelationUtils.codomain;
-import static com.pokemon.kore.ui.RelationUtils.defaultValue;
+import static com.pokemon.kore.ui.RelationUtils.defaultValue2;
 import static com.pokemon.kore.ui.RelationUtils.enclosingAbstraction;
-import static com.pokemon.kore.ui.RelationUtils.getRelation;
-import static com.pokemon.kore.ui.RelationUtils.linkTree;
-import static com.pokemon.kore.ui.RelationUtils.linkTreeToRelation;
+import static com.pokemon.kore.ui.RelationUtils.hashLink;
+import static com.pokemon.kore.ui.RelationUtils.relationAt;
+import static com.pokemon.kore.ui.RelationUtils.subRelationOrPath;
 import static com.pokemon.kore.utils.Boom.boom;
+import static com.pokemon.kore.utils.CodeUtils.child;
 import static com.pokemon.kore.utils.CodeUtils.equal;
-import static com.pokemon.kore.utils.CodeUtils.reroot;
-import static com.pokemon.kore.utils.CodeUtils.unit;
-import static com.pokemon.kore.utils.LinkTreeUtils.rebase;
+import static com.pokemon.kore.utils.CodeUtils.hashLink;
+import static com.pokemon.kore.utils.CodeUtils.iunit;
 import static com.pokemon.kore.utils.ListUtils.append;
-import static com.pokemon.kore.utils.ListUtils.fromArray;
 import static com.pokemon.kore.utils.ListUtils.iter;
 import static com.pokemon.kore.utils.ListUtils.length;
 import static com.pokemon.kore.utils.ListUtils.nil;
@@ -25,17 +25,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupWindow;
 
-import com.pokemon.kore.codes.CanonicalCode;
-import com.pokemon.kore.codes.CanonicalRelation;
-import com.pokemon.kore.codes.Code;
+import com.pokemon.kore.codes.IRelation;
 import com.pokemon.kore.codes.Label;
-import com.pokemon.kore.codes.Relation;
-import com.pokemon.kore.codes.Relation.Abstraction;
-import com.pokemon.kore.codes.Relation.Label_;
-import com.pokemon.kore.codes.Relation.Tag;
+import com.pokemon.kore.codes.Relation2;
+import com.pokemon.kore.codes.Relation2.Label_;
+import com.pokemon.kore.codes.Relation2.Link;
+import com.pokemon.kore.codes.Relation2.Tag;
 import com.pokemon.kore.utils.Either;
 import com.pokemon.kore.utils.Either3;
 import com.pokemon.kore.utils.F;
+import com.pokemon.kore.utils.ICode;
 import com.pokemon.kore.utils.List;
 import com.pokemon.kore.utils.Optional;
 import com.pokemon.kore.utils.Pair;
@@ -45,45 +44,60 @@ import com.pokemon.kore.utils.Unit;
 public final class RelationView2 {
   interface Listener {
     void extendComposition(List<Either3<Label, Integer, Unit>> path, Integer i,
-        Either<Relation, List<Either3<Label, Integer, Unit>>> er);
+        Either<Relation2, List<Either3<Label, Integer, Unit>>> er);
 
     void extendUnion(List<Either3<Label, Integer, Unit>> path, Integer i,
-        Either<Relation, List<Either3<Label, Integer, Unit>>> er);
+        Either<Relation2, List<Either3<Label, Integer, Unit>>> er);
 
     void select(List<Either3<Label, Integer, Unit>> path);
 
     void selectPath(List<Either3<Label, Integer, Unit>> path);
 
     void replaceRelation(List<Either3<Label, Integer, Unit>> path,
-        Either<Relation, List<Either3<Label, Integer, Unit>>> er);
+        Either<Relation2, List<Either3<Label, Integer, Unit>>> rp);
 
     boolean dontAbbreviate(List<Either3<Label, Integer, Unit>> path);
+
+    boolean canReplaceWithRef(List<Either3<Label, Integer, Unit>> path);
   }
 
-  public static View make(Context context, RelationViewColors rvc,
-      DragBro dragBro, Relation root, List<Either3<Label, Integer, Unit>> path,
-      Listener listener, CodeLabelAliasMap codeLabelAliases,
-      Bijection<CanonicalRelation, String> relationAliases,
-      List<Relation> relations) {
-    Either<Relation, List<Either3<Label, Integer, Unit>>> er =
-        RelationUtils.relationOrPathAt(path, root);
+  public static
+      View
+      make(
+          Context context,
+          RelationViewColors2 rvc,
+          DragBro dragBro,
+          Either<IRelation, Pair<Optional<String>, List<Either3<Label, Integer, Unit>>>> rap,
+          Listener listener, CodeLabelAliasMap2 codeLabelAliases,
+          Bijection<Link, String> relationAliases, List<Relation2> relations) {
+    return make(context, rvc, dragBro, rap, listener, codeLabelAliases,
+        relationAliases, relations, nil());
+  }
+
+  private static
+      View
+      make(
+          Context context,
+          RelationViewColors2 rvc,
+          DragBro dragBro,
+          Either<IRelation, Pair<Optional<String>, List<Either3<Label, Integer, Unit>>>> rap,
+          Listener listener, CodeLabelAliasMap2 codeLabelAliases,
+          Bijection<Link, String> relationAliases, List<Relation2> relations,
+          List<Either3<Label, Integer, Unit>> path) {
     View rv;
     Pair<Integer, Integer> cp;
-    Optional<String> alias =
-        relationAliases.xy.get(new CanonicalRelation(root, path));
-    F<Pair<Pair<Boolean, View>, F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit>>, Pair<PopupWindow, ViewGroup>> makeMenu =
-        x -> RelationMenu.make(context, root, path, x.x.y, rvc,
-            codeLabelAliases, relationAliases, relations, x.x.x, x.y);
+    F<Pair<Pair<Boolean, View>, F<Either<Relation2, List<Either3<Label, Integer, Unit>>>, Unit>>, Pair<PopupWindow, ViewGroup>> makeMenu =
+        x -> RelationMenu2.make(context, rap.x(), x.x.y, rvc, codeLabelAliases,
+            relationAliases, relations, x.x.x, x.y);
     F<View, Pair<PopupWindow, ViewGroup>> makeReplacementMenu =
-        v -> makeMenu.f(pair(pair(!path.isEmpty(), v), $er -> {
-          listener.replaceRelation(
-              path,
-              $er.tag == $er.tag.X ? Either.x(linkTreeToRelation(rebase(path,
-                  linkTree($er.x())))) : $er);
-          return unit();
-        }));
+        v -> makeMenu.f(pair(pair(listener.canReplaceWithRef(path), v),
+            rpl -> {
+              listener.replaceRelation(path, rpl);
+              return unit();
+            }));
+    Optional<String> alias = rap.tag == Either.Tag.Y ? rap.y().x : nothing();
     if (alias.isNothing() | listener.dontAbbreviate(path)) {
-      switch (er.tag) {
+      switch (rap.tag) {
       case Y:
         cp = rvc.referenceColors;
         rv =
@@ -94,30 +108,49 @@ public final class RelationView2 {
                 });
         break;
       case X:
-        Optional<Abstraction> oea = enclosingAbstraction(path, root);
-        Optional<Code> argCode =
+        Optional<IRelation.IR.Abstraction> oea = enclosingAbstraction(rap.x());
+        Optional<ICode> argCode =
             oea.isNothing() ? nothing() : some(oea.some().x.i);
-        Relation r = er.x();
-        cp = rvc.relationcolors.m.get(r.tag).some().x;
+        IRelation r = rap.x();
+        cp = rvc.relationcolors.m.get(r.ir.tag).some().x;
         F<Either3<Label, Integer, Unit>, View> make =
-            e -> make(context, rvc, dragBro, root, append(e, path), listener,
-                codeLabelAliases, relationAliases, relations);
-        switch (r.tag) {
+            e -> {
+              Either<IRelation, Pair<Optional<String>, List<Either3<Label, Integer, Unit>>>> rap2 =
+                  null;
+              Either<IRelation, List<Either3<Label, Integer, Unit>>> srp =
+                  subRelationOrPath(r, e).some().x;
+              switch (srp.tag) {
+              case X:
+                rap2 = Either.x(srp.x());
+                break;
+              case Y:
+                Optional<String> oa =
+                    relationAliases.xy
+                        .get(hashLink(r.relationAt.f(srp.y()).link));
+                rap2 = Either.y(pair(oa, srp.y()));
+                break;
+              default:
+                throw boom();
+              }
+              return make(context, rvc, dragBro, rap2, listener,
+                  codeLabelAliases, relationAliases, relations, append(e, path));
+            };
+        switch (r.ir.tag) {
         case COMPOSITION: {
           SARef<View> rvr = new SARef<>();
           rvr.set(rv =
-              CompositionView.make(context, make, dragBro, cp.x, cp.y, root,
-                  path, new CompositionView.Listener() {
+              CompositionView2.make(context, make, dragBro, cp.x, cp.y, r,
+                  new CompositionView2.Listener() {
                     public void select2() {
                       listener.select(path);
                     }
 
                     public void extend(Integer i) {
                       SARef<Pair<PopupWindow, ViewGroup>> p = new SARef<>();
-                      F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
-                          $er -> {
+                      F<Either<Relation2, List<Either3<Label, Integer, Unit>>>, Unit> f =
+                          er -> {
                             p.get().x.dismiss();
-                            listener.extendComposition(path, i, $er);
+                            listener.extendComposition(path, i, er);
                             return unit();
                           };
                       p.set(makeMenu.f(pair(pair(true, rvr.get()), f)));
@@ -132,15 +165,15 @@ public final class RelationView2 {
         case UNION:
           SARef<View> rvr = new SARef<>();
           rvr.set(rv =
-              UnionView.make(context, make, dragBro, cp.x, cp.y, root, path,
-                  new UnionView.Listener() {
+              UnionView2.make(context, make, dragBro, cp.x, cp.y, r,
+                  new UnionView2.Listener() {
                     public void select2() {
                       listener.select(path);
                     }
 
                     public void insert(Integer i) {
                       SARef<Pair<PopupWindow, ViewGroup>> p = new SARef<>();
-                      F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
+                      F<Either<Relation2, List<Either3<Label, Integer, Unit>>>, Unit> f =
                           $er -> {
                             p.get().x.dismiss();
                             listener.extendUnion(path, i, $er);
@@ -156,48 +189,67 @@ public final class RelationView2 {
           break;
         case LABEL:
           rv =
-              Label_View.make(
-                  context,
-                  make,
-                  cp.x,
-                  root,
-                  path,
-                  rvc.aliasTextColor,
-                  rvc.labelTextColor,
-                  codeLabelAliases,
-                  v -> {
-                    Pair<PopupWindow, ViewGroup> p = makeReplacementMenu.f(v);
-                    List<View> labels =
-                        UIUtils.relationLabels(
-                            p.y,
-                            context,
-                            v,
-                            codeLabelAliases,
-                            new CanonicalCode(r.label().o, nil()),
-                            l -> {
-                              p.x.dismiss();
-                              Relation sr =
-                                  getRelation(root, r, Either3.z(unit()))
-                                      .some().x;
-                              Code o = reroot(r.label().o, fromArray(l));
-                              listener.replaceRelation(path, Either.x(Relation
-                                  .label(new Label_(l, Either.x(equal(
-                                      codomain(sr), o) ? sr : defaultValue(
-                                      unit, o)), r.label().o))));
-                              return unit();
-                            });
-                    int i = 0;
-                    for (View lv : iter(labels))
-                      p.y.addView(lv, i++);
-                    return unit();
-                  });
+              Label_View2
+                  .make(
+                      context,
+                      make,
+                      cp.x,
+                      r,
+                      rvc.aliasTextColor,
+                      rvc.labelTextColor,
+                      codeLabelAliases,
+                      v -> {
+                        Pair<PopupWindow, ViewGroup> p =
+                            makeReplacementMenu.f(v);
+                        List<View> labels =
+                            UIUtils.relationLabels(
+                                p.y,
+                                context,
+                                v,
+                                codeLabelAliases,
+                                r.ir.label().o,
+                                l -> {
+                                  p.x.dismiss();
+                                  Either<IRelation, List<Either3<Label, Integer, Unit>>> srp =
+                                      subRelationOrPath(r, Either3.z(unit()))
+                                          .some().x;
+                                  IRelation sr = child(r, Either3.z(unit()));
+                                  Either3<Relation2, List<Either3<Label, Integer, Unit>>, Link> srpl;
+                                  switch (srp.tag) {
+                                  case X:
+                                    Pair<Relation2, List<Either3<Label, Integer, Unit>>> sl =
+                                        srp.x().link;
+                                    srpl =
+                                        sl.x.equals(r.link.x) ? Either3
+                                            .x(relationAt(sl.y, sl.x).some().x)
+                                            : Either3.z(hashLink(sl));
+                                    break;
+                                  case Y:
+                                    srpl = Either3.y(srp.y());
+                                    break;
+                                  default:
+                                    throw boom();
+                                  }
+                                  ICode o = child(r.ir.label().o, l);
+                                  listener.replaceRelation(path, Either
+                                      .x(Relation2.label(new Label_(l, equal(
+                                          codomain(sr), o) ? srpl : Either3
+                                          .x(defaultValue2(iunit, o)),
+                                          hashLink(r.ir.label().o.link())))));
+                                  return unit();
+                                });
+                        int i = 0;
+                        for (View lv : iter(labels))
+                          p.y.addView(lv, i++);
+                        return unit();
+                      });
           break;
         case ABSTRACTION:
           rv =
-              AbstractionView.make(context, make, cp.x, rvc.aliasTextColor,
-                  rvc.labelTextColor, root, path, codeLabelAliases,
-                  new AbstractionView.Listener() {
-                    public void replace(Relation r) {
+              AbstractionView2.make(context, make, cp.x, rvc.aliasTextColor,
+                  rvc.labelTextColor, r, codeLabelAliases,
+                  new AbstractionView2.Listener() {
+                    public void replace(Relation2 r) {
                       listener.replaceRelation(path, Either.x(r));
                     }
 
@@ -208,26 +260,25 @@ public final class RelationView2 {
           break;
         case PRODUCT:
           rv =
-              ProductView.make(context, make, cp.x, rvc.aliasTextColor,
-                  rvc.labelTextColor, root, path, codeLabelAliases, v -> {
+              ProductView2.make(context, make, cp.x, rvc.aliasTextColor,
+                  rvc.labelTextColor, r, codeLabelAliases, v -> {
                     makeReplacementMenu.f(v);
                     return unit();
                   });
           break;
         case PROJECTION:
           rv =
-              ProjectionView.make(context, cp.x, rvc.aliasTextColor,
-                  rvc.labelTextColor, root, path, codeLabelAliases, argCode
-                      .some().x, v -> {
+              ProjectionView2.make(context, cp.x, rvc.aliasTextColor,
+                  rvc.labelTextColor, r, codeLabelAliases, argCode.some().x,
+                  v -> {
                     Pair<PopupWindow, ViewGroup> p = makeReplacementMenu.f(v);
                     UIUtils.addProjectionsToMenu(p, context, v,
                         codeLabelAliases, argCode.some().x,
-                        reroot(argCode.some().x, r.projection().path),
-                        proj -> {
+                        r.ir.projection().o, proj -> {
                           p.x.dismiss();
-                          listener.replaceRelation(path, Either.x(Relation
-                              .projection(new Relation.Projection(proj, r
-                                  .projection().o))));
+                          listener.replaceRelation(path, Either.x(Relation2
+                              .projection(new Relation2.Projection(proj,
+                                  hashLink(r.ir.projection().o.link())))));
                           return unit();
                         });
                     return unit();
@@ -264,15 +315,16 @@ public final class RelationView2 {
                 case BOTTOM:
                 case TOP: {
                   SARef<Pair<PopupWindow, ViewGroup>> p2 = new SARef<>();
-                  F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
+                  F<Either<Relation2, List<Either3<Label, Integer, Unit>>>, Unit> f =
                       x -> {
                         p2.get().x.dismiss();
                         switch (p.x) {
                         case BOTTOM:
                           listener.extendUnion(
                               path,
-                              er.tag == er.tag.X && er.x().tag == Tag.UNION ? length(er
-                                  .x().union().l) : 1, x);
+                              rap.tag == rap.tag.X
+                                  && rap.x().ir.tag == Tag.UNION ? length(rap
+                                  .x().ir.union().l.f(unit())) : 1, x);
                           break;
                         case TOP:
                           listener.extendUnion(path, 0, x);
@@ -286,7 +338,7 @@ public final class RelationView2 {
                 case LEFT:
                 case RIGHT:
                   SARef<Pair<PopupWindow, ViewGroup>> p2 = new SARef<>();
-                  F<Either<Relation, List<Either3<Label, Integer, Unit>>>, Unit> f =
+                  F<Either<Relation2, List<Either3<Label, Integer, Unit>>>, Unit> f =
                       x -> {
                         p2.get().x.dismiss();
                         switch (p.x) {
@@ -294,9 +346,11 @@ public final class RelationView2 {
                           listener.extendComposition(path, 0, x);
                           break;
                         case RIGHT:
-                          listener.extendComposition(path, er.tag == er.tag.X
-                              && er.x().tag == Tag.COMPOSITION ? length(er.x()
-                              .composition().l) : 1, x);
+                          listener.extendComposition(
+                              path,
+                              rap.tag == rap.tag.X
+                                  && rap.x().ir.tag == Tag.COMPOSITION ? length(rap
+                                  .x().ir.composition().l.f(unit())) : 1, x);
                           break;
                         }
                         return unit();

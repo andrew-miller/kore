@@ -8,7 +8,10 @@ import static com.pokemon.kore.ui.RelationUtils.enclosingAbstraction;
 import static com.pokemon.kore.ui.RelationUtils.isUnit;
 import static com.pokemon.kore.ui.RelationUtils.relationOrPathAt;
 import static com.pokemon.kore.ui.RelationUtils.renderRelation;
+import static com.pokemon.kore.ui.RelationUtils.renderRelation2;
 import static com.pokemon.kore.ui.RelationUtils.resolve;
+import static com.pokemon.kore.ui.RelationUtils.wrapProjection;
+import static com.pokemon.kore.utils.CodeUtils.child;
 import static com.pokemon.kore.utils.CodeUtils.equal;
 import static com.pokemon.kore.utils.CodeUtils.hash;
 import static com.pokemon.kore.utils.CodeUtils.hashLink;
@@ -298,6 +301,20 @@ public class UIUtils {
   }
 
   public static List<View> relationLabels(ViewGroup vg, Context context,
+      View v, CodeLabelAliasMap2 codeLabelAliases, ICode c, F<Label, Unit> f) {
+    List<View> l = nil();
+    for (Pair<Label, ?> e : iter(c.labels().entrySet())) {
+      Optional<String> a =
+          codeLabelAliases.getAliases(hashLink(c.link())).xy.get(e.x);
+      Button b = new Button(context);
+      b.setText(a.isNothing() ? e.x.toString() : a.some().x);
+      b.setOnClickListener($ -> f.f(e.x));
+      l = cons(b, l);
+    }
+    return l;
+  }
+
+  public static List<View> relationLabels(ViewGroup vg, Context context,
       View v, CodeLabelAliasMap codeLabelAliases, CanonicalCode cc,
       F<Label, Unit> f) {
     List<View> l = nil();
@@ -309,6 +326,44 @@ public class UIUtils {
       l = cons(b, l);
     }
     return l;
+  }
+
+  /** <tt>c</tt> and <tt>out</tt> are root codes */
+  public static void addProjectionsToMenu(Pair<PopupWindow, ViewGroup> p,
+      Context context, View v, CodeLabelAliasMap2 codeLabelAliases, ICode c,
+      ICode out, F<List<Label>, Unit> select) {
+    addProjectionsToMenu(p, context, v, codeLabelAliases, nil(), c, c, out,
+        select);
+  }
+
+  private static void
+      addProjectionsToMenu(Pair<PopupWindow, ViewGroup> p, Context context,
+          View v, CodeLabelAliasMap2 codeLabelAliases, List<Label> proj,
+          ICode c, ICode o, ICode out, F<List<Label>, Unit> select) {
+    Button b = new Button(context);
+    int i = 0;
+    p.y.addView(b, i++);
+    b.setText(renderRelation2(some(c), Either.x(wrapProjection(proj, c)),
+        codeLabelAliases));
+    b.setOnClickListener($ -> {
+      p.x.dismiss();
+      select.f(proj);
+    });
+    b.setEnabled(equal(o, out));
+    for (Pair<Label, ?> e : iter(o.labels().entrySet())) {
+      Optional<String> a =
+          codeLabelAliases.getAliases(hashLink(o.link())).xy.get(e.x);
+      Button b2 = new Button(context);
+      b2.setText(a.isNothing() ? e.x.toString() : a.some().x);
+      b2.setOnClickListener($ -> {
+        p.x.dismiss();
+        Pair<PopupWindow, ViewGroup> p1 = makePopupWindow(context);
+        p1.x.showAsDropDown(v);
+        addProjectionsToMenu(p1, context, v, codeLabelAliases,
+            append(e.x, proj), c, child(o, e.x), out, select);
+      });
+      p.y.addView(b2, i++);
+    }
   }
 
   /** <tt>c</tt> and <tt>out</tt> are root codes */

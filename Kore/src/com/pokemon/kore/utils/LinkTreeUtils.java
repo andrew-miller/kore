@@ -5,6 +5,7 @@ import static com.pokemon.kore.utils.ListUtils.append;
 import static com.pokemon.kore.utils.ListUtils.cons;
 import static com.pokemon.kore.utils.ListUtils.drop;
 import static com.pokemon.kore.utils.ListUtils.iter;
+import static com.pokemon.kore.utils.ListUtils.map;
 import static com.pokemon.kore.utils.ListUtils.nil;
 import static com.pokemon.kore.utils.MapUtils.containsKey;
 import static com.pokemon.kore.utils.PairUtils.pair;
@@ -490,6 +491,23 @@ public class LinkTreeUtils {
         return p.y.tag == p.y.tag.Y ? false : validPath(p.y.x(),
             path.cons().tail);
     return false;
+  }
+
+  public static <E, V> LinkTree<E, V> strictLinkTreeToLinkTree(
+      StrictLinkTree<E, V> slt) {
+    return new LinkTree<E, V>() {
+      public List<Pair<E, Either<LinkTree<E, V>, List<E>>>> edges() {
+        return map(
+            p -> pair(
+                p.x,
+                p.y.tag == Either.Tag.X ? Either.x(strictLinkTreeToLinkTree(p.y
+                    .x())) : Either.y(p.y.y())), slt.edges);
+      }
+
+      public V vertex() {
+        return slt.vertex;
+      }
+    };
   }
 
 }
